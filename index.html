@@ -1,1112 +1,812 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>SaniPilot · Sanitenergie</title>
-<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SANITENERGIE — Tableau de bord</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --canvas:#0F1923;--surface:#19232F;--surf2:#1F2D3D;
-  --ink:#E8EAED;--inkSoft:#B4BCCE;--muted:#6B7490;--line:#273040;
-  --cobalt:#2BA8DC;--cobaltSoft:#0C2E3D;
-  --terra:#E05A3A;--terraSoft:#2E1810;
-  --sage:#3AAB6A;--sageSoft:#142A1E;
-  --ochre:#D4A43C;--ochreSoft:#2A2010;
-  --violet:#8B7CF6;--violetSoft:#1E1B4B;
+--canvas:#0F1923;--surface:#19232F;--surf2:#1F2D3D;
+--ink:#E8EAED;--inkSoft:#B4BCCE;--muted:#6B7490;--line:#273040;
+--cobalt:#2BA8DC;--cobaltSoft:#0C2E3D;
+--terra:#E05A3A;--terraSoft:#2E1810;
+--sage:#3AAB6A;--sageSoft:#142A1E;
+--ochre:#D4A43C;--ochreSoft:#2A2010;
+--violet:#8B7CF6;--violetSoft:#1E1B4B;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Space Grotesk',sans-serif;background:var(--canvas);color:var(--ink);display:flex;min-height:100vh}
-button,input,textarea,select{font-family:'Space Grotesk',sans-serif;color:var(--ink);background:var(--surface)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--canvas);color:var(--ink);font-family:'Space Grotesk',sans-serif;font-size:14px;line-height:1.5}
+h1,h2,h3,h4,.num,.oxa{font-family:'Oxanium',sans-serif}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:var(--canvas)}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+a{color:inherit;text-decoration:none}
 
-/* ── SIDEBAR ── */
-.sb{width:240px;background:#0A121A;border-right:1px solid #1A2535;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .28s}
-.sb-logo{padding:18px 18px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
-.sb-ico{width:36px;height:36px;background:linear-gradient(135deg,#2BA8DC,#0284c7);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb-name{font-family:'Oxanium',sans-serif;font-weight:700;font-size:13px;line-height:1.2}
-.sb-sub{font-size:10.5px;color:var(--muted);margin-top:1px}
-.sb-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
-.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;background:transparent;color:var(--inkSoft);font-weight:400;font-size:13.5px;width:100%;text-align:left;border:none;cursor:pointer;transition:background .15s}
-.nav-btn.active{background:var(--cobaltSoft);color:var(--cobalt);font-weight:600}
-.nav-btn:hover:not(.active){background:rgba(255,255,255,.04)}
-.nav-badge{margin-left:auto;background:var(--terra);color:#fff;font-size:10px;font-weight:700;border-radius:8px;padding:1px 6px}
-.sb-footer{padding:12px 16px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);text-align:center}
-.sb-overlay{display:none;position:fixed;inset:0;background:rgba(10,18,26,.6);z-index:99}
-.burger{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--inkSoft);align-items:center}
+.app{display:flex;min-height:100vh}
+.sidebar{width:248px;background:var(--surface);border-right:1px solid var(--line);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:50}
+.brand{padding:22px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.brand .logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--cobalt),var(--violet));display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:800;font-size:18px;color:#fff}
+.brand .bn{font-family:'Oxanium';font-weight:700;font-size:16px;letter-spacing:.5px}
+.brand .bs{font-size:11px;color:var(--muted)}
+.nav{flex:1;padding:14px 12px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:9px;color:var(--inkSoft);cursor:pointer;margin-bottom:3px;font-weight:500;position:relative;transition:.15s}
+.nav-item:hover{background:var(--surf2);color:var(--ink)}
+.nav-item.active{background:var(--cobaltSoft);color:var(--cobalt)}
+.nav-item.active svg{stroke:var(--cobalt)}
+.nav-item svg{width:19px;height:19px;stroke:var(--muted);fill:none;stroke-width:1.8;flex-shrink:0}
+.nav-item .badge{margin-left:auto;background:var(--terra);color:#fff;font-size:11px;font-weight:700;padding:1px 8px;border-radius:10px;font-family:'Oxanium'}
+.nav-foot{padding:12px;border-top:1px solid var(--line)}
+.main{flex:1;margin-left:248px;min-width:0}
+.topbar{height:64px;border-bottom:1px solid var(--line);background:rgba(15,25,35,.85);backdrop-filter:blur(8px);position:sticky;top:0;z-index:40;display:flex;align-items:center;padding:0 28px;gap:18px}
+.topbar h1{font-size:19px;font-weight:700}
+.topbar .sub{font-size:12px;color:var(--muted)}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.rge{display:flex;align-items:center;gap:7px;background:var(--sageSoft);color:var(--sage);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid rgba(58,171,106,.3)}
+.userchip{display:flex;align-items:center;gap:9px}
+.userchip .av{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--terra),var(--ochre));display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:700;color:#fff;font-size:13px}
+.content{padding:28px}
+.view{display:none}
+.view.active{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* ── MAIN ── */
-.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
-.topbar{height:56px;background:#0A121A;border-bottom:1px solid #1A2535;display:flex;align-items:center;gap:12px;padding:0 24px;position:sticky;top:0;z-index:50}
-.search{flex:1;max-width:360px;position:relative;display:flex;align-items:center}
-.search input{width:100%;height:34px;background:var(--canvas);border:1px solid var(--line);border-radius:9px;padding:0 12px 0 34px;font-size:13px;outline:none;color:var(--ink)}
-.search input::placeholder{color:var(--muted)}
-.search svg{position:absolute;left:10px;color:var(--muted);pointer-events:none}
-.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--cobalt),#0369a1);color:#fff;font-family:'Oxanium',sans-serif;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.content{flex:1;padding:26px 26px 56px}
-.view{display:none;animation:fi .3s ease both;max-width:1100px}
-.view.active{display:block}
-@keyframes fi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
-.view-title{font-family:'Oxanium',sans-serif;font-weight:700;font-size:20px;margin-bottom:4px}
-.view-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.section-title{font-size:13px;font-weight:600;color:var(--inkSoft);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.mt{margin-top:20px}
+.row{display:flex;align-items:center}
 
-/* ── CARDS ── */
-.card{background:var(--surface);border-radius:14px;border:1px solid var(--line);padding:20px 22px}
-.sec{font-family:'Oxanium',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin-bottom:14px}
-.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.kpi.c-cobalt::before{background:var(--cobalt)}.kpi.c-terra::before{background:var(--terra)}
+.kpi.c-sage::before{background:var(--sage)}.kpi.c-ochre::before{background:var(--ochre)}.kpi.c-violet::before{background:var(--violet)}
+.kpi .k-label{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.kpi .k-val{font-family:'Oxanium';font-size:30px;font-weight:700;margin-top:6px}
+.kpi .k-sub{font-size:12px;margin-top:4px;color:var(--inkSoft)}
+.up{color:var(--sage)}.down{color:var(--terra)}
 
-/* ── KPI ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
-.kpi{background:var(--surface);border-radius:14px;border:1px solid var(--line);padding:20px 22px;display:flex;flex-direction:column;gap:10px}
-.kpi-label{font-size:12.5px;color:var(--muted);font-weight:500}
-.kpi-val{font-family:'Oxanium',sans-serif;font-weight:700;font-size:26px;letter-spacing:-.5px}
-.kpi-sub{font-size:11.5px;font-weight:600;border-radius:5px;padding:2px 8px;align-self:flex-start;background:var(--canvas);color:var(--muted)}
-.kpi-up{background:var(--sageSoft);color:var(--sage)}
-.kpi-down{background:var(--terraSoft);color:var(--terra)}
-.kpi-warn{background:var(--ochreSoft);color:var(--ochre)}
+.hero{background:linear-gradient(120deg,var(--terraSoft),var(--surface));border:1px solid rgba(224,90,58,.35);border-radius:14px;padding:22px 24px;display:flex;align-items:center;gap:22px}
+.hero .hicon{width:48px;height:48px;border-radius:11px;background:var(--terra);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hero .hicon svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2}
+.hero .ht{font-size:13px;color:var(--inkSoft)}
+.hero .hv{font-family:'Oxanium';font-size:26px;font-weight:700;color:var(--terra)}
 
-/* ── HERO / ALERT ── */
-.hero{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--terra);border-radius:12px;padding:22px 26px;margin-bottom:18px;display:flex;align-items:center;gap:32px;flex-wrap:wrap}
-.hero-val{font-family:'Oxanium',sans-serif;font-weight:800;font-size:36px;color:var(--ink);letter-spacing:-1px;line-height:1.1;margin-bottom:6px}
-.hero-lbl{font-family:'Oxanium',sans-serif;font-weight:700;font-size:10px;letter-spacing:.14em;color:var(--terra);margin-bottom:8px;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--surf2);border:1px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:9px;font-family:'Space Grotesk';font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--cobalt);color:var(--cobalt)}
+.btn.primary{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+.btn.primary:hover{background:#229fd4;color:#fff}
+.btn.danger{background:var(--terra);border-color:var(--terra);color:#fff}
+.btn.danger:hover{background:#cf4e30;color:#fff}
+.btn.sage{background:var(--sage);border-color:var(--sage);color:#fff}
+.btn.sage:hover{background:#32935a;color:#fff}
+.btn.sm{padding:6px 12px;font-size:12px}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
 
-/* ── BADGES ── */
-.badge{font-size:11.5px;font-weight:600;border-radius:6px;padding:3px 9px;white-space:nowrap;display:inline-block}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Oxanium'}
+.t-signe{background:var(--sageSoft);color:var(--sage)}
+.t-dormant{background:var(--ochreSoft);color:var(--ochre)}
+.t-refuse{background:var(--terraSoft);color:var(--terra)}
+.t-attente{background:var(--cobaltSoft);color:var(--cobalt)}
+.t-retard{background:var(--terraSoft);color:var(--terra)}
+.t-payee{background:var(--sageSoft);color:var(--sage)}
+.t-encours{background:var(--cobaltSoft);color:var(--cobalt)}
+.t-planifie{background:var(--ochreSoft);color:var(--ochre)}
+.t-termine{background:var(--sageSoft);color:var(--sage)}
+.t-actif{background:var(--sageSoft);color:var(--sage)}
+.t-prospect{background:var(--violetSoft);color:var(--violet)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--line);color:var(--inkSoft);padding:2px 9px;border-radius:14px;font-size:11px;margin-right:5px}
 
-/* ── PROGRESS BARS ── */
-.pbar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-.pbar-label{width:160px;font-size:12.5px;color:var(--inkSoft);flex-shrink:0;display:flex;align-items:center;gap:6px}
-.pbar-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.pbar-track{flex:1;height:6px;background:var(--canvas);border-radius:3px;overflow:hidden}
-.pbar-fill{height:100%;border-radius:3px;transition:width .6s ease}
-.pbar-val{font-family:monospace;font-size:12px;font-weight:600;color:var(--inkSoft);width:70px;text-align:right;flex-shrink:0}
+.pbar{height:8px;background:var(--surf2);border-radius:6px;overflow:hidden}
+.pbar>span{display:block;height:100%;border-radius:6px;background:var(--cobalt)}
 
-/* ── CUSTOM BAR CHART (devis vs signés) ── */
-.bar-chart{display:flex;gap:6px;align-items:flex-end;height:120px;padding-bottom:4px}
-.bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;cursor:pointer}
-.bar-pair{display:flex;gap:2px;align-items:flex-end}
-.bar-env{width:13px;background:var(--cobaltSoft);border:1.5px solid var(--cobalt);border-radius:3px 3px 0 0}
-.bar-sig{width:13px;background:var(--sage);border-radius:3px 3px 0 0}
-.bar-lbl{font-size:10px;color:var(--muted);margin-top:5px}
+.lcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;cursor:pointer;transition:.15s;margin-bottom:12px}
+.lcard:hover{border-color:var(--cobalt);transform:translateY(-1px)}
+.lcard .lc-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.lcard .lc-ref{font-family:'Oxanium';font-weight:700;color:var(--cobalt);font-size:14px}
+.lcard .lc-amt{margin-left:auto;font-family:'Oxanium';font-weight:700;font-size:17px}
+.lcard .lc-meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.flash{animation:flash 1.4s}
+@keyframes flash{0%{box-shadow:0 0 0 0 rgba(58,171,106,.7);border-color:var(--sage)}100%{box-shadow:0 0 0 14px rgba(58,171,106,0);border-color:var(--line)}}
 
-/* ── PIPELINE FUNNEL ── */
-.pipe-funnel{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:stretch;gap:0;margin-bottom:16px}
-.pipe-stage{background:var(--canvas);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
-.pipe-arrow{display:flex;align-items:center;padding:0 8px;color:var(--muted);font-size:18px}
-.pipe-stage-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
-.pipe-stage-val{font-family:'Oxanium',sans-serif;font-weight:700;font-size:24px;margin-bottom:3px}
-.pipe-stage-amt{font-size:12px;color:var(--inkSoft)}
-.pipe-stage-note{font-size:11px;margin-top:6px}
+.tabs{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.tab{padding:10px 16px;cursor:pointer;color:var(--muted);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--cobalt);border-color:var(--cobalt)}
+.tabpane{display:none}.tabpane.active{display:block}
 
-/* ── FACT CARDS ── */
-.fact-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
-.fact-card:hover{border-color:var(--cobalt)}
-.fact-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.fact-meta-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.fact-meta-val{font-family:'Oxanium',sans-serif;font-weight:700;font-size:15px;color:var(--cobalt)}
-.fact-meta-txt{font-size:13px;color:var(--inkSoft)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600}
+td{padding:13px 12px;border-bottom:1px solid var(--line);font-size:13px}
+tr:hover td{background:var(--surf2)}
+.best-row td{background:rgba(58,171,106,.06)}
 
-/* ── TABLE ── */
-.tbl{background:var(--surface);border-radius:14px;border:1px solid var(--line);overflow-x:auto}
-.tbl-head{display:grid;padding:10px 18px;background:var(--canvas);border-bottom:1px solid var(--line);font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.tbl-row{display:grid;padding:13px 18px;align-items:center;border-bottom:1px solid var(--line);font-size:13px;transition:background .1s}
-.tbl-row:last-child{border-bottom:none}
-.tbl-row:hover{background:var(--canvas)}
-.tbl-row.clickable{cursor:pointer}
+.overlay{position:fixed;inset:0;background:rgba(8,14,20,.72);backdrop-filter:blur(3px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:15px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;animation:pop .2s}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.modal .m-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
+.modal .m-body{padding:20px 22px}
+.modal .m-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.m-close{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;line-height:1}
+.li-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.li-row .d{color:var(--inkSoft)}.li-row .q{color:var(--muted);font-size:12px}
 
-/* ── CLIENT CARDS ── */
-.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:20px}
-.client-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
-.client-card:hover{border-color:var(--cobalt);box-shadow:0 4px 20px rgba(43,168,220,.1)}
+.barchart{display:flex;align-items:flex-end;gap:16px;height:180px;padding-top:10px}
+.barcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.barpair{display:flex;gap:4px;align-items:flex-end;height:100%;width:100%;justify-content:center}
+.bar{width:14px;border-radius:4px 4px 0 0;position:relative;cursor:pointer;transition:.15s}
+.bar.b-env{background:var(--surf2);border:1px solid var(--line)}
+.bar.b-sig{background:var(--cobalt)}
+.bar:hover{opacity:.8}
+.bar .tip{position:absolute;bottom:105%;left:50%;transform:translateX(-50%);background:var(--canvas);border:1px solid var(--line);padding:4px 8px;border-radius:6px;font-size:11px;white-space:nowrap;display:none;z-index:5;font-family:'Oxanium'}
+.bar:hover .tip{display:block}
+.barcol .lab{font-size:11px;color:var(--muted)}
 
-/* ── CHANTIER CARDS ── */
-.chantier-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;cursor:pointer;transition:border-color .15s;margin-bottom:12px}
-.chantier-card:hover{border-color:var(--cobalt)}
-.prog-track{height:6px;background:var(--canvas);border-radius:4px;overflow:hidden;flex:1}
-.prog-fill{height:100%;border-radius:4px}
-.checklist-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
-.checklist-row:last-child{border-bottom:none}
+.hp{margin-bottom:14px}
+.hp .hp-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.hp .hp-top .v{font-family:'Oxanium';font-weight:600}
 
-/* ── CALENDRIER HEBDO ── */
-.cal-wrap{background:var(--surface);border-radius:14px;border:1px solid var(--line);overflow:auto;margin-bottom:16px}
-.cal-head{display:grid;grid-template-columns:90px repeat(5,1fr);background:var(--canvas);border-bottom:1px solid var(--line);min-width:520px}
-.cal-row{display:grid;grid-template-columns:90px repeat(5,1fr);min-width:520px;border-bottom:1px solid var(--line)}
-.cal-row:last-child{border-bottom:none}
-.cal-cell{padding:10px 12px;border-right:1px solid var(--line);font-size:12px}
-.cal-cell:last-child{border-right:none}
-.cal-event{border-radius:6px;padding:5px 8px;font-size:11.5px;font-weight:600;margin-bottom:4px}
-.ev-clim{background:var(--cobaltSoft);color:var(--cobalt);border:1px solid rgba(43,168,220,.3)}
-.ev-plomb{background:var(--violetSoft);color:var(--violet);border:1px solid rgba(139,124,246,.3)}
-.ev-sdb{background:var(--sageSoft);color:var(--sage);border:1px solid rgba(58,171,106,.3)}
-.ev-chauf{background:var(--ochreSoft);color:var(--ochre);border:1px solid rgba(212,164,60,.3)}
+.weekgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.daycell{background:var(--surf2);border:1px solid var(--line);border-radius:9px;padding:12px;text-align:center}
+.daycell .dn{font-size:11px;color:var(--muted)}
+.daycell .dv{font-family:'Oxanium';font-size:18px;font-weight:700;margin-top:4px}
+.daycell.creux{border-color:var(--ochre);background:var(--ochreSoft)}
+.creuxbadge{font-size:10px;color:var(--ochre);margin-top:4px;font-weight:600}
 
-/* ── RELANCE SEQUENCES ── */
-.seq-steps{display:flex;gap:10px;flex-wrap:wrap}
-.seq-step{flex:1;min-width:130px;border:1px solid var(--line);border-radius:9px;padding:12px 14px}
-.seq-step.active{border-color:var(--cobalt);background:var(--cobaltSoft)}
-.seq-step.danger{border-color:var(--terra);background:var(--terraSoft)}
-.seq-day{font-family:'Oxanium',sans-serif;font-weight:700;font-size:11px;margin-bottom:4px}
-.seq-action{font-size:12.5px;font-weight:600;margin-bottom:2px}
-.seq-note{font-size:11px;color:var(--muted)}
+.funnel{display:flex;align-items:stretch;gap:0}
+.fstage{flex:1;background:var(--surf2);border:1px solid var(--line);padding:16px;text-align:center}
+.fstage:first-child{border-radius:10px 0 0 10px}
+.fstage:last-child{border-radius:0 10px 10px 0}
+.fstage .fl{font-size:11px;color:var(--muted);text-transform:uppercase}
+.fstage .fv{font-family:'Oxanium';font-size:24px;font-weight:700;margin-top:4px}
+.farr{display:flex;align-items:center;color:var(--muted);font-size:20px;padding:0 4px}
 
-/* ── FOURNISSEURS ── */
-.prix-best{color:var(--sage);font-weight:700}
-.eco-banner{background:var(--sageSoft);border:1px solid rgba(58,171,106,.4);border-radius:9px;padding:10px 16px;font-size:13px;color:var(--sage);font-weight:600;margin-top:14px}
+.calgrid{display:grid;grid-template-columns:54px repeat(5,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.calgrid>div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;min-height:60px}
+.calhd{background:var(--surf2);font-weight:600;text-align:center;font-size:12px;min-height:auto!important}
+.caltime{color:var(--muted);font-size:11px;text-align:right;font-family:'Oxanium'}
+.calev{border-radius:6px;padding:5px 8px;font-size:11px;font-weight:600;margin-bottom:4px}
+.ev-clim{background:var(--cobaltSoft);color:var(--cobalt);border-left:3px solid var(--cobalt)}
+.ev-sdb{background:var(--sageSoft);color:var(--sage);border-left:3px solid var(--sage)}
+.ev-plomb{background:var(--violetSoft);color:var(--violet);border-left:3px solid var(--violet)}
+.ev-chauf{background:var(--ochreSoft);color:var(--ochre);border-left:3px solid var(--ochre)}
 
-/* ── BUTTONS ── */
-.btn{border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;border-radius:9px;transition:opacity .15s;font-size:13px;padding:8px 16px}
-.btn:hover{opacity:.85}
-.btn-cobalt{background:var(--cobalt);color:#fff}
-.btn-terra{background:var(--terra);color:#fff}
-.btn-outline{background:transparent;color:var(--inkSoft);border:1px solid var(--line)}
-.btn-outline:hover{border-color:var(--cobalt);color:var(--cobalt)}
-.btn-ghost-cobalt{background:var(--cobaltSoft);color:var(--cobalt);border:1px solid var(--cobalt)}
-.btn-ghost-terra{background:var(--terraSoft);color:var(--terra);border:1px solid var(--terra)}
-.btn-ghost-sage{background:var(--sageSoft);color:var(--sage);border:1px solid var(--sage)}
+.seqstep{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.seqstep:last-child{border:none}
+.seqdot{width:30px;height:30px;border-radius:50%;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'Oxanium';font-weight:700;color:var(--muted);flex-shrink:0}
+.seqstep.active .seqdot{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+.seqstep.danger .seqdot{background:var(--terra);border-color:var(--terra);color:#fff}
 
-/* ── TABS ── */
-.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:20px}
-.tab-btn{padding:10px 18px;font-size:13.5px;font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
-.tab-btn.active{color:var(--cobalt);border-bottom-color:var(--cobalt);font-weight:600}
-.tab-panel{display:none}.tab-panel.active{display:block}
+.av-c{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:700;color:#fff;flex-shrink:0}
 
-/* ── MODAL ── */
-.doc-overlay{display:none;position:fixed;inset:0;background:rgba(10,18,26,.65);z-index:200;align-items:center;justify-content:center;padding:20px}
-.doc-overlay.open{display:flex}
-.doc-modal{background:var(--surface);border-radius:18px;width:min(660px,96vw);max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.5);animation:mpop .28s cubic-bezier(.34,1.56,.64,1) both}
-@keyframes mpop{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
-.doc-mhead{padding:22px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.doc-mbody{padding:18px 24px}
-.doc-mfoot{padding:0 24px 22px;display:flex;gap:10px;flex-wrap:wrap}
-.li-grid{display:grid;grid-template-columns:1fr 50px 80px 90px;gap:8px;align-items:center}
-.li-head{font-weight:700;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:8px 0;border-bottom:2px solid var(--line)}
-.li-row{padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.checkitem{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.checkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.checkitem.done .checkbox{background:var(--sage);border-color:var(--sage)}
+.checkitem.done .checkbox svg{stroke:#fff}
+.checkbox svg{width:13px;height:13px;stroke:transparent;stroke-width:3;fill:none}
+.checkitem.done .clab{color:var(--muted);text-decoration:line-through}
 
-/* ── TOOLTIP ── */
-.chart-tip{position:fixed;background:#0A121A;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;display:none;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.jentry{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.jentry .jdate{font-family:'Oxanium';font-size:12px;color:var(--cobalt);font-weight:600;flex-shrink:0;width:50px}
 
-/* ── PARAMS ── */
-.form-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px}
-.form-input{width:100%;height:38px;border:1px solid var(--line);border-radius:8px;padding:0 12px;font-size:13px;outline:none;background:var(--canvas);color:var(--ink)}
-.form-input:focus{border-color:var(--cobalt)}
-textarea.form-input{height:auto;padding:10px 12px;resize:none}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--inkSoft);margin-bottom:6px;font-weight:500}
+.field input,.field textarea,.field select{width:100%;background:var(--canvas);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--ink);font-family:'Space Grotesk';font-size:13px}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--cobalt)}
+.radio-row{display:flex;gap:10px}
+.radio-opt{flex:1;border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:13px}
+.radio-opt.sel{border-color:var(--cobalt);background:var(--cobaltSoft);color:var(--cobalt)}
 
-/* ── MOBILE ── */
-@media(max-width:768px){
-  .sb{transform:translateX(-100%)}
-  .sb.open{transform:translateX(0)}
-  .sb-overlay{display:block}
-  .main{margin-left:0}
-  .burger{display:flex!important}
-  .pipe-funnel{grid-template-columns:1fr}
-  .pipe-arrow{display:none}
-  .fact-grid4{grid-template-columns:1fr 1fr}
-  .topbar{padding:0 14px}
-  .content{padding:16px 14px 48px}
-}
+.search{width:100%;background:var(--canvas);border:1px solid var(--line);border-radius:9px;padding:11px 14px;color:var(--ink);font-family:'Space Grotesk';font-size:13px}
+.search:focus{outline:none;border-color:var(--cobalt)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.alert-box{background:var(--ochreSoft);border:1px solid rgba(212,164,60,.35);color:var(--ochre);border-radius:10px;padding:13px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
 </style>
 </head>
 <body>
-
-<div class="sb-overlay" id="overlay" onclick="closeSb()"></div>
-<div class="chart-tip" id="tip"></div>
-
-<!-- ══ SIDEBAR ══ -->
-<aside class="sb" id="sb">
-  <div class="sb-logo">
-    <div class="sb-ico">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6 8 4 12 4 15a8 8 0 0 0 16 0c0-3-2-7-8-13z"/><path d="M12 22v-4"/><path d="M8 18l4-4 4 4"/></svg>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">SE</div>
+      <div><div class="bn">SANITENERGIE</div><div class="bs">Plomberie · Clim · Chauffe-eau</div></div>
     </div>
-    <div>
-      <div class="sb-name">Sanitenergie</div>
-      <div class="sb-sub">Plomberie · Clim · Chauffe-eau</div>
-    </div>
-  </div>
-  <nav class="sb-nav">
-    <button class="nav-btn active" data-view="dashboard" onclick="showView('dashboard')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-      Tableau de bord
-    </button>
-    <button class="nav-btn" data-view="devis" onclick="showView('devis')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>
-      Devis &amp; Facturation
-    </button>
-    <button class="nav-btn" data-view="relances" onclick="showView('relances')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      Relances
-      <span class="nav-badge">11</span>
-    </button>
-    <button class="nav-btn" data-view="chantiers" onclick="showView('chantiers')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>
-      Chantiers
-    </button>
-    <button class="nav-btn" data-view="calendrier" onclick="showView('calendrier')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Calendrier
-    </button>
-    <button class="nav-btn" data-view="fournisseurs" onclick="showView('fournisseurs')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      Fournisseurs
-    </button>
-    <button class="nav-btn" data-view="clients" onclick="showView('clients')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Clients
-    </button>
-    <div style="flex:1"></div>
-    <button class="nav-btn" data-view="reglages" onclick="showView('reglages')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Réglages
-    </button>
-  </nav>
-  <div class="sb-footer">Propulsé par <strong style="color:var(--cobalt)">VivoPartner</strong></div>
-</aside>
-
-<!-- ══ MAIN ══ -->
-<div class="main">
-  <header class="topbar">
-    <button class="burger" id="burger" onclick="openSb()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <div class="search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Rechercher un client, devis..."/>
-    </div>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
-      <select style="background:var(--canvas);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12.5px;color:var(--inkSoft);outline:none;cursor:pointer">
-        <option>Ce mois-ci</option><option>Mois dernier</option><option>3 mois</option><option>Cette année</option>
-      </select>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="avatar">MB</div>
-        <div><div style="font-size:12.5px;font-weight:600;line-height:1.2">M. Basty</div><div style="font-size:10.5px;color:var(--muted)">Artisan RGE</div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="nav-foot">
+      <div class="nav-item" data-view="reglages">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Réglages</span>
       </div>
     </div>
-  </header>
-
-  <div class="content">
-
-<!-- ══════════ DASHBOARD ══════════ -->
-<div class="view active" id="view-dashboard">
-  <div style="margin-bottom:22px">
-    <h1 class="view-title">Bonjour Mickael</h1>
-    <p style="font-size:13.5px;color:var(--muted)">Voici votre situation commerciale — lundi 22 juin 2026</p>
-  </div>
-
-  <!-- KPIs -->
-  <div class="kpi-grid">
-    <div class="kpi">
-      <span class="kpi-label">CA Juin 2026</span>
-      <div class="kpi-val" style="color:var(--cobalt)">19 200 €</div>
-      <span class="kpi-sub kpi-up">+12,3 % vs mai</span>
-    </div>
-    <div class="kpi">
-      <span class="kpi-label">Devis sans réponse</span>
-      <div class="kpi-val" style="color:var(--terra)">8</div>
-      <span class="kpi-sub kpi-warn">24 500 € en jeu</span>
-    </div>
-    <div class="kpi">
-      <span class="kpi-label">Taux de conversion</span>
-      <div class="kpi-val">68 %</div>
-      <span class="kpi-sub kpi-up">+3 pts vs mai</span>
-    </div>
-    <div class="kpi">
-      <span class="kpi-label">CA signé juin</span>
-      <div class="kpi-val">12 840 €</div>
-      <span class="kpi-sub" style="background:var(--canvas)">7 devis convertis</span>
-    </div>
-  </div>
-
-  <!-- HERO ALERT -->
-  <div class="hero">
-    <div style="flex:1;min-width:220px">
-      <div class="hero-lbl">Chiffre à récupérer</div>
-      <div class="hero-val">30 340 €</div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:380px">8 devis sans réponse et 3 factures impayées. Une relance ciblée peut récupérer ce CA dès aujourd'hui.</p>
-    </div>
-    <button onclick="showView('relances')" class="btn btn-terra" style="font-size:14px;padding:13px 22px;box-shadow:0 4px 16px rgba(224,90,58,.35);white-space:nowrap">Lancer les relances →</button>
-  </div>
-
-  <!-- ROW 1 : barres + CA par prestation -->
-  <div class="grid2">
-    <!-- Devis envoyés vs signés -->
-    <div class="card">
-      <p class="sec">Devis envoyés vs signés (6 mois)</p>
-      <div class="bar-chart" id="barChart">
-        <!-- populated by JS -->
-      </div>
-      <div style="display:flex;gap:16px;margin-top:10px">
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--inkSoft)"><div style="width:10px;height:10px;border-radius:2px;background:var(--cobaltSoft);border:1.5px solid var(--cobalt)"></div>Envoyés</div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--inkSoft)"><div style="width:10px;height:10px;border-radius:2px;background:var(--sage)"></div>Signés</div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--terra)">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          Écart = CA non relancé
-        </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div><h1 id="topTitle">Tableau de bord</h1><div class="sub">Lundi 22 juin 2026 · Pia (66)</div></div>
+      <div class="right">
+        <div class="rge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Certifié RGE</div>
+        <div class="userchip"><div class="av">MB</div><div><div style="font-size:13px;font-weight:600">Mickael Basty</div><div style="font-size:11px;color:var(--muted)">Gérant</div></div></div>
       </div>
     </div>
-    <!-- CA par prestation -->
-    <div class="card">
-      <p class="sec">CA par prestation · Juin 2026</p>
-      <div style="margin-bottom:6px">
-        <div class="pbar-row"><div class="pbar-label"><div class="pbar-dot" style="background:var(--cobalt)"></div>Climatisation</div><div class="pbar-track"><div class="pbar-fill" style="width:45%;background:var(--cobalt)"></div></div><div class="pbar-val">8 640 €</div></div>
-        <div class="pbar-row"><div class="pbar-label"><div class="pbar-dot" style="background:var(--sage)"></div>Rénovation SDB</div><div class="pbar-track"><div class="pbar-fill" style="width:30%;background:var(--sage)"></div></div><div class="pbar-val">5 760 €</div></div>
-        <div class="pbar-row"><div class="pbar-label"><div class="pbar-dot" style="background:var(--ochre)"></div>Chauffe-eau thermo.</div><div class="pbar-track"><div class="pbar-fill" style="width:15%;background:var(--ochre)"></div></div><div class="pbar-val">2 880 €</div></div>
-        <div class="pbar-row"><div class="pbar-label"><div class="pbar-dot" style="background:var(--violet)"></div>Plomberie dépannage</div><div class="pbar-track"><div class="pbar-fill" style="width:10%;background:var(--violet)"></div></div><div class="pbar-val">1 920 €</div></div>
-      </div>
-      <div style="border-top:1px solid var(--line);padding-top:10px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:12px;color:var(--muted)">Total mois</span>
-        <span style="font-family:'Oxanium',sans-serif;font-weight:700;font-size:18px;color:var(--cobalt)">19 200 €</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ROW 2 : pipeline + charge semaines -->
-  <div class="grid2">
-    <!-- Pipeline -->
-    <div class="card">
-      <p class="sec">Pipeline du mois</p>
-      <div style="margin-bottom:0">
-        <div class="pbar-row"><span class="pbar-label" style="width:150px">Demandes reçues</span><div class="pbar-track"><div class="pbar-fill" style="width:100%;background:var(--cobalt)"></div></div><span style="width:20px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">18</span></div>
-        <div class="pbar-row"><span class="pbar-label" style="width:150px">Devis envoyés</span><div class="pbar-track"><div class="pbar-fill" style="width:89%;background:var(--cobalt);opacity:.75"></div></div><span style="width:20px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">16</span></div>
-        <div class="pbar-row"><span class="pbar-label" style="width:150px">Signés</span><div class="pbar-track"><div class="pbar-fill" style="width:56%;background:var(--sage)"></div></div><span style="width:20px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">10</span></div>
-        <div class="pbar-row"><span class="pbar-label" style="width:150px">En chantier</span><div class="pbar-track"><div class="pbar-fill" style="width:33%;background:var(--ochre)"></div></div><span style="width:20px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">6</span></div>
-        <div class="pbar-row"><span class="pbar-label" style="width:150px">Terminés (juin)</span><div class="pbar-track"><div class="pbar-fill" style="width:22%;background:var(--muted);opacity:.6"></div></div><span style="width:20px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">4</span></div>
-      </div>
-    </div>
-    <!-- Charge semaines -->
-    <div class="card">
-      <p class="sec">Charge semaines à venir</p>
-      <div id="chargeGrid"></div>
-    </div>
-  </div>
-
-  <!-- Provenance -->
-  <div class="card" style="margin-bottom:14px">
-    <p class="sec">Provenance des chantiers · Juin 2026</p>
-    <div style="margin-bottom:6px">
-      <div class="pbar-row"><div class="pbar-label" style="width:180px"><div class="pbar-dot" style="background:var(--cobalt)"></div>Bouche-à-oreille</div><div class="pbar-track"><div class="pbar-fill" style="width:55%;background:var(--cobalt)"></div></div><div class="pbar-val">10 560 €</div><div style="font-size:11px;color:var(--muted);width:35px;text-align:right">55 %</div></div>
-      <div class="pbar-row"><div class="pbar-label" style="width:180px"><div class="pbar-dot" style="background:var(--sage)"></div>Site internet</div><div class="pbar-track"><div class="pbar-fill" style="width:20%;background:var(--sage)"></div></div><div class="pbar-val">3 840 €</div><div style="font-size:11px;color:var(--muted);width:35px;text-align:right">20 %</div></div>
-      <div class="pbar-row"><div class="pbar-label" style="width:180px"><div class="pbar-dot" style="background:var(--ochre)"></div>Sous-traitance</div><div class="pbar-track"><div class="pbar-fill" style="width:18%;background:var(--ochre)"></div></div><div class="pbar-val">3 456 €</div><div style="font-size:11px;color:var(--muted);width:35px;text-align:right">18 %</div></div>
-      <div class="pbar-row"><div class="pbar-label" style="width:180px"><div class="pbar-dot" style="background:var(--muted)"></div>Autres</div><div class="pbar-track"><div class="pbar-fill" style="width:7%;background:var(--muted)"></div></div><div class="pbar-val">1 344 €</div><div style="font-size:11px;color:var(--muted);width:35px;text-align:right">7 %</div></div>
-    </div>
-    <div style="border-top:1px solid var(--line);padding-top:10px;font-size:12px;color:var(--muted)">Total 19 200 € — <span style="color:var(--cobalt);font-weight:600">le bouche-à-oreille reste votre 1er canal</span></div>
-  </div>
-
-  <!-- Évolution CA (Chart.js) -->
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
-      <p class="sec" style="margin:0">Évolution du CA (12 mois)</p>
-      <span style="font-size:12px;color:var(--muted)">Juil 2025 → Juin 2026</span>
-    </div>
-    <div style="position:relative;height:180px"><canvas id="caLineChart"></canvas></div>
+    <div class="content" id="content"></div>
   </div>
 </div>
-<!-- /dashboard -->
-
-<!-- ══════════ DEVIS & FACTURATION ══════════ -->
-<div class="view" id="view-devis">
-  <h1 class="view-title">Devis &amp; Facturation</h1>
-  <p class="view-sub">Tunnel de conversion et suivi des paiements</p>
-  <!-- Pipeline funnel -->
-  <div class="card" style="margin-bottom:18px">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
-      <p class="sec" style="margin:0">Pipeline d'affaires · Juin 2026</p>
-      <span style="font-size:12px;color:var(--muted)">Volume total : 36 400 €</span>
-    </div>
-    <div class="pipe-funnel">
-      <div class="pipe-stage">
-        <div class="pipe-stage-lbl">À relancer</div>
-        <div class="pipe-stage-val" style="color:var(--terra)">8</div>
-        <div class="pipe-stage-amt">24 500 €</div>
-        <div class="pipe-stage-note" style="color:var(--terra)">Devis sans réponse</div>
-      </div>
-      <div class="pipe-arrow">›</div>
-      <div class="pipe-stage">
-        <div class="pipe-stage-lbl">À facturer</div>
-        <div class="pipe-stage-val" style="color:var(--ochre)">3</div>
-        <div class="pipe-stage-amt">8 640 €</div>
-        <div class="pipe-stage-note" style="color:var(--inkSoft)">Devis signés</div>
-      </div>
-      <div class="pipe-arrow">›</div>
-      <div class="pipe-stage">
-        <div class="pipe-stage-lbl">Factures ouvertes</div>
-        <div class="pipe-stage-val" style="color:var(--cobalt)">5</div>
-        <div class="pipe-stage-amt">14 380 €</div>
-        <div class="pipe-stage-note" style="color:var(--terra)">dont 3 en retard</div>
-      </div>
-      <div class="pipe-arrow">›</div>
-      <div class="pipe-stage" style="border-color:var(--sage);background:var(--sageSoft)">
-        <div class="pipe-stage-lbl" style="color:var(--sage)">Encaissé</div>
-        <div class="pipe-stage-val" style="color:var(--sage)">4</div>
-        <div class="pipe-stage-amt">12 840 €</div>
-        <div class="pipe-stage-note" style="color:var(--sage)">Factures payées</div>
-      </div>
-    </div>
-    <div style="height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:7px">
-      <div style="height:100%;width:35%;background:var(--sage);border-radius:2px"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:12px">
-      <span style="color:var(--muted)">12 840 € encaissés sur 36 400 € de volume total</span>
-      <span style="color:var(--sage);font-weight:600">35 % encaissé</span>
-    </div>
-  </div>
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('devis',this)">Devis</button>
-    <button class="tab-btn" onclick="showTab('factures',this)">Factures</button>
-  </div>
-  <div id="tab-devis" class="tab-panel active" id="tab-devis-panel">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-      <button class="btn btn-cobalt">+ Nouveau devis</button>
-    </div>
-    <div id="devis-list"></div>
-  </div>
-  <div id="tab-factures" class="tab-panel">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-      <button class="btn btn-cobalt">+ Nouvelle facture</button>
-    </div>
-    <div id="factures-list"></div>
-  </div>
-</div>
-
-<!-- ══════════ RELANCES ══════════ -->
-<div class="view" id="view-relances">
-  <h1 class="view-title">Relances</h1>
-  <p class="view-sub">Séquences de suivi automatiques</p>
-  <div class="hero" style="margin-bottom:20px">
-    <div style="flex:1;min-width:180px">
-      <div class="hero-lbl">À récupérer via relance</div>
-      <div class="hero-val">30 340 €</div>
-      <p style="font-size:13px;color:var(--muted)">11 dossiers en attente d'action</p>
-    </div>
-    <button class="btn btn-terra" style="font-size:14px;padding:13px 22px;box-shadow:0 4px 16px rgba(224,90,58,.35)" onclick="lancerToutesRelances()">Tout relancer (11)</button>
-  </div>
-  <!-- Devis sans réponse -->
-  <div class="card" style="margin-bottom:16px">
-    <p class="sec">Devis sans réponse · 8 dossiers · 24 500 €</p>
-    <div id="relance-devis-list"></div>
-  </div>
-  <!-- Factures impayées -->
-  <div class="card" style="margin-bottom:16px">
-    <p class="sec">Factures impayées · 3 dossiers · 5 840 €</p>
-    <div id="relance-fact-list"></div>
-  </div>
-  <!-- Séquences -->
-  <div class="card" style="margin-bottom:12px">
-    <p class="sec">Séquence devis — SEQ_DEVIS</p>
-    <div class="seq-steps">
-      <div class="seq-step"><div class="seq-day" style="color:var(--cobalt)">J+2</div><div class="seq-action">SMS de courtoisie</div><div class="seq-note">Confirmer réception devis</div></div>
-      <div class="seq-step active"><div class="seq-day" style="color:var(--cobalt)">J+5</div><div class="seq-action" style="color:var(--cobalt)">E-mail de relance</div><div class="seq-note">Rappel + disponibilité</div></div>
-      <div class="seq-step"><div class="seq-day" style="color:var(--muted)">J+10</div><div class="seq-action">Appel + offre</div><div class="seq-note">Proposition démo / visite</div></div>
-    </div>
-  </div>
-  <div class="card">
-    <p class="sec">Séquence factures — SEQ_FACT</p>
-    <div class="seq-steps">
-      <div class="seq-step"><div class="seq-day" style="color:var(--ochre)">J+3</div><div class="seq-action">SMS rappel</div><div class="seq-note">Rappel échéance</div></div>
-      <div class="seq-step danger"><div class="seq-day" style="color:var(--terra)">J+8</div><div class="seq-action" style="color:var(--terra)">E-mail formel</div><div class="seq-note">Mise en demeure douce</div></div>
-      <div class="seq-step"><div class="seq-day" style="color:var(--terra)">J+15</div><div class="seq-action">Courrier AR</div><div class="seq-note">Procédure recouvrement</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ CHANTIERS ══════════ -->
-<div class="view" id="view-chantiers">
-  <h1 class="view-title">Chantiers</h1>
-  <p class="view-sub">Suivi en temps réel</p>
-  <div id="chantiers-list-view"></div>
-</div>
-
-<!-- ══════════ CALENDRIER ══════════ -->
-<div class="view" id="view-calendrier">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:22px">
-    <div>
-      <h1 class="view-title">Planning de production</h1>
-      <p style="font-size:13px;color:var(--muted)" id="cal-week-label"></p>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button onclick="navWeek(-1)" class="btn btn-outline">← Semaine préc.</button>
-      <button onclick="navWeek(0)" class="btn btn-ghost-cobalt">Aujourd'hui</button>
-      <button onclick="navWeek(1)" class="btn btn-outline">Semaine suiv. →</button>
-    </div>
-  </div>
-  <div class="cal-wrap" id="cal-render"></div>
-</div>
-
-<!-- ══════════ FOURNISSEURS ══════════ -->
-<div class="view" id="view-fournisseurs">
-  <h1 class="view-title">Comparateur fournisseurs</h1>
-  <p class="view-sub">Choisissez le meilleur prix pour chaque chantier</p>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="fourn-tabs">
-    <button class="btn btn-ghost-cobalt fourn-tab" data-fourn="ballon" onclick="showFourn('ballon',this)">Ballon thermodynamique</button>
-    <button class="btn btn-outline fourn-tab" data-fourn="clim" onclick="showFourn('clim',this)">Split climatisation</button>
-    <button class="btn btn-outline fourn-tab" data-fourn="mitigeur" onclick="showFourn('mitigeur',this)">Mitigeur thermostatique</button>
-  </div>
-  <div id="fourn-content"></div>
-</div>
-
-<!-- ══════════ CLIENTS ══════════ -->
-<div class="view" id="view-clients">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px">
-    <div>
-      <h1 class="view-title">Clients</h1>
-      <p style="font-size:13px;color:var(--muted)" id="clients-count">12 clients</p>
-    </div>
-    <input type="text" oninput="filterClients(this.value)" placeholder="Rechercher..." style="height:36px;border:1px solid var(--line);border-radius:9px;padding:0 14px;font-size:13px;outline:none;background:var(--canvas);color:var(--ink);width:200px"/>
-  </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">
-    <button onclick="setCrmFilter('')" class="btn btn-ghost-cobalt crmf" style="font-size:12px;padding:6px 14px">Tous</button>
-    <button onclick="setCrmFilter('actif')" class="btn btn-outline crmf" style="font-size:12px;padding:6px 14px">Clients actifs</button>
-    <button onclick="setCrmFilter('prospect')" class="btn btn-outline crmf" style="font-size:12px;padding:6px 14px">Prospects</button>
-  </div>
-  <div class="client-grid" id="clients-grid"></div>
-</div>
-
-<!-- ══════════ RÉGLAGES ══════════ -->
-<div class="view" id="view-reglages">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:22px">
-    <div><h1 class="view-title">Réglages</h1><p style="font-size:13px;color:var(--muted)">Paramètres de l'entreprise et de l'application</p></div>
-    <button class="btn btn-cobalt">Sauvegarder</button>
-  </div>
-  <div class="grid2">
-    <div class="card">
-      <p class="sec">Mon entreprise</p>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div><label class="form-label">Raison sociale</label><input class="form-input" value="Sanitenergie"/></div>
-        <div><label class="form-label">Dirigeant</label><input class="form-input" value="Mickael Basty"/></div>
-        <div><label class="form-label">SIRET</label><input class="form-input" value="XXX XXX XXX 00014"/></div>
-        <div><label class="form-label">Adresse</label><input class="form-input" value="Pia, 66380 Pyrénées-Orientales"/></div>
-        <div><label class="form-label">Téléphone</label><input class="form-input" value="06 XX XX XX XX"/></div>
-        <div><label class="form-label">Email</label><input class="form-input" value="mickael@sanitenergie.fr"/></div>
-        <div><label class="form-label">Certification</label><input class="form-input" value="RGE — Qualibat"/></div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="card">
-        <p class="sec">Devis &amp; Factures</p>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div><label class="form-label">TVA appliquée</label>
-            <select class="form-input" style="height:38px;cursor:pointer"><option>TVA 10 %</option><option>TVA 20 %</option><option>Sans TVA (micro)</option></select>
-          </div>
-          <div><label class="form-label">Conditions de paiement</label><input class="form-input" value="30 jours fin de mois"/></div>
-          <div><label class="form-label">Prochain N° devis</label><input class="form-input" type="number" value="2048"/></div>
-          <div><label class="form-label">Mention pied de page</label><textarea class="form-input" rows="3">TVA non applicable art. 293 B du CGI — RCS Perpignan — APE 4322A</textarea></div>
-        </div>
-      </div>
-      <div class="card">
-        <p class="sec">Relances automatiques</p>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div><label class="form-label">Délai 1ère relance devis (jours)</label><input class="form-input" type="number" value="5"/></div>
-          <div><label class="form-label">Délai 2ème relance devis (jours)</label><input class="form-input" type="number" value="10"/></div>
-          <div><label class="form-label">Délai relance facture (jours après échéance)</label><input class="form-input" type="number" value="7"/></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-  </div><!-- /content -->
-</div><!-- /main -->
-
-<!-- ══ MODAL ══ -->
-<div class="doc-overlay" id="doc-overlay" onclick="closeModal(event)">
-  <div class="doc-modal" id="doc-modal">
-    <div class="doc-mhead" id="doc-mhead"></div>
-    <div class="doc-mbody" id="doc-mbody"></div>
-    <div class="doc-mfoot" id="doc-mfoot"></div>
-  </div>
-</div>
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
 
 <script>
-/* ═══ DATA ═══ */
-var DEVIS = [
-  {ref:'DV-047',client:'Jean-Pierre Roca',ville:'Perpignan',prestation:'Dépannage plomberie',montant:105,dateEnvoi:'12/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre dépannage",qte:1,unit:'ff',pu:87.5,total:87.5},{desc:'Fournitures',qte:1,unit:'ff',pu:17.5,total:17.5}]},
-  {ref:'DV-046',client:'Marie Estève',ville:'Canet-en-Roussillon',prestation:'Installation climatisation',montant:3200,dateEnvoi:'10/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre pose split",qte:2,unit:'j',pu:700,total:1400},{desc:'Unité intérieure + extérieure',qte:1,unit:'ff',pu:1500,total:1500},{desc:'Raccordements et finitions',qte:1,unit:'ff',pu:300,total:300}]},
-  {ref:'DV-045',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation salle de bain',montant:6500,dateEnvoi:'08/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre rénovation SDB",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements sanitaires',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Carrelage et étanchéité',qte:1,unit:'ff',pu:1200,total:1200}]},
-  {ref:'DV-044',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:2800,dateEnvoi:'07/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre pose ballon thermo.",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L Atlantic Calypso',qte:1,unit:'u',pu:1600,total:1600},{desc:'Raccordements électrique + eau',qte:1,unit:'ff',pu:400,total:400}]},
-  {ref:'DV-043',client:'Nathalie Puig',ville:'Pia',prestation:'Entretien climatisation',montant:95,dateEnvoi:'05/06/2026',statut:'refuse',lignes:[{desc:'Forfait entretien annuel split',qte:1,unit:'ff',pu:95,total:95}]},
-  {ref:'DV-042',client:'Laurent Mas',ville:'Rivesaltes',prestation:'Installation climatisation',montant:4100,dateEnvoi:'03/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre multi-split",qte:3,unit:'j',pu:700,total:2100},{desc:'Unités intérieures x2 + ext.',qte:1,unit:'ff',pu:1700,total:1700},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
-  {ref:'DV-041',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation salle de bain',montant:5200,dateEnvoi:'01/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre SDB",qte:4,unit:'j',pu:700,total:2800},{desc:'Équipements',qte:1,unit:'ff',pu:1600,total:1600},{desc:'Revêtements',qte:1,unit:'ff',pu:800,total:800}]},
-  {ref:'DV-040',client:'Michel Fabre',ville:'Pia',prestation:'Chauffe-eau thermodynamique',montant:4800,dateEnvoi:'28/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre + dépose ancien",qte:1,unit:'j',pu:1000,total:1000},{desc:'Ballon 270L thermodynamique',qte:1,unit:'u',pu:2800,total:2800},{desc:'Raccordements',qte:1,unit:'ff',pu:1000,total:1000}]},
-  {ref:'DV-039',client:'Isabelle Olive',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:3500,dateEnvoi:'25/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L',qte:1,unit:'u',pu:2300,total:2300},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
-  {ref:'DV-038',client:'Patrick Serra',ville:'Saint-Estève',prestation:'Rénovation salle de bain',montant:5800,dateEnvoi:'20/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre SDB complète",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements haut de gamme',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Revêtements',qte:1,unit:'ff',pu:500,total:500}]},
-  {ref:'DV-037',client:'François Coll',ville:'Canet',prestation:'Installation climatisation',montant:2900,dateEnvoi:'18/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:2,unit:'j',pu:700,total:1400},{desc:'Split 3.5kW Daikin',qte:1,unit:'u',pu:1200,total:1200},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
-  {ref:'DV-036',client:'Sophie Guitart',ville:'Perpignan',prestation:'Entretien climatisation',montant:95,dateEnvoi:'17/05/2026',statut:'dormant',lignes:[{desc:'Forfait entretien annuel',qte:1,unit:'ff',pu:95,total:95}]},
+const DEVIS=[
+{ref:'DV-047',client:'Jean-Pierre Roca',ville:'Perpignan',prestation:'Dépannage plomberie',montant:105,dateEnvoi:'12/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre dépannage",qte:1,unit:'ff',pu:87.5,total:87.5},{desc:'Fournitures',qte:1,unit:'ff',pu:17.5,total:17.5}]},
+{ref:'DV-046',client:'Marie Estève',ville:'Canet-en-Roussillon',prestation:'Installation climatisation',montant:3200,dateEnvoi:'10/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre pose split",qte:2,unit:'j',pu:700,total:1400},{desc:'Unité intérieure + extérieure',qte:1,unit:'ff',pu:1500,total:1500},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-045',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation salle de bain',montant:6500,dateEnvoi:'08/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre SDB",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements sanitaires',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Carrelage et étanchéité',qte:1,unit:'ff',pu:1200,total:1200}]},
+{ref:'DV-044',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:2800,dateEnvoi:'07/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre pose ballon",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L Atlantic Calypso',qte:1,unit:'u',pu:1600,total:1600},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
+{ref:'DV-043',client:'Nathalie Puig',ville:'Pia',prestation:'Entretien climatisation',montant:95,dateEnvoi:'05/06/2026',statut:'refuse',lignes:[{desc:'Forfait entretien annuel split',qte:1,unit:'ff',pu:95,total:95}]},
+{ref:'DV-042',client:'Laurent Mas',ville:'Rivesaltes',prestation:'Installation climatisation',montant:4100,dateEnvoi:'03/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre multi-split",qte:3,unit:'j',pu:700,total:2100},{desc:'Unités x2 + ext.',qte:1,unit:'ff',pu:1700,total:1700},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-041',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation salle de bain',montant:5200,dateEnvoi:'01/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre SDB",qte:4,unit:'j',pu:700,total:2800},{desc:'Équipements',qte:1,unit:'ff',pu:1600,total:1600},{desc:'Revêtements',qte:1,unit:'ff',pu:800,total:800}]},
+{ref:'DV-040',client:'Michel Fabre',ville:'Pia',prestation:'Chauffe-eau thermodynamique',montant:4800,dateEnvoi:'28/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre + dépose",qte:1,unit:'j',pu:1000,total:1000},{desc:'Ballon 270L',qte:1,unit:'u',pu:2800,total:2800},{desc:'Raccordements',qte:1,unit:'ff',pu:1000,total:1000}]},
+{ref:'DV-039',client:'Isabelle Olive',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:3500,dateEnvoi:'25/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L',qte:1,unit:'u',pu:2300,total:2300},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
+{ref:'DV-038',client:'Patrick Serra',ville:'Saint-Estève',prestation:'Rénovation salle de bain',montant:5800,dateEnvoi:'20/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre SDB",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Revêtements',qte:1,unit:'ff',pu:500,total:500}]},
+{ref:'DV-037',client:'François Coll',ville:'Canet',prestation:'Installation climatisation',montant:2900,dateEnvoi:'18/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:2,unit:'j',pu:700,total:1400},{desc:'Split 3.5kW Daikin',qte:1,unit:'u',pu:1200,total:1200},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-036',client:'Sophie Guitart',ville:'Perpignan',prestation:'Entretien climatisation',montant:95,dateEnvoi:'17/05/2026',statut:'dormant',lignes:[{desc:'Forfait entretien annuel',qte:1,unit:'ff',pu:95,total:95}]},
 ];
-
-var FACTURES = [
-  {ref:'FA-042',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation SDB — acompte',montant:2400,montantHT:2182,tva:218,dateEmission:'10/06/2026',echeance:'10/07/2026',statut:'en retard',devisRef:'DV-045',jours:32},
-  {ref:'FA-041',client:'Batipro 66',ville:'Perpignan',prestation:'Installation clim — solde',montant:2100,montantHT:1909,tva:191,dateEmission:'25/05/2026',echeance:'25/06/2026',statut:'en retard',devisRef:null,jours:18},
-  {ref:'FA-040',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:1340,montantHT:1218,tva:122,dateEmission:'14/06/2026',echeance:'14/07/2026',statut:'en attente',devisRef:'DV-044',jours:8},
-  {ref:'FA-039',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation SDB',montant:5200,montantHT:4727,tva:473,dateEmission:'02/06/2026',echeance:'02/07/2026',statut:'en attente',devisRef:'DV-041',jours:null},
-  {ref:'FA-038',client:'Batipro 66',ville:'Perpignan',prestation:'Installation clim lot A',montant:8400,montantHT:7636,tva:764,dateEmission:'20/05/2026',echeance:'20/06/2026',statut:'payee',devisRef:null,jours:null},
-  {ref:'FA-037',client:'Bruno Castel',ville:'Le Soler',prestation:'Dépannage plomberie',montant:105,montantHT:95,tva:10,dateEmission:'12/05/2026',echeance:'12/06/2026',statut:'payee',devisRef:null,jours:null},
+const FACTURES=[
+{ref:'FA-042',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation SDB acompte',montant:2400,montantHT:2182,tva:218,dateEmission:'10/06/2026',echeance:'10/07/2026',statut:'en retard',devisRef:'DV-045',jours:32},
+{ref:'FA-041',client:'Batipro 66',ville:'Perpignan',prestation:'Installation clim solde',montant:2100,montantHT:1909,tva:191,dateEmission:'25/05/2026',echeance:'25/06/2026',statut:'en retard',devisRef:null,jours:18},
+{ref:'FA-040',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:1340,montantHT:1218,tva:122,dateEmission:'14/06/2026',echeance:'14/07/2026',statut:'en attente',devisRef:'DV-044',jours:null},
+{ref:'FA-039',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation SDB',montant:5200,montantHT:4727,tva:473,dateEmission:'02/06/2026',echeance:'02/07/2026',statut:'en attente',devisRef:'DV-041',jours:null},
+{ref:'FA-038',client:'Batipro 66',ville:'Perpignan',prestation:'Installation clim lot A',montant:8400,montantHT:7636,tva:764,dateEmission:'20/05/2026',echeance:'20/06/2026',statut:'payee',devisRef:null,jours:null},
+{ref:'FA-037',client:'Bruno Castel',ville:'Le Soler',prestation:'Dépannage plomberie',montant:105,montantHT:95,tva:10,dateEmission:'12/05/2026',echeance:'12/06/2026',statut:'payee',devisRef:null,jours:null},
 ];
-
-var CLIENTS = [
-  {nom:'SCI Les Albères',ville:'Canet-en-Roussillon',type:'Professionnel',ca:14200,statut:'actif',tags:['gros volume','SCI'],note:'Gestionnaire : M. Roca. Chantiers réguliers.',tel:'04 68 12 34 56'},
-  {nom:'Batipro 66',ville:'Perpignan',type:'Constructeur',ca:32600,statut:'actif',tags:['constructeur','sous-traitance'],note:'Référent : P. Durand. Contrat cadre annuel.',tel:'04 68 98 76 54'},
-  {nom:'Thomas Verdaguer',ville:'Perpignan',type:'Particulier',ca:5600,statut:'actif',tags:['fidèle'],note:'Satisfait, recommande Sanitenergie.',tel:'06 34 56 78 90'},
-  {nom:'Camille Font',ville:'Perpignan',type:'Particulière',ca:5200,statut:'actif',tags:[],note:'RDV préféré le matin.',tel:'06 67 89 01 23'},
-  {nom:'Patrick Serra',ville:'Saint-Estève',type:'Particulier',ca:9400,statut:'actif',tags:['gros budget'],note:'',tel:'06 90 12 34 56'},
-  {nom:'Laurent Mas',ville:'Rivesaltes',type:'Particulier',ca:7800,statut:'actif',tags:[],note:'',tel:'06 56 78 90 12'},
-  {nom:'Marie Estève',ville:'Canet-en-Roussillon',type:'Particulière',ca:3200,statut:'prospect',tags:['devis dormant'],note:'Hésite, préfère SMS.',tel:'06 23 45 67 89'},
-  {nom:'Michel Fabre',ville:'Pia',type:'Particulier',ca:4800,statut:'prospect',tags:['devis dormant'],note:'Budget confirmé.',tel:'06 78 90 12 34'},
-  {nom:'Isabelle Olive',ville:'Perpignan',type:'Particulière',ca:3500,statut:'prospect',tags:['devis dormant'],note:'',tel:'06 89 01 23 45'},
-  {nom:'Jean-Pierre Roca',ville:'Perpignan',type:'Particulier',ca:1840,statut:'actif',tags:[],note:'',tel:'06 12 34 56 78'},
-  {nom:'Bruno Castel',ville:'Le Soler',type:'Particulier',ca:420,statut:'actif',tags:[],note:'',tel:'06 01 23 45 67'},
-  {nom:'Nathalie Puig',ville:'Pia',type:'Particulière',ca:190,statut:'actif',tags:[],note:'',tel:'06 45 67 89 01'},
+const CLIENTS=[
+{id:1,nom:'SCI Les Albères',ville:'Canet-en-Roussillon',type:'Professionnel',ca:14200,statut:'actif',tags:['gros volume','SCI'],note:'Gestionnaire: M. Roca. Chantiers réguliers.',tel:'04 68 12 34 56',prochaine:'Bilan chantier SDB semaine prochaine',historique:['DV-045 signé — 6 500 €','FA-042 en retard — 2 400 €']},
+{id:2,nom:'Batipro 66',ville:'Perpignan',type:'Constructeur',ca:32600,statut:'actif',tags:['constructeur','sous-traitance'],note:'Référent: P. Durand. Contrat cadre annuel.',tel:'04 68 98 76 54',prochaine:'Relance FA-041 — 2 100 €',historique:['FA-041 en retard — 2 100 €','FA-038 payée — 8 400 €']},
+{id:3,nom:'Thomas Verdaguer',ville:'Perpignan',type:'Particulier',ca:5600,statut:'actif',tags:['fidèle'],note:'Très satisfait, recommande Sanitenergie.',tel:'06 34 56 78 90',prochaine:'Suivi après installation chauffe-eau',historique:['DV-044 signé — 2 800 €','FA-040 en attente — 1 340 €']},
+{id:4,nom:'Camille Font',ville:'Perpignan',type:'Particulière',ca:5200,statut:'actif',tags:[],note:'RDV préféré le matin.',tel:'06 67 89 01 23',prochaine:'Clôture chantier SDB',historique:['DV-041 signé — 5 200 €','FA-039 en attente — 5 200 €']},
+{id:5,nom:'Patrick Serra',ville:'Saint-Estève',type:'Particulier',ca:9400,statut:'actif',tags:['gros budget'],note:'',tel:'06 90 12 34 56',prochaine:'Relance DV-038',historique:['DV-038 dormant — 5 800 €']},
+{id:6,nom:'Laurent Mas',ville:'Rivesaltes',type:'Particulier',ca:7800,statut:'actif',tags:[],note:'',tel:'06 56 78 90 12',prochaine:'Relance DV-042',historique:['DV-042 dormant — 4 100 €']},
+{id:7,nom:'Marie Estève',ville:'Canet-en-Roussillon',type:'Particulière',ca:3200,statut:'prospect',tags:['devis dormant'],note:'Hésite, préfère SMS.',tel:'06 23 45 67 89',prochaine:'Relance DV-046',historique:['DV-046 dormant — 3 200 €']},
+{id:8,nom:'Michel Fabre',ville:'Pia',type:'Particulier',ca:4800,statut:'prospect',tags:['devis dormant'],note:'Budget confirmé.',tel:'06 78 90 12 34',prochaine:'Relance DV-040',historique:['DV-040 dormant — 4 800 €']},
+{id:9,nom:'Isabelle Olive',ville:'Perpignan',type:'Particulière',ca:3500,statut:'prospect',tags:['devis dormant'],note:'',tel:'06 89 01 23 45',prochaine:'Relance DV-039',historique:['DV-039 dormant — 3 500 €']},
+{id:10,nom:'Jean-Pierre Roca',ville:'Perpignan',type:'Particulier',ca:1840,statut:'actif',tags:[],note:'',tel:'06 12 34 56 78',prochaine:'Relance DV-047',historique:['DV-047 dormant — 105 €']},
+{id:11,nom:'Bruno Castel',ville:'Le Soler',type:'Particulier',ca:420,statut:'actif',tags:[],note:'',tel:'06 01 23 45 67',prochaine:'—',historique:['FA-037 payée — 105 €']},
+{id:12,nom:'Nathalie Puig',ville:'Pia',type:'Particulière',ca:190,statut:'actif',tags:[],note:'',tel:'06 45 67 89 01',prochaine:'—',historique:['DV-043 refusé — 95 €']},
 ];
-
-var CHANTIERS_DATA = [
-  {id:1,client:'SCI Les Albères',ville:'Canet',adresse:'28 bd de la Mer',prestation:'Rénovation salle de bain',avancement:60,statut:'en cours',debut:'08/06',fin:'26/06',type:'sdb',note:'Carrelage posé, sanitaires en cours.',checklist:{devis:true,acompte:true,materiau:true,execution:false,reception:false}},
-  {id:2,client:'Batipro 66',ville:'Perpignan',adresse:'ZAC Nord',prestation:'Installation climatisation (lots)',avancement:30,statut:'en cours',debut:'22/06',fin:'24/06',type:'clim',note:'Lot B à poser semaine prochaine.',checklist:{devis:true,acompte:true,materiau:false,execution:false,reception:false}},
-  {id:3,client:'André Dupont',ville:'Perpignan',adresse:'15 rue Victor Hugo',prestation:'Rénovation salle de bain',avancement:0,statut:'planifié',debut:'24/06',fin:'26/06',type:'sdb',note:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false}},
-  {id:4,client:'François Coll',ville:'Canet',adresse:'9 av. de la Plage',prestation:'Installation climatisation',avancement:0,statut:'planifié',debut:'28/06',fin:'28/06',type:'clim',note:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false}},
-  {id:5,client:'Thomas Verdaguer',ville:'Perpignan',adresse:'3 impasse des Roses',prestation:'Chauffe-eau thermodynamique',avancement:100,statut:'terminé',debut:'15/06',fin:'17/06',type:'chauf',note:'Client satisfait. Facture émise.',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true}},
-  {id:6,client:'Camille Font',ville:'Perpignan',adresse:'12 rue des Mimosas',prestation:'Rénovation salle de bain',avancement:100,statut:'terminé',debut:'02/06',fin:'04/06',type:'sdb',note:'Réceptionné sans réserve.',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true}},
+const CHANTIERS_DATA=[
+{id:1,client:'SCI Les Albères',ville:'Canet',adresse:'28 bd de la Mer',prestation:'Rénovation salle de bain',avancement:60,statut:'en cours',debut:'08/06',fin:'26/06',type:'sdb',note:'Carrelage posé, sanitaires en cours.',contactSurPlace:'M. Roca — 04 68 12 34 56',codeAcces:'Digicode: 1842B',checklist:{devis:true,acompte:true,materiau:true,execution:false,reception:false},journal:[{date:'08/06',texte:'Dépose ancien carrelage effectuée.'},{date:'15/06',texte:'Nouveau carrelage posé. Sanitaires en cours.'}]},
+{id:2,client:'Batipro 66',ville:'Perpignan',adresse:'ZAC Nord',prestation:'Installation climatisation (lots)',avancement:30,statut:'en cours',debut:'22/06',fin:'24/06',type:'clim',note:'Lot B à poser semaine prochaine.',contactSurPlace:'P. Durand — 04 68 98 76 54',codeAcces:'',checklist:{devis:true,acompte:true,materiau:false,execution:false,reception:false},journal:[{date:'22/06',texte:'Lot A posé et testé.'}]},
+{id:3,client:'André Dupont',ville:'Perpignan',adresse:'15 rue Victor Hugo',prestation:'Rénovation salle de bain',avancement:0,statut:'planifié',debut:'24/06',fin:'26/06',type:'sdb',note:'',contactSurPlace:'M. Dupont — 06 55 44 33 22',codeAcces:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false},journal:[]},
+{id:4,client:'François Coll',ville:'Canet',adresse:'9 av. de la Plage',prestation:'Installation climatisation',avancement:0,statut:'planifié',debut:'28/06',fin:'28/06',type:'clim',note:'',contactSurPlace:'M. Coll — 06 77 88 99 00',codeAcces:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false},journal:[]},
+{id:5,client:'Thomas Verdaguer',ville:'Perpignan',adresse:'3 impasse des Roses',prestation:'Chauffe-eau thermodynamique',avancement:100,statut:'terminé',debut:'15/06',fin:'17/06',type:'chauf',note:'Client satisfait. Facture émise.',contactSurPlace:'M. Verdaguer — 06 34 56 78 90',codeAcces:'',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true},journal:[{date:'17/06',texte:'Installation terminée. Réception sans réserve.'}]},
+{id:6,client:'Camille Font',ville:'Perpignan',adresse:'12 rue des Mimosas',prestation:'Rénovation salle de bain',avancement:100,statut:'terminé',debut:'02/06',fin:'04/06',type:'sdb',note:'Réceptionné sans réserve.',contactSurPlace:'Mme Font — 06 67 89 01 23',codeAcces:'',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true},journal:[{date:'04/06',texte:'Chantier terminé. Client a signé la réception.'}]},
 ];
+const FOURN={
+ballon:{title:'Ballon thermodynamique 200L Atlantic Calypso',economie:124,rows:[
+{nom:'ProMat 66',ref:'Atlantic Calypso 200L',prix:248,delai:'7j',dispo:'Limité',best:true},
+{nom:'Thermor Pro',ref:'Atlantic Calypso 200L',prix:262,delai:'3j',dispo:'Disponible'},
+{nom:'Clim+Pro',ref:'Atlantic Calypso 200L',prix:289,delai:'5j',dispo:'Disponible'},
+{nom:'BricoDepot Pro',ref:'Atlantic Calypso 200L',prix:310,delai:'1j',dispo:'Disponible'}]},
+clim:{title:'Split Mitsubishi MSZ-AP 3.5kW',economie:185,rows:[
+{nom:'ProMat 66',ref:'Mitsubishi MSZ-AP35VG',prix:875,delai:'5j',dispo:'Disponible',best:true},
+{nom:'Frigor Sud',ref:'Mitsubishi MSZ-AP35VG',prix:910,delai:'1j',dispo:'Disponible'},
+{nom:'Clim+Pro',ref:'Mitsubishi MSZ-AP35VG',prix:960,delai:'2j',dispo:'Disponible'},
+{nom:'Atlantic Pro',ref:'Daikin FTXC35C',prix:1060,delai:'4j',dispo:'Disponible'}]},
+mitigeur:{title:'Mitigeur thermostatique Hansgrohe Ecostat',economie:47,rows:[
+{nom:'Sanitaire 66',ref:'Hansgrohe Ecostat 1001CL',prix:138,delai:'2j',dispo:'Disponible',best:true},
+{nom:'ProMat 66',ref:'Hansgrohe Ecostat 1001CL',prix:145,delai:'3j',dispo:'Disponible'},
+{nom:'BricoDepot Pro',ref:'Hansgrohe Ecostat 1001CL',prix:152,delai:'1j',dispo:'Disponible'},
+{nom:'SDB Direct',ref:'Grohe Grohtherm 800',prix:185,delai:'5j',dispo:'Limité'}]},
+};
+const CAL_EVENTS={
+'lun':[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
+'mar':[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
+'mer':[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+'jeu':[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+'ven':[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+};
+const fmt=n=>n.toLocaleString('fr-FR')+' €';
+const ICON={check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'};
 
-var FOURN = {
-  ballon:{title:'Ballon thermodynamique 200L Atlantic Calypso',economie:124,rows:[
-    {nom:'ProMat 66',ref:'Atlantic Calypso 200L',prix:248,delai:'7 j',dispo:'Limité',best:true},
-    {nom:'Thermor Pro',ref:'Atlantic Calypso 200L',prix:262,delai:'3 j',dispo:'Disponible',best:false},
-    {nom:'Clim+Pro',ref:'Atlantic Calypso 200L',prix:289,delai:'5 j',dispo:'Disponible',best:false},
-    {nom:'BricoDepot Pro',ref:'Atlantic Calypso 200L',prix:310,delai:'1 j',dispo:'Disponible',best:false},
-  ]},
-  clim:{title:'Split climatisation Mitsubishi MSZ-AP 3.5 kW',economie:185,rows:[
-    {nom:'ProMat 66',ref:'Mitsubishi MSZ-AP35VG',prix:875,delai:'5 j',dispo:'Disponible',best:true},
-    {nom:'Frigor Sud',ref:'Mitsubishi MSZ-AP35VG',prix:910,delai:'1 j',dispo:'Disponible',best:false},
-    {nom:'Clim+Pro',ref:'Mitsubishi MSZ-AP35VG',prix:960,delai:'2 j',dispo:'Disponible',best:false},
-    {nom:'Atlantic Pro',ref:'Daikin FTXC35C',prix:1060,delai:'4 j',dispo:'Disponible',best:false},
-  ]},
-  mitigeur:{title:'Mitigeur thermostatique Hansgrohe Ecostat',economie:47,rows:[
-    {nom:'Sanitaire 66',ref:'Hansgrohe Ecostat 1001CL',prix:138,delai:'2 j',dispo:'Disponible',best:true},
-    {nom:'ProMat 66',ref:'Hansgrohe Ecostat 1001CL',prix:145,delai:'3 j',dispo:'Disponible',best:false},
-    {nom:'BricoDepot Pro',ref:'Hansgrohe Ecostat 1001CL',prix:152,delai:'1 j',dispo:'Disponible',best:false},
-    {nom:'SDB Direct',ref:'Grohe Grohtherm 800',prix:185,delai:'5 j',dispo:'Limité',best:false},
-  ]},
+const NAVITEMS=[
+{v:'dashboard',l:'Tableau de bord',i:'<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>'},
+{v:'devis',l:'Devis & Facturation',i:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'},
+{v:'relances',l:'Relances',i:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',badge:11},
+{v:'chantiers',l:'Chantiers',i:'<path d="M2 22h20"/><path d="M6 18V9l6-4 6 4v9"/><rect x="9" y="13" width="6" height="5"/>'},
+{v:'calendrier',l:'Calendrier',i:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
+{v:'fournisseurs',l:'Fournisseurs',i:'<path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'},
+{v:'clients',l:'Clients',i:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/>'},
+];
+function buildNav(){
+  document.getElementById('nav').innerHTML=NAVITEMS.map(n=>`<div class="nav-item" data-view="${n.v}"><svg viewBox="0 0 24 24">${n.i}</svg><span>${n.l}</span>${n.badge?`<span class="badge">${n.badge}</span>`:''}</div>`).join('');
+}
+const TITLES={dashboard:'Tableau de bord',devis:'Devis & Facturation',relances:'Relances',chantiers:'Chantiers',calendrier:'Calendrier',fournisseurs:'Fournisseurs',clients:'Clients',reglages:'Réglages'};
+let currentView='dashboard';
+function setView(v){
+  currentView=v;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
+  document.getElementById('topTitle').textContent=TITLES[v];
+  renderView(v);
+}
+function renderView(v){
+  document.getElementById('content').innerHTML=`<div class="view active">${VIEWS[v]()}</div>`;
+  if(v==='dashboard') drawLineChart();
+  if(v==='fournisseurs') initFourn();
+  if(v==='clients') initClients();
+}
+function openModal(html){document.getElementById('modal').innerHTML=html;document.getElementById('overlay').classList.add('open');}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+document.addEventListener('click',e=>{if(e.target.id==='overlay')closeModal();});
+
+const VIEWS={};
+
+VIEWS.dashboard=function(){
+  const prestations=[['Climatisation',8400,'cobalt'],['Rénovation SDB',6500,'sage'],['Chauffe-eau',3140,'ochre'],['Plomberie',1160,'violet']];
+  const maxP=Math.max(...prestations.map(p=>p[1]));
+  const bars=[['Jan',9,5],['Fév',11,6],['Mar',14,9],['Avr',12,7],['Mai',16,10],['Juin',18,12]];
+  const maxBar=18;
+  const pipeline=[['Devis envoyés',8,24500,'cobalt'],['En relance',5,17800,'ochre'],['Négociation',2,9300,'violet'],['Signés ce mois',3,12840,'sage']];
+  const maxPipe=24500;
+  const weeks=[['S25',5,false],['S26',4,false],['S27',2,true],['S28',1,true]];
+  const prov=[['Bouche-à-oreille',42,'sage'],['Site web',24,'cobalt'],['Constructeurs',18,'violet'],['Anciens clients',16,'ochre']];
+  return `
+  <div class="grid4">
+    <div class="kpi c-cobalt"><div class="k-label">CA Juin</div><div class="k-val">19 200 €</div><div class="k-sub up">▲ +12,3% vs mai</div></div>
+    <div class="kpi c-ochre"><div class="k-label">Devis sans réponse</div><div class="k-val">8</div><div class="k-sub">24 500 € en jeu</div></div>
+    <div class="kpi c-sage"><div class="k-label">Taux conversion</div><div class="k-val">68 %</div><div class="k-sub up">▲ +3 pts</div></div>
+    <div class="kpi c-terra"><div class="k-label">CA signé (mois)</div><div class="k-val">12 840 €</div><div class="k-sub">3 devis signés</div></div>
+  </div>
+  <div class="mt hero">
+    <div class="hicon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <div><div class="ht">Encours à récupérer (devis dormants + factures en retard)</div><div class="hv">30 340 €</div></div>
+    <button class="btn primary" style="margin-left:auto" onclick="setView('relances')">Voir les relances</button>
+  </div>
+  <div class="grid2 mt">
+    <div class="card"><div class="section-title">Devis envoyés vs signés (6 mois)</div>
+      <div class="barchart">${bars.map(b=>`<div class="barcol"><div class="barpair">
+        <div class="bar b-env" style="height:${b[1]/maxBar*100}%"><span class="tip">${b[1]} envoyés</span></div>
+        <div class="bar b-sig" style="height:${b[2]/maxBar*100}%"><span class="tip">${b[2]} signés</span></div>
+      </div><div class="lab">${b[0]}</div></div>`).join('')}</div>
+      <div style="display:flex;gap:18px;margin-top:14px;font-size:12px;color:var(--muted)"><span><span style="display:inline-block;width:10px;height:10px;background:var(--surf2);border:1px solid var(--line);border-radius:2px;margin-right:5px"></span>Envoyés</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--cobalt);border-radius:2px;margin-right:5px"></span>Signés</span></div>
+    </div>
+    <div class="card"><div class="section-title">CA par prestation (mois)</div>
+      ${prestations.map(p=>`<div class="hp"><div class="hp-top"><span>${p[0]}</span><span class="v">${fmt(p[1])}</span></div><div class="pbar"><span style="width:${p[1]/maxP*100}%;background:var(--${p[2]})"></span></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="grid2 mt">
+    <div class="card"><div class="section-title">Pipeline commercial</div>
+      ${pipeline.map(p=>`<div class="hp"><div class="hp-top"><span>${p[0]} · ${p[1]}</span><span class="v">${fmt(p[2])}</span></div><div class="pbar"><span style="width:${p[2]/maxPipe*100}%;background:var(--${p[3]})"></span></div></div>`).join('')}
+    </div>
+    <div class="card"><div class="section-title">Charge des semaines (jours occupés)</div>
+      <div class="weekgrid">${weeks.map(w=>`<div class="daycell ${w[2]?'creux':''}"><div class="dn">${w[0]}</div><div class="dv">${w[1]}/5</div>${w[2]?'<div class="creuxbadge">⚠ Creux</div>':''}</div>`).join('')}</div>
+      <div class="alert-box" style="margin-top:14px">⚠ S27 &amp; S28 sont creuses — relancez des devis chauds pour combler.</div>
+    </div>
+  </div>
+  <div class="card mt"><div class="section-title">Provenance des demandes</div>
+    ${prov.map(p=>`<div class="hp"><div class="hp-top"><span>${p[0]}</span><span class="v">${p[1]} %</span></div><div class="pbar"><span style="width:${p[1]}%;background:var(--${p[2]})"></span></div></div>`).join('')}
+  </div>
+  <div class="card mt"><div class="section-title">Chiffre d'affaires — 12 derniers mois</div>
+    <div style="height:280px"><canvas id="caChart"></canvas></div>
+  </div>`;
+};
+function drawLineChart(){
+  const ctx=document.getElementById('caChart');if(!ctx)return;
+  new Chart(ctx,{type:'line',data:{
+    labels:['Juil','Août','Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Juin'],
+    datasets:[{label:"CA mensuel (€)",data:[12400,9800,14200,16800,13900,11200,10800,13400,15900,17100,17100,19200],
+      borderColor:'#2BA8DC',backgroundColor:'rgba(43,168,220,.12)',fill:true,tension:.35,pointBackgroundColor:'#2BA8DC',pointRadius:3,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'#273040'},ticks:{color:'#6B7490'}},y:{grid:{color:'#273040'},ticks:{color:'#6B7490',callback:v=>v/1000+'k'}}}}});
+}
+
+VIEWS.devis=function(){
+  return `
+  <div class="card"><div class="section-title">Tunnel de conversion</div>
+    <div class="funnel">
+      <div class="fstage"><div class="fl">Envoyés</div><div class="fv">12</div></div>
+      <div class="farr">›</div>
+      <div class="fstage"><div class="fl">Relancés</div><div class="fv">8</div></div>
+      <div class="farr">›</div>
+      <div class="fstage"><div class="fl">Négociation</div><div class="fv">5</div></div>
+      <div class="farr">›</div>
+      <div class="fstage"><div class="fl">Signés</div><div class="fv">3</div></div>
+    </div>
+  </div>
+  <div class="tabs mt">
+    <div class="tab active" onclick="switchTab(this,'tab-devis')">Devis</div>
+    <div class="tab" onclick="switchTab(this,'tab-fact')">Factures</div>
+  </div>
+  <div class="tabpane active" id="tab-devis"><div id="devis-list">${DEVIS.map(devisCard).join('')}</div></div>
+  <div class="tabpane" id="tab-fact"><div id="fact-list">${FACTURES.map(factCard).join('')}</div></div>`;
+};
+function switchTab(el,id){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');
+}
+const STATUTLAB={signe:'Signé',dormant:'Dormant',refuse:'Refusé'};
+function devisCard(d){
+  const bg=d.statut==='signe'?'background:var(--sageSoft);border-color:var(--sage)':'';
+  return `<div class="lcard" id="card-${d.ref}" style="${bg}" onclick="openDevis('${d.ref}')">
+    <div class="lc-head"><span class="lc-ref">${d.ref}</span><span class="tag t-${d.statut}" id="badge-${d.ref}">${STATUTLAB[d.statut]}</span><span class="lc-amt">${fmt(d.montant)}</span></div>
+    <div style="font-weight:600;margin-bottom:4px">${d.client} · ${d.prestation}</div>
+    <div class="lc-meta"><span>${d.ville}</span><span>Envoyé le ${d.dateEnvoi}</span></div>
+  </div>`;
+}
+const FSTATUT={'en retard':'t-retard','en attente':'t-attente','payee':'t-payee'};
+const FSTATUTLAB={'en retard':'En retard','en attente':'En attente','payee':'Payée'};
+function factCard(f){
+  return `<div class="lcard${f._flash?' flash':''}" id="fcard-${f.ref}" onclick="openFact('${f.ref}')">
+    <div class="lc-head"><span class="lc-ref">${f.ref}</span><span class="tag ${FSTATUT[f.statut]}" id="fbadge-${f.ref}">${FSTATUTLAB[f.statut]}${f.jours?' ('+f.jours+'j)':''}</span><span class="lc-amt">${fmt(f.montant)}</span></div>
+    <div style="font-weight:600;margin-bottom:4px">${f.client} · ${f.prestation}</div>
+    <div class="lc-meta"><span>${f.ville}</span><span>Émise ${f.dateEmission}</span><span>Échéance ${f.echeance}</span></div>
+  </div>`;
+}
+function openDevis(ref){
+  const d=DEVIS.find(x=>x.ref===ref);
+  let foot=`<button class="btn" onclick="closeModal()">Fermer</button>`;
+  if(d.statut==='dormant'){foot=`<button class="btn" onclick="closeModal()">Fermer</button><button class="btn primary" onclick="alert('Relance envoyée à ${d.client}')">Relancer</button><button class="btn sage" onclick="marquerSigne('${d.ref}')">Marquer signé</button>`;}
+  else if(d.statut==='signe'){
+    const hasFact=FACTURES.some(f=>f.devisRef===d.ref);
+    foot=`<button class="btn" onclick="closeModal()">Fermer</button>`+(hasFact?'':`<button class="btn primary" onclick="creerFactureFromDevis('${d.ref}')">Créer la facture</button>`);
+  }
+  openModal(`
+    <div class="m-head"><div><div style="font-family:Oxanium;font-weight:700;font-size:18px;color:var(--cobalt)">${d.ref}</div><div style="color:var(--muted);font-size:13px;margin-top:3px">${d.client} · ${d.ville}</div></div><button class="m-close" onclick="closeModal()">×</button></div>
+    <div class="m-body">
+      <div style="display:flex;gap:10px;margin-bottom:16px"><span class="tag t-${d.statut}">${STATUTLAB[d.statut]}</span><span class="chip">${d.prestation}</span><span class="chip">Envoyé ${d.dateEnvoi}</span></div>
+      ${d.lignes.map(l=>`<div class="li-row"><div><div class="d">${l.desc}</div><div class="q">${l.qte} ${l.unit} × ${fmt(l.pu)}</div></div><div style="font-family:Oxanium;font-weight:600">${fmt(l.total)}</div></div>`).join('')}
+      <div class="li-row" style="border:none;margin-top:8px"><div style="font-weight:700">Total TTC</div><div style="font-family:Oxanium;font-weight:700;font-size:18px">${fmt(d.montant)}</div></div>
+    </div>
+    <div class="m-foot">${foot}</div>`);
+}
+function marquerSigne(ref){
+  const d=DEVIS.find(x=>x.ref===ref);d.statut='signe';
+  const card=document.getElementById('card-'+ref);
+  if(card){card.style.background='var(--sageSoft)';card.style.borderColor='var(--sage)';
+    const b=document.getElementById('badge-'+ref);b.className='tag t-signe';b.textContent='Signé';}
+  closeModal();
+}
+function creerFactureFromDevis(ref){
+  const d=DEVIS.find(x=>x.ref===ref);
+  const num=Math.max(...FACTURES.map(f=>+f.ref.split('-')[1]))+1;
+  const ht=Math.round(d.montant/1.1);
+  const nf={ref:'FA-0'+num,client:d.client,ville:d.ville,prestation:d.prestation,montant:d.montant,montantHT:ht,tva:d.montant-ht,dateEmission:'22/06/2026',echeance:'22/07/2026',statut:'en attente',devisRef:d.ref,jours:null,_flash:true};
+  FACTURES.unshift(nf);
+  closeModal();
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===1));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-fact').classList.add('active');
+  document.getElementById('fact-list').innerHTML=FACTURES.map(factCard).join('');
+  setTimeout(()=>{nf._flash=false;},1500);
+}
+function openFact(ref){
+  const f=FACTURES.find(x=>x.ref===ref);
+  let foot=`<button class="btn" onclick="closeModal()">Fermer</button>`;
+  if(f.statut==='en retard') foot+=`<button class="btn primary" onclick="alert('Relance de paiement envoyée à ${f.client}')">Relancer</button>`;
+  if(f.statut!=='payee') foot+=`<button class="btn sage" onclick="marquerPayee('${f.ref}')">Marquer payée</button>`;
+  const link=f.devisRef?`<div class="li-row"><div class="d">Devis lié</div><div><a style="color:var(--cobalt);cursor:pointer;font-weight:600" onclick="closeModal();openDevis('${f.devisRef}')">${f.devisRef} ›</a></div></div>`:'';
+  openModal(`
+    <div class="m-head"><div><div style="font-family:Oxanium;font-weight:700;font-size:18px;color:var(--cobalt)">${f.ref}</div><div style="color:var(--muted);font-size:13px;margin-top:3px">${f.client} · ${f.ville}</div></div><button class="m-close" onclick="closeModal()">×</button></div>
+    <div class="m-body">
+      <div style="display:flex;gap:10px;margin-bottom:16px"><span class="tag ${FSTATUT[f.statut]}">${FSTATUTLAB[f.statut]}</span><span class="chip">${f.prestation}</span></div>
+      <div class="li-row"><div class="d">Émise le</div><div>${f.dateEmission}</div></div>
+      <div class="li-row"><div class="d">Échéance</div><div>${f.echeance}</div></div>
+      ${link}
+      <div class="li-row"><div class="d">Montant HT</div><div style="font-family:Oxanium">${fmt(f.montantHT)}</div></div>
+      <div class="li-row"><div class="d">TVA (10%)</div><div style="font-family:Oxanium">${fmt(f.tva)}</div></div>
+      <div class="li-row" style="border:none;margin-top:8px"><div style="font-weight:700">Total TTC</div><div style="font-family:Oxanium;font-weight:700;font-size:18px">${fmt(f.montant)}</div></div>
+    </div>
+    <div class="m-foot">${foot}</div>`);
+}
+function marquerPayee(ref){
+  const f=FACTURES.find(x=>x.ref===ref);f.statut='payee';f.jours=null;
+  const b=document.getElementById('fbadge-'+ref);if(b){b.className='tag t-payee';b.textContent='Payée';}
+  closeModal();
+}
+
+VIEWS.relances=function(){
+  const dormants=DEVIS.filter(d=>d.statut==='dormant');
+  const retards=FACTURES.filter(f=>f.statut==='en retard');
+  return `
+  <div class="hero">
+    <div class="hicon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+    <div><div class="ht">Total à récupérer</div><div class="hv">30 340 €</div></div>
+    <button class="btn danger" style="margin-left:auto" onclick="alert('Lancement des 11 relances...')">Tout relancer (11)</button>
+  </div>
+  <div class="grid2 mt">
+    <div>
+      <div class="section-title">Devis dormants (${dormants.length})</div>
+      ${dormants.map(d=>`<div class="lcard" style="cursor:default">
+        <div class="lc-head"><span class="lc-ref">${d.ref}</span><span class="tag t-dormant">Dormant</span><span class="lc-amt">${fmt(d.montant)}</span></div>
+        <div style="font-weight:600;margin-bottom:8px">${d.client} · ${d.prestation}</div>
+        <div class="row"><span class="lc-meta"><span>Envoyé ${d.dateEnvoi}</span></span><button class="btn sm primary" style="margin-left:auto" onclick="alert('Relance envoyée à ${d.client}')">Relancer</button></div>
+      </div>`).join('')}
+    </div>
+    <div>
+      <div class="section-title">Factures en retard (${retards.length})</div>
+      ${retards.map(f=>`<div class="lcard" style="cursor:default;border-color:rgba(224,90,58,.4)">
+        <div class="lc-head"><span class="lc-ref">${f.ref}</span><span class="tag t-retard">${f.jours}j de retard</span><span class="lc-amt">${fmt(f.montant)}</span></div>
+        <div style="font-weight:600;margin-bottom:8px">${f.client} · ${f.prestation}</div>
+        <div class="row"><span class="lc-meta"><span>Échéance ${f.echeance}</span></span><button class="btn sm danger" style="margin-left:auto" onclick="alert('Relance de paiement envoyée à ${f.client}')">Relancer</button></div>
+      </div>`).join('')}
+      <div class="section-title mt">Séquence devis</div>
+      <div class="card">
+        <div class="seqstep active"><div class="seqdot">J+2</div><div><div style="font-weight:600">SMS de relance</div><div style="font-size:12px;color:var(--muted)">Envoyé automatiquement</div></div></div>
+        <div class="seqstep active"><div class="seqdot">J+5</div><div><div style="font-weight:600">Email détaillé</div><div style="font-size:12px;color:var(--muted)">Étape en cours</div></div></div>
+        <div class="seqstep"><div class="seqdot">J+10</div><div><div style="font-weight:600">Appel téléphonique</div><div style="font-size:12px;color:var(--muted)">À venir</div></div></div>
+      </div>
+      <div class="section-title mt">Séquence facture</div>
+      <div class="card">
+        <div class="seqstep active"><div class="seqdot">J+3</div><div><div style="font-weight:600">SMS de rappel</div><div style="font-size:12px;color:var(--muted)">Envoyé</div></div></div>
+        <div class="seqstep danger"><div class="seqdot">J+8</div><div><div style="font-weight:600">Email mise en demeure</div><div style="font-size:12px;color:var(--terra)">Action urgente</div></div></div>
+        <div class="seqstep"><div class="seqdot">J+15</div><div><div style="font-weight:600">Courrier recommandé</div><div style="font-size:12px;color:var(--muted)">À venir</div></div></div>
+      </div>
+    </div>
+  </div>`;
 };
 
-var RELANCE_DEVIS = DEVIS.filter(function(d){return d.statut==='dormant';});
-var RELANCE_AGES = [10,8,15,12,20,6,5,18,22,26,32,14];
-
-/* ═══ SIDEBAR ═══ */
-function openSb(){document.getElementById('sb').classList.add('open');document.getElementById('overlay').style.display='block'}
-function closeSb(){document.getElementById('sb').classList.remove('open');document.getElementById('overlay').style.display='none'}
-
-/* ═══ VIEWS ═══ */
-function showView(id){
-  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
-  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
-  document.getElementById('view-'+id).classList.add('active');
-  var nb=document.querySelector('[data-view="'+id+'"]');
-  if(nb)nb.classList.add('active');
-  closeSb();
-  if(id==='dashboard')initDashboard();
-  if(id==='devis')renderDevis();
-  if(id==='relances')renderRelances();
-  if(id==='chantiers')renderChantiers();
-  if(id==='calendrier')renderCalendar();
-  if(id==='fournisseurs')showFourn('ballon',document.querySelector('.fourn-tab'));
-  if(id==='clients')renderClients('');
+VIEWS.chantiers=function(){
+  return `<div id="chantiers-list">
+    <div class="grid3">${CHANTIERS_DATA.map(chantierCard).join('')}</div>
+  </div>
+  <div id="chantiers-fiche" style="display:none"></div>`;
+};
+const CSTATUT={'en cours':'t-encours','planifié':'t-planifie','terminé':'t-termine'};
+function chantierCard(c){
+  const done=Object.values(c.checklist).filter(Boolean).length;
+  return `<div class="lcard" onclick="openChantierFiche(${c.id})">
+    <div class="lc-head"><span class="tag ${CSTATUT[c.statut]}">${c.statut}</span><span style="margin-left:auto;font-size:12px;color:var(--muted)">${c.debut} → ${c.fin}</span></div>
+    <div style="font-weight:700;margin-bottom:3px">${c.client}</div>
+    <div style="font-size:12px;color:var(--inkSoft);margin-bottom:10px">${c.prestation} · ${c.ville}</div>
+    <div class="hp" style="margin-bottom:6px"><div class="hp-top"><span>Avancement</span><span class="v">${c.avancement}%</span></div><div class="pbar"><span style="width:${c.avancement}%"></span></div></div>
+    <div style="font-size:12px;color:var(--muted)">${done}/5 étapes complétées</div>
+  </div>`;
 }
-
-/* ═══ TABS DEVIS/FACTURES ═══ */
-function showTab(panel,btn){
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
-  document.getElementById('tab-devis').classList.remove('active');
-  document.getElementById('tab-factures').classList.remove('active');
-  document.getElementById('tab-'+panel).classList.add('active');
-  if(btn)btn.classList.add('active');
+const CHECKLABELS={devis:'Devis signé',acompte:'Acompte reçu',materiau:'Matériel commandé',execution:'Exécution terminée',reception:'Réception client'};
+function openChantierFiche(id){
+  const c=CHANTIERS_DATA.find(x=>x.id===id);
+  document.getElementById('chantiers-list').style.display='none';
+  const f=document.getElementById('chantiers-fiche');f.style.display='block';
+  f.innerHTML=`
+    <button class="btn sm" onclick="backToChantiers()">← Retour aux chantiers</button>
+    <div class="card mt"><div class="row" style="gap:14px;align-items:flex-start">
+      <div><h2 style="font-size:22px">${c.client}</h2><div style="color:var(--muted);font-size:13px;margin-top:4px">${c.adresse} · ${c.ville}</div>
+      <div style="margin-top:8px;font-size:13px;color:var(--inkSoft)">${c.prestation}</div></div>
+      <span class="tag ${CSTATUT[c.statut]}" style="margin-left:auto">${c.statut}</span></div>
+      <div class="hp mt"><div class="hp-top"><span>Avancement du chantier</span><span class="v">${c.avancement}%</span></div><div class="pbar"><span style="width:${c.avancement}%"></span></div></div>
+    </div>
+    <div class="grid2 mt">
+      <div class="card"><div class="section-title">Étapes</div><div id="checklist-${id}">${renderChecklist(c)}</div></div>
+      <div class="card"><div class="section-title">Informations</div>
+        <div class="li-row"><div class="d">Contact sur place</div><div>${c.contactSurPlace}</div></div>
+        <div class="li-row"><div class="d">Code d'accès</div><div>${c.codeAcces||'—'}</div></div>
+        <div class="li-row"><div class="d">Début</div><div>${c.debut}</div></div>
+        <div class="li-row" style="border:none"><div class="d">Fin prévue</div><div>${c.fin}</div></div>
+      </div>
+    </div>
+    <div class="card mt"><div class="section-title">Journal de chantier</div>
+      <div id="journal-${id}">${renderJournal(c)}</div>
+      <div class="row mt" style="gap:10px"><input class="search" id="jinput-${id}" placeholder="Nouvelle note de chantier..." style="flex:1"><button class="btn primary" onclick="addJournalEntry(${id})">Ajouter</button></div>
+    </div>
+    <div class="card mt"><div class="section-title">Note</div><div style="color:var(--inkSoft)">${c.note||'Aucune note.'}</div></div>`;
 }
-
-/* ═══ BADGE HTML ═══ */
-function badgeHtml(s){
-  var map={dormant:['var(--line)','var(--muted)'],'en attente':['var(--ochreSoft)','var(--ochre)'],signe:['var(--sageSoft)','var(--sage)'],'en retard':['var(--terraSoft)','var(--terra)'],payee:['var(--sageSoft)','var(--sage)'],refuse:['var(--line)','var(--muted)'],'planifié':['var(--cobaltSoft)','var(--cobalt)'],'en cours':['var(--ochreSoft)','var(--ochre)'],'terminé':['var(--sageSoft)','var(--sage)']};
-  var c=map[s]||['var(--line)','var(--muted)'];
-  return '<span class="badge" style="background:'+c[0]+';color:'+c[1]+'">'+s+'</span>';
+function renderChecklist(c){
+  return Object.keys(c.checklist).map(k=>`<div class="checkitem ${c.checklist[k]?'done':''}" onclick="toggleCheck(${c.id},'${k}')"><div class="checkbox">${ICON.check}</div><div class="clab">${CHECKLABELS[k]}</div></div>`).join('');
 }
-
-/* ═══ RENDER DEVIS ═══ */
-function renderDevis(){
-  var el=document.getElementById('devis-list');
-  el.innerHTML=DEVIS.map(function(d){
-    var dormBorder=d.statut==='dormant'?'border-left:3px solid var(--terra)':'';
-    var signBorder=d.statut==='signe'?'border-left:3px solid var(--sage)':'';
-    var border=dormBorder||signBorder||'';
-    return '<div class="fact-card" style="'+border+'" onclick="openDevisModal(\''+d.ref+'\')" onmouseover="this.style.borderColor=\'var(--cobalt)\'" onmouseout="this.style.borderColor=\''+(d.statut==='dormant'?'var(--terra)':d.statut==='signe'?'var(--sage)':'var(--line)')+'\'">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
-      '<div style="display:flex;align-items:center;gap:10px">'+
-      '<span style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:15px">'+d.ref+'</span>'+
-      badgeHtml(d.statut)+'</div><span style="color:var(--muted)">›</span></div>'+
-      '<div class="fact-grid4">'+
-      '<div><div class="fact-meta-lbl">Client</div><div style="font-size:13px;font-weight:600">'+d.client+'</div></div>'+
-      '<div><div class="fact-meta-lbl">Prestation</div><div style="font-size:13px;color:var(--inkSoft)">'+d.prestation+'</div></div>'+
-      '<div><div class="fact-meta-lbl">Montant HT</div><div class="fact-meta-val">'+d.montant.toLocaleString('fr-FR')+' €</div></div>'+
-      '<div><div class="fact-meta-lbl">Envoyé le</div><div style="font-size:13px;color:var(--inkSoft)">'+d.dateEnvoi+'</div></div>'+
-      '</div></div>';
-  }).join('');
-
-  var el2=document.getElementById('factures-list');
-  el2.innerHTML=FACTURES.map(function(f){
-    var retardBorder=f.statut==='en retard'?'border-left:3px solid var(--terra)':'';
-    var payBorder=f.statut==='payee'?'border-left:3px solid var(--sage)':'';
-    var border=retardBorder||payBorder||'';
-    return '<div class="fact-card" style="'+border+'" onclick="openFactModal(\''+f.ref+'\')" onmouseover="this.style.borderColor=\'var(--cobalt)\'" onmouseout="this.style.borderColor=\''+(f.statut==='en retard'?'var(--terra)':f.statut==='payee'?'var(--sage)':'var(--line)')+'\'">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
-      '<div style="display:flex;align-items:center;gap:10px;flex:1">'+
-      '<span style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:15px">'+f.ref+'</span>'+
-      badgeHtml(f.statut)+
-      '<span style="font-size:13px;color:var(--inkSoft);margin-left:4px">'+f.client+'</span></div>'+
-      (f.statut!=='payee'?'<div onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center">'+
-      (f.statut==='en retard'?'<button onclick="relancer(\''+f.client+'\',this)" class="btn btn-ghost-terra" style="font-size:12px;padding:5px 12px">Relancer</button>':'')+
-      '<button onclick="marquerPayee(\''+f.ref+'\',this)" class="btn btn-ghost-sage" style="font-size:12px;padding:5px 12px">Marquer payée</button>'+
-      '</div>':'')+'<span style="color:var(--muted);margin-left:8px">›</span></div>'+
-      '<div class="fact-grid4">'+
-      '<div><div class="fact-meta-lbl">Montant TTC</div><div class="fact-meta-val">'+f.montant.toLocaleString('fr-FR')+' €</div></div>'+
-      '<div><div class="fact-meta-lbl">Montant HT</div><div style="font-size:13px;color:var(--inkSoft)">'+f.montantHT.toLocaleString('fr-FR')+' €</div></div>'+
-      '<div><div class="fact-meta-lbl">TVA</div><div style="font-size:13px;color:var(--inkSoft)">'+f.tva+' €</div></div>'+
-      '<div><div class="fact-meta-lbl">Échéance</div><div style="font-size:13px;'+(f.statut==='en retard'?'color:var(--terra);font-weight:600':'color:var(--inkSoft)')+'">'+f.echeance+(f.jours?' — dépassée de '+f.jours+' j':'')+'</div></div>'+
-      '</div></div>';
-  }).join('');
+function renderJournal(c){
+  if(!c.journal.length) return '<div style="color:var(--muted);font-size:13px">Aucune entrée pour le moment.</div>';
+  return c.journal.map(j=>`<div class="jentry"><div class="jdate">${j.date}</div><div>${j.texte}</div></div>`).join('');
 }
-
-/* ═══ RELANCES ═══ */
-function renderRelances(){
-  var el=document.getElementById('relance-devis-list');
-  if(!el)return;
-  el.innerHTML=RELANCE_DEVIS.map(function(d,i){
-    var age=RELANCE_AGES[i]||7;
-    return '<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)">'+
-      '<div style="flex:1"><div style="font-weight:600;font-size:13.5px">'+d.ref+' · '+d.client+'</div>'+
-      '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+d.prestation+' — '+d.montant.toLocaleString('fr-FR')+' € · envoyé il y a '+age+' j</div></div>'+
-      '<button class="btn btn-ghost-cobalt" style="font-size:12px;padding:5px 12px;white-space:nowrap" onclick="relancer(\''+d.client+'\',this)">Relancer</button>'+
-      '</div>';
-  }).join('');
-  if(el.innerHTML==='')el.innerHTML='<p style="color:var(--muted);font-size:13px;padding:14px 0">Aucun devis sans réponse.</p>';
-
-  var el2=document.getElementById('relance-fact-list');
-  if(!el2)return;
-  var retard=FACTURES.filter(function(f){return f.statut==='en retard';});
-  el2.innerHTML=retard.map(function(f){
-    return '<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)">'+
-      '<div style="flex:1"><div style="font-weight:600;font-size:13.5px">'+f.ref+' · '+f.client+'</div>'+
-      '<div style="font-size:12px;color:var(--terra);margin-top:2px;font-weight:500">'+f.montant.toLocaleString('fr-FR')+' € — dépassée de '+f.jours+' jours</div></div>'+
-      '<button class="btn btn-ghost-terra" style="font-size:12px;padding:5px 12px;white-space:nowrap" onclick="relancer(\''+f.client+'\',this)">Relancer</button>'+
-      '</div>';
-  }).join('');
+function toggleCheck(id,key){
+  const c=CHANTIERS_DATA.find(x=>x.id===id);c.checklist[key]=!c.checklist[key];
+  document.getElementById('checklist-'+id).innerHTML=renderChecklist(c);
 }
-
-function relancer(client,btn){
-  var orig=btn.textContent,origClass=btn.className;
-  btn.textContent='Envoyé ✓';btn.className='btn btn-ghost-sage';
-  setTimeout(function(){btn.textContent=orig;btn.className=origClass;},2500);
+function addJournalEntry(id){
+  const c=CHANTIERS_DATA.find(x=>x.id===id);const inp=document.getElementById('jinput-'+id);
+  if(!inp.value.trim())return;
+  const d=new Date();const dt=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+  c.journal.push({date:dt,texte:inp.value.trim()});inp.value='';
+  document.getElementById('journal-'+id).innerHTML=renderJournal(c);
 }
+function backToChantiers(){document.getElementById('chantiers-fiche').style.display='none';document.getElementById('chantiers-list').style.display='block';}
 
-function lancerToutesRelances(){
-  document.querySelectorAll('#relance-devis-list button,#relance-fact-list button').forEach(function(b){
-    b.textContent='Envoyé ✓';b.className='btn btn-ghost-sage';
+VIEWS.calendrier=function(){
+  const days=['Lun 22','Mar 23','Mer 24','Jeu 25','Ven 26'];
+  const keys=['lun','mar','mer','jeu','ven'];
+  const slots=['08h','10h','12h','14h','16h'];
+  let grid='<div class="calhd"></div>'+days.map(d=>`<div class="calhd">${d}</div>`).join('');
+  slots.forEach((s,si)=>{
+    grid+=`<div class="caltime">${s}</div>`;
+    keys.forEach(k=>{
+      const evs=(CAL_EVENTS[k]||[]).filter(e=>e.slot===si);
+      grid+=`<div>${evs.map(e=>`<div class="calev ev-${e.type}">${e.t}</div>`).join('')}</div>`;
+    });
   });
-}
+  return `
+  <div class="grid3">
+    <div class="kpi c-cobalt"><div class="k-label">Interventions cette semaine</div><div class="k-val">5</div><div class="k-sub">2 chantiers actifs</div></div>
+    <div class="kpi c-sage"><div class="k-label">Jours occupés</div><div class="k-val">5/5</div><div class="k-sub">Semaine complète</div></div>
+    <div class="kpi c-ochre"><div class="k-label">Répartition</div><div class="k-val" style="font-size:18px;margin-top:10px">2 Clim · 3 SDB</div><div class="k-sub">par type d'intervention</div></div>
+  </div>
+  <div class="card mt"><div class="row" style="margin-bottom:16px;gap:10px">
+    <div class="section-title" style="margin:0">Semaine du 22 au 26 juin 2026</div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn sm" onclick="alert('Semaine précédente')">←</button>
+      <button class="btn sm" onclick="alert('Retour à aujourd\\'hui')">Aujourd'hui</button>
+      <button class="btn sm" onclick="alert('Semaine suivante')">→</button>
+      <button class="btn sm primary" onclick="alert('Export ICS en cours...')">↓ Exporter ICS</button>
+    </div>
+  </div>
+  <div class="calgrid">${grid}</div>
+  <div style="display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--muted)">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--cobalt);border-radius:2px;margin-right:5px"></span>Clim</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--sage);border-radius:2px;margin-right:5px"></span>SDB</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--violet);border-radius:2px;margin-right:5px"></span>Plomberie</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--ochre);border-radius:2px;margin-right:5px"></span>Chauffe-eau</span>
+  </div>
+  <div class="alert-box" style="margin-top:14px">⚠ Cette semaine est complète. La semaine du 29/06 a 2 jours sans intervention — relancez des devis chauds.</div>
+  </div>`;
+};
 
-function marquerPayee(ref,btn){
-  var f=FACTURES.find(function(x){return x.ref===ref;});
-  if(f)f.statut='payee';
-  btn.textContent='Payée ✓';btn.className='btn btn-ghost-sage';
-  setTimeout(function(){renderDevis();},500);
+VIEWS.fournisseurs=function(){
+  return `
+  <div class="card"><input class="search" id="fournSearch" placeholder="Rechercher un fournisseur ou une référence..." oninput="searchFournisseurs(this.value)"></div>
+  <div id="fournNormal">
+    <div class="tabs mt">
+      <div class="tab active" data-cat="ballon" onclick="switchFourn(this,'ballon')">Ballon thermo</div>
+      <div class="tab" data-cat="clim" onclick="switchFourn(this,'clim')">Split clim</div>
+      <div class="tab" data-cat="mitigeur" onclick="switchFourn(this,'mitigeur')">Mitigeur</div>
+    </div>
+    <div id="fournTable"></div>
+  </div>
+  <div id="fournSearchResults" style="display:none"></div>`;
+};
+let curFourn='ballon';
+function initFourn(){curFourn='ballon';renderFournTable('ballon');}
+function switchFourn(el,cat){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  curFourn=cat;renderFournTable(cat);
 }
-
-/* ═══ CHANTIERS ═══ */
-var CHECKLIST_LABELS={devis:'Devis signé',acompte:'Acompte reçu',materiau:'Matériaux commandés',execution:'Travaux exécutés',reception:'Réception client'};
-function renderChantiers(){
-  var el=document.getElementById('chantiers-list-view');
-  if(!el)return;
-  var typeColor={clim:'var(--cobalt)',sdb:'var(--sage)',chauf:'var(--ochre)',plomb:'var(--violet)'};
-  el.innerHTML=CHANTIERS_DATA.map(function(c){
-    var done=Object.values(c.checklist).filter(Boolean).length;
-    var total=Object.keys(c.checklist).length;
-    var checks=Object.keys(c.checklist).map(function(k){
-      return '<div class="checklist-row">'+
-        '<div style="width:16px;height:16px;border-radius:4px;border:1.5px solid '+(c.checklist[k]?'var(--sage)':'var(--line)')+';background:'+(c.checklist[k]?'var(--sageSoft)':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
-        (c.checklist[k]?'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'')+
-        '</div>'+
-        '<span style="'+(c.checklist[k]?'color:var(--muted);text-decoration:line-through':'')+'">'+CHECKLIST_LABELS[k]+'</span>'+
-        '</div>';
-    }).join('');
-    return '<div class="chantier-card">'+
-      '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">'+
-      '<div><div style="font-weight:700;font-size:15px;margin-bottom:2px">'+c.client+'</div>'+
-      '<div style="font-size:12.5px;color:var(--muted)">📍 '+c.adresse+', '+c.ville+'</div></div>'+
-      badgeHtml(c.statut)+'</div>'+
-      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'+
-      '<span style="font-size:12.5px;color:var(--inkSoft)">'+c.prestation+'</span>'+
-      '<span style="width:6px;height:6px;border-radius:50%;background:'+typeColor[c.type]+';flex-shrink:0"></span>'+
-      '<span style="font-size:12px;color:var(--muted)">'+c.debut+' → '+c.fin+'</span>'+
-      '</div>'+
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+
-      '<div class="prog-track"><div class="prog-fill" style="width:'+c.avancement+'%;background:'+typeColor[c.type]+'"></div></div>'+
-      '<span style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:14px;color:'+typeColor[c.type]+';flex-shrink:0">'+c.avancement+' %</span>'+
-      '</div>'+
-      '<div>'+checks+'</div>'+
-      (c.note?'<div style="margin-top:10px;font-size:12px;color:var(--muted);background:var(--canvas);border-radius:7px;padding:8px 10px">💬 '+c.note+'</div>':'')+
-      '</div>';
-  }).join('');
+function fournRows(rows){
+  return rows.map(r=>`<tr class="${r.best?'best-row':''}">
+    <td style="font-weight:600">${r.nom} ${r.best?'<span class="tag t-signe" style="margin-left:6px">Meilleur</span>':''}</td>
+    <td style="color:var(--inkSoft)">${r.ref}</td>
+    <td style="font-family:Oxanium;font-weight:700">${r.prix} €${r.best?'<span class="chip" style="margin-left:6px;background:var(--sageSoft);color:var(--sage);border:none">Best</span>':''}</td>
+    <td>${r.delai}</td>
+    <td><span class="tag ${r.dispo==='Disponible'?'t-signe':'t-dormant'}">${r.dispo}</span></td></tr>`).join('');
 }
-
-/* ═══ CALENDRIER HEBDO ═══ */
-var calWeekOffset=0;
-var CAL_EVENTS=[
-  {date:new Date(2026,5,22),label:'Batipro 66 — Clim',type:'clim'},
-  {date:new Date(2026,5,23),label:'Batipro 66 — Clim',type:'clim'},
-  {date:new Date(2026,5,24),label:'Dupont — SDB',type:'sdb'},
-  {date:new Date(2026,5,25),label:'Dupont — SDB',type:'sdb'},
-  {date:new Date(2026,5,26),label:'Dupont — SDB',type:'sdb'},
-  {date:new Date(2026,5,28),label:'Coll — Clim',type:'clim'},
-  {date:new Date(2026,5,29),label:'Coll — Clim',type:'clim'},
-  {date:new Date(2026,6,1),label:'Olive — Chauffe-eau',type:'chauf'},
-  {date:new Date(2026,6,2),label:'Olive — Chauffe-eau',type:'chauf'},
-  {date:new Date(2026,6,6),label:'Serra — SDB',type:'sdb'},
-  {date:new Date(2026,6,7),label:'Serra — SDB',type:'sdb'},
-  {date:new Date(2026,6,8),label:'Serra — SDB',type:'sdb'},
-  {date:new Date(2026,6,9),label:'Serra — SDB',type:'sdb'},
-];
-function navWeek(dir){
-  if(dir===0)calWeekOffset=0;
-  else calWeekOffset+=dir;
-  renderCalendar();
+function fournTableHTML(cat){
+  const c=FOURN[cat];
+  return `<div class="card"><div class="section-title">${c.title}</div>
+    <table><thead><tr><th>Fournisseur</th><th>Référence</th><th>Prix HT</th><th>Délai</th><th>Disponibilité</th></tr></thead>
+    <tbody>${fournRows(c.rows)}</tbody></table>
+    <div class="alert-box" style="margin-top:16px;background:var(--sageSoft);border-color:rgba(58,171,106,.35);color:var(--sage)">💡 Économie potentielle de ${c.economie} € en choisissant le meilleur fournisseur.</div>
+  </div>`;
 }
-function renderCalendar(){
-  var el=document.getElementById('cal-render');
-  if(!el)return;
-  var today=new Date(2026,5,22);
-  var monday=new Date(today);
-  monday.setDate(today.getDate()-today.getDay()+1+calWeekOffset*7);
-  var days=['Lun','Mar','Mer','Jeu','Ven'];
-  var dates=[];for(var i=0;i<5;i++){var d=new Date(monday);d.setDate(monday.getDate()+i);dates.push(d);}
-  var label=document.getElementById('cal-week-label');
-  if(label){var opts={day:'numeric',month:'long'};label.textContent='Semaine du '+dates[0].toLocaleDateString('fr-FR',opts)+' au '+dates[4].toLocaleDateString('fr-FR',opts)+' 2026';}
-  var head='<div class="cal-head">'+
-    '<div class="cal-cell" style="font-size:11px;font-weight:600;color:var(--muted);padding:10px 12px">Heure</div>'+
-    days.map(function(d,i){
-      var dt=dates[i];
-      var isToday=dt.toDateString()===today.toDateString();
-      return '<div class="cal-cell" style="font-size:11.5px;font-weight:600;color:'+(isToday?'var(--cobalt)':'var(--inkSoft)')+';text-align:center;padding:10px 8px">'+d+'<br><span style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:16px">'+dt.getDate()+'</span></div>';
-    }).join('')+'</div>';
-  var rows=['08h','10h','12h','14h','16h'].map(function(h,ri){
-    var cells=dates.map(function(dt){
-      var evs=CAL_EVENTS.filter(function(e){return e.date.toDateString()===dt.toDateString()&&ri<3;});
-      return '<div class="cal-cell" style="vertical-align:top;min-height:60px">'+evs.map(function(e){return '<div class="cal-event ev-'+e.type+'">'+e.label+'</div>';}).join('')+'</div>';
-    }).join('');
-    return '<div class="cal-row"><div class="cal-cell" style="font-size:11px;color:var(--muted);font-weight:600">'+h+'</div>'+cells+'</div>';
-  }).join('');
-  el.innerHTML=head+rows;
-}
-
-/* ═══ FOURNISSEURS ═══ */
-function showFourn(key,btn){
-  document.querySelectorAll('.fourn-tab').forEach(function(b){b.className='btn btn-outline fourn-tab';});
-  if(btn){btn.className='btn btn-ghost-cobalt fourn-tab';}
-  var data=FOURN[key];
-  var el=document.getElementById('fourn-content');
-  if(!el)return;
-  var rows=data.rows.map(function(r){
-    return '<div class="tbl-row" style="grid-template-columns:1.5fr 2fr 1fr 1fr 1fr">'+
-      '<div style="font-weight:600">'+r.nom+'</div>'+
-      '<div style="color:var(--inkSoft);font-size:12.5px">'+r.ref+'</div>'+
-      '<div class="'+(r.best?'prix-best':'')+'">'+r.prix+' €'+(r.best?'<span class="badge" style="background:var(--sageSoft);color:var(--sage);margin-left:6px;font-size:10px">Meilleur</span>':'')+'</div>'+
-      '<div style="color:var(--inkSoft)">'+r.delai+'</div>'+
-      '<div style="color:'+(r.dispo==='Disponible'?'var(--sage)':r.dispo==='Limité'?'var(--ochre)':'var(--terra)')+';font-weight:600">'+r.dispo+'</div>'+
-      '</div>';
-  }).join('');
-  el.innerHTML='<div class="tbl">'+
-    '<div class="tbl-head" style="grid-template-columns:1.5fr 2fr 1fr 1fr 1fr">'+
-    '<div>Fournisseur</div><div>Référence</div><div>Prix HT</div><div>Délai</div><div>Disponibilité</div></div>'+
-    rows+'</div>'+
-    '<div class="eco-banner">✅ Économie potentielle en choisissant le meilleur prix : <strong>'+data.economie+' € HT par unité</strong> — '+data.title+'</div>';
-}
-
-/* ═══ CLIENTS ═══ */
-var crmFilter='';
-function renderClients(q){
-  var el=document.getElementById('clients-grid');
-  if(!el)return;
-  var list=CLIENTS.filter(function(c){
-    var matchQ=!q||c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q);
-    var matchF=!crmFilter||c.statut===crmFilter;
-    return matchQ&&matchF;
-  });
-  document.getElementById('clients-count').textContent=list.length+' client'+(list.length>1?'s':'');
-  el.innerHTML=list.map(function(c){
-    var initials=c.nom.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
-    var colors=['#2BA8DC','#3AAB6A','#D4A43C','#8B7CF6','#E05A3A'];
-    var col=colors[c.nom.charCodeAt(0)%colors.length];
-    return '<div class="client-card" onclick="alert(\'Fiche client : '+c.nom+'\')">'+
-      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'+
-      '<div style="width:36px;height:36px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:12px;color:#fff;flex-shrink:0">'+initials+'</div>'+
-      '<div><div style="font-weight:700;font-size:14px">'+c.nom+'</div><div style="font-size:12px;color:var(--muted)">'+c.ville+' · '+c.type+'</div></div>'+
-      badgeHtml(c.statut)+'</div>'+
-      '<div style="display:flex;justify-content:space-between;align-items:center">'+
-      '<span style="font-size:12px;color:var(--muted)">CA total</span>'+
-      '<span style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:15px;color:var(--cobalt)">'+c.ca.toLocaleString('fr-FR')+' €</span></div>'+
-      (c.tags.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'+c.tags.map(function(t){return '<span class="badge" style="background:var(--canvas);color:var(--muted);font-size:10.5px">'+t+'</span>';}).join('')+'</div>':'')+
-      '</div>';
-  }).join('');
-}
-function setCrmFilter(f){
-  crmFilter=f;
-  document.querySelectorAll('.crmf').forEach(function(b){b.className='btn btn-outline crmf';});
-  renderClients('');
-}
-function filterClients(q){renderClients(q.toLowerCase());}
-
-/* ═══ MODALS ═══ */
-function mclose(){return "closeModal({target:document.getElementById('doc-overlay')})";}
-function closeModal(evt){
-  if(evt&&evt.target!==document.getElementById('doc-overlay'))return;
-  document.getElementById('doc-overlay').classList.remove('open');
-}
-function openModal(){document.getElementById('doc-overlay').classList.add('open');}
-
-function lignesHtml(lignes){
-  var total=0;
-  var rows=lignes.map(function(l){total+=l.total;return '<div class="li-grid li-row"><span>'+l.desc+'</span><span style="text-align:center;color:var(--muted)">'+l.qte+' '+l.unit+'</span><span style="text-align:right;font-family:monospace">'+l.pu.toFixed(0)+' €</span><span style="text-align:right;font-family:monospace;font-weight:600">'+l.total.toFixed(0)+' €</span></div>';}).join('');
-  return '<div style="margin-top:16px"><div class="li-grid li-head"><span>Description</span><span style="text-align:center">Qté</span><span style="text-align:right">PU HT</span><span style="text-align:right">Total HT</span></div>'+rows+
-    '<div style="display:flex;justify-content:flex-end;gap:24px;padding:12px 0;margin-top:4px;border-top:2px solid var(--line)">'+
-    '<div style="text-align:right"><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Total HT</div><div style="font-family:monospace;font-weight:600">'+total.toFixed(0)+' €</div></div>'+
-    '<div style="text-align:right"><div style="font-size:11px;color:var(--muted);margin-bottom:2px">TVA 10 %</div><div style="font-family:monospace;font-weight:600">'+(total*0.1).toFixed(0)+' €</div></div>'+
-    '<div style="text-align:right"><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Total TTC</div><div style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:20px;color:var(--cobalt)">'+(total*1.1).toFixed(0)+' €</div></div>'+
-    '</div></div>';
-}
-
-function openDevisModal(ref){
-  var d=DEVIS.find(function(x){return x.ref===ref;});if(!d)return;
-  document.getElementById('doc-mhead').innerHTML=
-    '<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:20px">'+d.ref+'</span>'+badgeHtml(d.statut)+'</div>'+
-    '<div style="font-size:13px;color:var(--muted)">'+d.client+' · '+d.ville+'</div></div>'+
-    '<button onclick="'+mclose()+'" style="background:var(--canvas);border:1px solid var(--line);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;color:var(--muted)">✕</button>';
-  document.getElementById('doc-mbody').innerHTML=
-    '<div class="grid2" style="margin-bottom:4px">'+
-    '<div><div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Informations</div>'+
-    '<div style="font-size:13px;margin-bottom:5px"><span style="color:var(--muted)">Prestation :</span> <strong>'+d.prestation+'</strong></div>'+
-    '<div style="font-size:13px;margin-bottom:5px"><span style="color:var(--muted)">Envoyé le :</span> <strong>'+d.dateEnvoi+'</strong></div>'+
-    '<div style="font-size:13px"><span style="color:var(--muted)">Montant HT :</span> <strong style="color:var(--cobalt);font-family:\'Oxanium\',sans-serif">'+d.montant.toLocaleString('fr-FR')+' €</strong></div></div>'+
-    '<div><div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Client</div>'+
-    '<div style="font-size:13px;font-weight:600">'+d.client+'</div>'+
-    '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+d.ville+'</div></div></div>'+
-    lignesHtml(d.lignes);
-  var f='<button onclick="'+mclose()+'" class="btn btn-outline">Fermer</button>';
-  if(d.statut==='dormant')f+='<button onclick="relancer(\''+d.client+'\',this)" class="btn btn-ghost-cobalt">Relancer</button>';
-  if(d.statut==='dormant'||d.statut==='en attente')f+='<button onclick="alert(\'Devis marqué signé\')" class="btn" style="background:var(--sage);color:#fff">Marquer signé</button>';
-  document.getElementById('doc-mfoot').innerHTML=f;
-  openModal();
-}
-
-function openFactModal(ref){
-  var f=FACTURES.find(function(x){return x.ref===ref;});if(!f)return;
-  document.getElementById('doc-mhead').innerHTML=
-    '<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:20px">'+f.ref+'</span>'+badgeHtml(f.statut)+'</div>'+
-    '<div style="font-size:13px;color:var(--muted)">'+f.client+' · '+f.ville+'</div></div>'+
-    '<button onclick="'+mclose()+'" style="background:var(--canvas);border:1px solid var(--line);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;color:var(--muted)">✕</button>';
-  document.getElementById('doc-mbody').innerHTML=
-    '<div class="grid2" style="margin-bottom:4px">'+
-    '<div><div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Informations</div>'+
-    '<div style="font-size:13px;margin-bottom:5px"><span style="color:var(--muted)">Émise le :</span> <strong>'+f.dateEmission+'</strong></div>'+
-    '<div style="font-size:13px;margin-bottom:5px"><span style="color:var(--muted)">Échéance :</span> <strong style="color:'+(f.statut==='en retard'?'var(--terra)':'var(--ink)')+'">'+f.echeance+'</strong></div>'+
-    (f.jours?'<div style="font-size:13px;color:var(--terra);font-weight:600">Dépassée de '+f.jours+' jours</div>':'')+
-    '</div>'+
-    '<div><div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Montants</div>'+
-    '<div style="font-size:13px;margin-bottom:4px"><span style="color:var(--muted)">HT :</span> <strong>'+f.montantHT.toLocaleString('fr-FR')+' €</strong></div>'+
-    '<div style="font-size:13px;margin-bottom:4px"><span style="color:var(--muted)">TVA :</span> <strong>'+f.tva+' €</strong></div>'+
-    '<div style="font-size:16px"><span style="color:var(--muted)">TTC :</span> <strong style="font-family:\'Oxanium\',sans-serif;font-size:22px;color:var(--cobalt)">'+f.montant.toLocaleString('fr-FR')+' €</strong></div>'+
-    '</div></div>';
-  var btns='<button onclick="'+mclose()+'" class="btn btn-outline">Fermer</button>';
-  if(f.statut==='en retard')btns+='<button onclick="relancer(\''+f.client+'\',this)" class="btn btn-ghost-terra">Relancer</button>';
-  if(f.statut!=='payee')btns+='<button onclick="marquerPayee(\''+f.ref+'\',this);'+mclose()+'" class="btn" style="background:var(--sage);color:#fff">Marquer payée</button>';
-  document.getElementById('doc-mfoot').innerHTML=btns;
-  openModal();
-}
-
-/* ═══ DASHBOARD ═══ */
-var caChart=null;
-function initDashboard(){
-  // Bar chart devis vs signés
-  var barData=[
-    {label:'Jan',env:22,sig:15},{label:'Fév',env:20,sig:13},
-    {label:'Mars',env:24,sig:16},{label:'Avr',env:26,sig:18},
-    {label:'Mai',env:21,sig:14},{label:'Juin',env:18,sig:10},
-  ];
-  var maxEnv=Math.max.apply(null,barData.map(function(d){return d.env;}));
-  var bc=document.getElementById('barChart');
-  if(bc)bc.innerHTML=barData.map(function(d){
-    var hEnv=Math.round(d.env/maxEnv*100);
-    var hSig=Math.round(d.sig/maxEnv*100);
-    return '<div class="bar-group" onmouseenter="showTip(event,\''+d.label+'\','+d.env+','+d.sig+')" onmouseleave="hideTip()">'+
-      '<div class="bar-pair">'+
-      '<div class="bar-env" style="height:'+hEnv+'px"></div>'+
-      '<div class="bar-sig" style="height:'+hSig+'px"></div>'+
-      '</div>'+
-      '<div class="bar-lbl">'+d.label+'</div></div>';
-  }).join('');
-
-  // Charge semaines
-  var chargeData=[
-    {s:'S25',label:'16-20 juin',days:[1,1,1,0,0],creux:false},
-    {s:'S26',label:'23-27 juin',days:[1,1,1,1,0],creux:false},
-    {s:'S27',label:'30 juin-4 juil.',days:[1,0,0,0,0],creux:true},
-    {s:'S28',label:'7-11 juil.',days:[0,0,0,0,0],creux:true},
-  ];
-  var cg=document.getElementById('chargeGrid');
-  if(cg)cg.innerHTML=chargeData.map(function(w){
-    return '<div style="margin-bottom:11px">'+
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
-      '<span style="font-family:\'Oxanium\',sans-serif;font-weight:700;font-size:11px;color:'+(w.creux?'var(--terra)':'var(--muted)')+';width:28px">'+w.s+'</span>'+
-      '<span style="font-size:12px;color:var(--muted)">'+w.label+'</span>'+
-      (w.creux?'<span class="badge" style="background:var(--terraSoft);color:var(--terra);font-size:10px">creux</span>':'')+
-      '</div>'+
-      '<div style="display:flex;gap:4px;margin-left:36px">'+
-      ['L','M','M','J','V'].map(function(d,i){return w.days[i]?
-        '<div style="flex:1;height:22px;border-radius:5px;background:var(--cobaltSoft);border:1.5px solid var(--cobalt);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--cobalt)">'+d+'</div>':
-        '<div style="flex:1;height:22px;border-radius:5px;border:1.5px dashed var(--line)"></div>';
-      }).join('')+
-      '</div></div>';
-  }).join('')+
-  '<p style="font-size:11.5px;color:var(--terra);margin-top:8px;font-weight:500">2 semaines creuses — des relances chauds peuvent les combler</p>';
-
-  // Line chart CA
-  if(caChart){caChart.destroy();caChart=null;}
-  var ctx=document.getElementById('caLineChart');
-  if(!ctx)return;
-  var ctxC=ctx.getContext('2d');
-  var grad=ctxC.createLinearGradient(0,0,0,160);
-  grad.addColorStop(0,'rgba(43,168,220,.2)');grad.addColorStop(1,'rgba(43,168,220,0)');
-  caChart=new Chart(ctxC,{
-    type:'line',
-    data:{
-      labels:['Jul','Août','Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Juin'],
-      datasets:[{label:'CA (€)',data:[18200,11400,23800,25200,20600,15800,22400,20100,27800,29400,17100,19200],
-        borderColor:'#2BA8DC',borderWidth:2.5,pointRadius:3.5,pointBackgroundColor:'#2BA8DC',
-        pointBorderColor:'#0F1923',pointBorderWidth:2,fill:true,backgroundColor:grad,tension:.4}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#0A121A',titleColor:'#E8EAED',bodyColor:'#6B7490',
-        padding:10,cornerRadius:8,callbacks:{label:function(c){return ' '+c.parsed.y.toLocaleString('fr-FR')+' €';}}}},
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6B7490',font:{size:11,family:'Space Grotesk'}}},
-        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6B7490',font:{size:11,family:'Space Grotesk'},callback:function(v){return v>=1000?(v/1000)+'k €':v+' €';}}}
-      }
+function renderFournTable(cat){const el=document.getElementById('fournTable');if(el)el.innerHTML=fournTableHTML(cat);}
+function searchFournisseurs(q){
+  q=q.trim().toLowerCase();
+  const normal=document.getElementById('fournNormal');const res=document.getElementById('fournSearchResults');
+  if(!q){normal.style.display='block';res.style.display='none';renderFournTable(curFourn);return;}
+  normal.style.display='none';res.style.display='block';
+  let html='';
+  Object.keys(FOURN).forEach(cat=>{
+    const matches=FOURN[cat].rows.filter(r=>r.nom.toLowerCase().includes(q)||r.ref.toLowerCase().includes(q));
+    if(matches.length){
+      html+=`<div class="card mt"><div class="section-title">${FOURN[cat].title}</div>
+      <table><thead><tr><th>Fournisseur</th><th>Référence</th><th>Prix HT</th><th>Délai</th><th>Disponibilité</th></tr></thead>
+      <tbody>${fournRows(matches)}</tbody></table></div>`;
     }
   });
+  res.innerHTML=html||'<div class="card mt" style="text-align:center;color:var(--muted)">Aucun résultat.</div>';
 }
 
-/* ═══ TOOLTIP ═══ */
-function showTip(evt,label,env,sig){
-  var t=document.getElementById('tip');
-  t.innerHTML='<strong style="color:#E8EAED">'+label+'</strong><br>Envoyés : <strong>'+env+'</strong><br>Signés : <strong style="color:#3AAB6A">'+sig+'</strong><br><span style="color:#E05A3A">Non relancés : '+(env-sig)+'</span>';
-  t.style.display='block';t.style.left=(evt.clientX+12)+'px';t.style.top=(evt.clientY-10)+'px';
+const AVCOLORS=['#2BA8DC','#E05A3A','#3AAB6A','#D4A43C','#8B7CF6'];
+function avColor(id){return AVCOLORS[id%AVCOLORS.length];}
+function initials(n){return (n.split(' ').filter(w=>w[0]&&w[0]===w[0].toUpperCase()).slice(0,2).map(w=>w[0]).join('')||n.slice(0,2)).toUpperCase();}
+VIEWS.clients=function(){
+  return `<div id="clients-list">
+    <div class="card"><div class="row" style="gap:12px;flex-wrap:wrap">
+      <input class="search" id="clientSearch" placeholder="Rechercher un client..." style="flex:1;min-width:200px" oninput="renderClientList()">
+      <div style="display:flex;gap:8px"><button class="btn sm primary" data-f="all" onclick="setClientFilter(this,'all')">Tous</button>
+      <button class="btn sm" data-f="actif" onclick="setClientFilter(this,'actif')">Clients actifs</button>
+      <button class="btn sm" data-f="prospect" onclick="setClientFilter(this,'prospect')">Prospects</button></div>
+    </div></div>
+    <div class="grid3 mt" id="clientGrid"></div>
+  </div>
+  <div id="clients-fiche" style="display:none"></div>`;
+};
+let clientFilter='all';
+function initClients(){clientFilter='all';renderClientList();}
+function setClientFilter(el,f){clientFilter=f;el.parentElement.querySelectorAll('.btn').forEach(b=>b.classList.remove('primary'));el.classList.add('primary');renderClientList();}
+function renderClientList(){
+  const q=(document.getElementById('clientSearch')?.value||'').toLowerCase();
+  let list=CLIENTS.filter(c=>clientFilter==='all'||c.statut===clientFilter);
+  if(q)list=list.filter(c=>c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q));
+  document.getElementById('clientGrid').innerHTML=list.map(c=>`<div class="lcard" onclick="openClientFiche(${c.id})">
+    <div class="row" style="gap:12px;margin-bottom:10px"><div class="av-c" style="background:${avColor(c.id)}">${initials(c.nom)}</div>
+    <div><div style="font-weight:700">${c.nom}</div><div style="font-size:12px;color:var(--muted)">${c.ville} · ${c.type}</div></div>
+    <span class="tag t-${c.statut}" style="margin-left:auto">${c.statut==='actif'?'Actif':'Prospect'}</span></div>
+    <div class="row"><span style="font-family:Oxanium;font-weight:700;font-size:17px">${fmt(c.ca)}</span></div>
+    <div style="margin-top:8px">${c.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+  </div>`).join('')||'<div style="color:var(--muted)">Aucun client.</div>';
 }
-function hideTip(){document.getElementById('tip').style.display='none';}
+function openClientFiche(id){
+  const c=CLIENTS.find(x=>x.id===id);
+  document.getElementById('clients-list').style.display='none';
+  const f=document.getElementById('clients-fiche');f.style.display='block';
+  const nbDevis=DEVIS.filter(d=>d.client===c.nom).length;
+  f.innerHTML=`
+  <button class="btn sm" onclick="backToClients()">← Retour aux clients</button>
+  <div class="card mt"><div class="row" style="gap:16px">
+    <div class="av-c" style="width:58px;height:58px;font-size:20px;background:${avColor(c.id)}">${initials(c.nom)}</div>
+    <div><h2 style="font-size:22px">${c.nom}</h2><div style="color:var(--muted);font-size:13px;margin-top:4px">${c.ville} · ${c.type} · ${c.tel}</div></div>
+    <span class="tag t-${c.statut}" style="margin-left:auto">${c.statut==='actif'?'Actif':'Prospect'}</span>
+  </div></div>
+  <div class="grid2 mt">
+    <div class="kpi c-cobalt"><div class="k-label">CA total</div><div class="k-val">${fmt(c.ca)}</div></div>
+    <div class="kpi c-violet"><div class="k-label">Devis émis</div><div class="k-val">${nbDevis}</div></div>
+  </div>
+  <div class="grid2 mt">
+    <div class="card"><div class="section-title">Historique</div>
+      ${c.historique.map(h=>`<div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid var(--line)"><span class="dot" style="background:${h.includes('payée')||h.includes('signé')?'var(--sage)':h.includes('retard')||h.includes('refusé')?'var(--terra)':'var(--ochre)'}"></span><span>${h}</span></div>`).join('')}
+    </div>
+    <div class="card"><div class="section-title">Prochaine action</div>
+      <div class="alert-box">${c.prochaine}</div>
+      <div class="section-title mt">Note interne</div>
+      <textarea id="clientNote-${id}" style="width:100%;min-height:90px;background:var(--canvas);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--ink);font-family:Space Grotesk">${c.note}</textarea>
+      <button class="btn sm primary mt" onclick="saveClientNote(${id})">Enregistrer la note</button>
+      <span id="noteSaved-${id}" style="color:var(--sage);font-size:12px;margin-left:10px;display:none">✓ Enregistré</span>
+    </div>
+  </div>`;
+}
+function saveClientNote(id){
+  const c=CLIENTS.find(x=>x.id===id);c.note=document.getElementById('clientNote-'+id).value;
+  const s=document.getElementById('noteSaved-'+id);s.style.display='inline';setTimeout(()=>s.style.display='none',2000);
+}
+function backToClients(){document.getElementById('clients-fiche').style.display='none';document.getElementById('clients-list').style.display='block';}
 
-/* ═══ INIT ═══ */
-setTimeout(initDashboard,150);
+VIEWS.reglages=function(){
+  return `
+  <div class="grid2">
+    <div class="card"><div class="section-title">Mon entreprise</div>
+      <div class="field"><label>Nom</label><input value="SANITENERGIE"></div>
+      <div class="field"><label>SIRET</label><input value="892 451 678 00019"></div>
+      <div class="field"><label>Adresse</label><input value="14 rue de l'Industrie, 66380 Pia"></div>
+      <div class="field"><label>Téléphone</label><input value="04 68 00 00 00"></div>
+      <div class="field"><label>Email</label><input value="contact@sanitenergie.fr"></div>
+      <div class="field"><label>Certification RGE</label><input value="RGE QualiPAC — n° E-12345"></div>
+    </div>
+    <div>
+      <div class="card"><div class="section-title">Devis & Factures</div>
+        <div class="field"><label>Taux de TVA</label><select><option>10 % (rénovation)</option><option>20 % (standard)</option><option>5,5 % (énergie)</option></select></div>
+        <div class="field"><label>Conditions de paiement</label><input value="30 jours nets"></div>
+        <div class="field"><label>Prochain numéro de facture</label><input value="FA-043"></div>
+        <div class="field"><label>Mention pied de page</label><textarea style="min-height:70px">Assurance décennale MAAF n°123456 — Médiateur de la consommation: CNPM</textarea></div>
+      </div>
+      <div class="card mt"><div class="section-title">Relances automatiques</div>
+        <div class="field"><label>Délai 1ère relance devis (jours)</label><input value="2"></div>
+        <div class="field"><label>Délai 1ère relance facture (jours)</label><input value="3"></div>
+        <div class="field"><label>Ton des messages</label>
+          <div class="radio-row">
+            <div class="radio-opt sel" onclick="pickTon(this)">Cordial</div>
+            <div class="radio-opt" onclick="pickTon(this)">Formel</div>
+            <div class="radio-opt" onclick="pickTon(this)">Ferme</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mt"><div class="section-title">Données</div>
+    <div class="row" style="gap:12px">
+      <button class="btn primary" onclick="alert('Export des données en cours...')">Exporter mes données</button>
+      <button class="btn danger" onclick="alert('Réinitialisation — action irréversible (démo)')">Réinitialiser</button>
+    </div>
+  </div>`;
+};
+function pickTon(el){el.parentElement.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');}
+
+buildNav();
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>setView(n.dataset.view)));
+setView('dashboard');
 </script>
 </body>
 </html>
