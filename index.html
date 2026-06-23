@@ -327,12 +327,27 @@ mer:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
 jeu:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
 ven:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
 };
+const EVENTS=[
+  {id:1,date:'2026-06-22',debut:'08:00',fin:'17:00',titre:'Batipro 66 — Clim lot B',type:'clim',lieu:'ZAC Nord, Perpignan'},
+  {id:2,date:'2026-06-23',debut:'08:00',fin:'17:00',titre:'Batipro 66 — Clim lot B',type:'clim',lieu:'ZAC Nord, Perpignan'},
+  {id:3,date:'2026-06-24',debut:'08:00',fin:'17:00',titre:'Dupont — Rénovation SDB',type:'sdb',lieu:'15 rue Victor Hugo, Perpignan'},
+  {id:4,date:'2026-06-25',debut:'08:00',fin:'17:00',titre:'Dupont — Rénovation SDB',type:'sdb',lieu:'15 rue Victor Hugo, Perpignan'},
+  {id:5,date:'2026-06-26',debut:'08:00',fin:'17:00',titre:'Dupont — Rénovation SDB',type:'sdb',lieu:'15 rue Victor Hugo, Perpignan'},
+  {id:6,date:'2026-06-16',debut:'09:00',fin:'16:00',titre:'Verdaguer — Chauffe-eau',type:'chauf',lieu:'3 imp. des Roses, Perpignan'},
+  {id:7,date:'2026-06-17',debut:'09:00',fin:'12:00',titre:'Verdaguer — Finition',type:'chauf',lieu:'3 imp. des Roses, Perpignan'},
+  {id:8,date:'2026-06-28',debut:'08:00',fin:'17:00',titre:'Coll — Split clim',type:'clim',lieu:'9 av. de la Plage, Canet'},
+  {id:9,date:'2026-06-10',debut:'09:00',fin:'12:00',titre:'Font — Réception SDB',type:'sdb',lieu:'12 rue des Mimosas, Perpignan'},
+  {id:10,date:'2026-06-04',debut:'08:00',fin:'17:00',titre:'Font — SDB Jour 3',type:'sdb',lieu:'12 rue des Mimosas, Perpignan'},
+];
 
 const CHK_LABELS={devis:'Devis signé',acompte:'Acompte reçu',materiau:'Matériel commandé',execution:'Travaux exécutés',reception:'Réception client'};
 const BADGE_CLS={signe:'b-signe',dormant:'b-dormant',refuse:'b-refuse','en attente':'b-attente','en retard':'b-retard',payee:'b-payee','en cours':'b-encours',planifié:'b-planifie',terminé:'b-termine',actif:'b-actif',prospect:'b-prospect'};
 const BADGE_LBL={signe:'Signé',dormant:'Dormant',refuse:'Refusé','en attente':'En attente','en retard':'En retard',payee:'Payée','en cours':'En cours',planifié:'Planifié',terminé:'Terminé',actif:'Actif',prospect:'Prospect'};
 const fmt=n=>n.toLocaleString('fr-FR')+' €';
 function badge(s){return `<span class="badge ${BADGE_CLS[s]||'b-dormant'}">${BADGE_LBL[s]||s}</span>`;}
+const STATUS_COLOR={signe:'var(--green)',dormant:'var(--amber)',refuse:'var(--red)','en attente':'var(--blue)','en retard':'var(--red)',payee:'var(--green)'};
+function rowAccent(s){return `style="box-shadow:inset 3px 0 0 ${STATUS_COLOR[s]||'transparent'}"`;}
+
 
 /* ── CORE ── */
 const VIEWS={};
@@ -368,7 +383,8 @@ function go(v){
   document.getElementById('content').innerHTML=VIEWS[v]?VIEWS[v]():'';
   if(v==='dashboard')initDash();
   if(v==='fournisseurs'){curFourn='ballon';renderFourn('ballon');}
-  if(v==='clients'){crmFilter='all';renderClients();}
+  if(v==='clients'){crmFilter='all';renderCl();}
+  if(v==='calendrier'){calMode='week';calWeekOff=0;setTimeout(renderCal,0);}
 }
 
 /* ── MODAL ── */
@@ -429,13 +445,25 @@ function initDash(){
   if(!ctx)return;
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,170);
   g.addColorStop(0,'rgba(56,189,248,.18)');g.addColorStop(1,'rgba(56,189,248,0)');
+  const CA_DETAIL=[
+    {clim:8200,sdb:5500,chauf:3200,plomb:1300},{clim:5100,sdb:3800,chauf:1900,plomb:600},
+    {clim:10700,sdb:7100,chauf:4500,plomb:1500},{clim:11300,sdb:8400,chauf:4000,plomb:1500},
+    {clim:9300,sdb:6800,chauf:3300,plomb:1200},{clim:7100,sdb:5200,chauf:2700,plomb:800},
+    {clim:10100,sdb:7400,chauf:3700,plomb:1200},{clim:9100,sdb:6600,chauf:3200,plomb:1200},
+    {clim:12500,sdb:9300,chauf:4400,plomb:1600},{clim:13200,sdb:10100,chauf:4600,plomb:1500},
+    {clim:7700,sdb:5700,chauf:2900,plomb:800},{clim:8640,sdb:5760,chauf:2880,plomb:1920}
+  ];
   caChart=new Chart(ctx,{type:'line',data:{
     labels:['Jul','Août','Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Juin'],
     datasets:[{data:[18200,11400,23800,25200,20600,15800,22400,20100,27800,29400,17100,19200],
-      borderColor:'#38BDF8',borderWidth:2,pointRadius:3,pointBackgroundColor:'#38BDF8',
+      borderColor:'#38BDF8',borderWidth:2,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:'#38BDF8',
       pointBorderColor:'#0D1117',pointBorderWidth:1.5,fill:true,backgroundColor:g,tension:.4}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-    tooltip:{backgroundColor:'#161C24',titleColor:'#E2E8F0',bodyColor:'#94A3B8',padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.parsed.y.toLocaleString('fr-FR')+' €'}}},
+    tooltip:{backgroundColor:'#161C24',titleColor:'#E2E8F0',bodyColor:'#94A3B8',padding:12,cornerRadius:10,borderColor:'#1E2A36',borderWidth:1,
+      callbacks:{
+        label:c=>' Total : '+c.parsed.y.toLocaleString('fr-FR')+' €',
+        afterBody:c=>{const d=CA_DETAIL[c[0].dataIndex];return['','  Clim : '+d.clim.toLocaleString('fr-FR')+' €','  SDB : '+d.sdb.toLocaleString('fr-FR')+' €','  Chauffe-eau : '+d.chauf.toLocaleString('fr-FR')+' €','  Plomberie : '+d.plomb.toLocaleString('fr-FR')+' €'];}
+      }}},
     scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5A6E',font:{size:11,family:'Inter'}}},
       y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5A6E',font:{size:11,family:'Inter'},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}
   }});
@@ -458,7 +486,7 @@ VIEWS.devis=function(){
   <div class="tab" onclick="swTab(this,'t-fact')">Factures</div>
 </div>
 <div class="tabp on" id="t-devis">
-  <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn prim">+ Nouveau devis</button></div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px"><button class="btn" onclick="openVoiceDevis()" title="Créer un devis par commande vocale"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Vocal</button><button class="btn prim" onclick="openNewDevis()">+ Nouveau devis</button></div>
   <div class="card" style="padding:0;overflow:hidden">
     <table class="tbl"><thead><tr><th>Référence</th><th>Client · Ville</th><th>Prestation</th><th>Montant</th><th>Envoyé le</th><th>Statut</th></tr></thead>
     <tbody id="dtbody">${DEVIS.map(devisRow).join('')}</tbody></table>
@@ -473,13 +501,13 @@ VIEWS.devis=function(){
 </div>`;
 };
 
-function devisRow(d){return `<tr class="click" id="dr-${d.ref}" onclick="openDevis('${d.ref}')"><td><span class="oxa" style="color:var(--blue);font-weight:600">${d.ref}</span></td><td>${d.client}<div class="sub">${d.ville}</div></td><td style="color:var(--soft)">${d.prestation}</td><td><span class="num oxa">${fmt(d.montant)}</span></td><td style="color:var(--soft)">${d.dateEnvoi}</td><td id="dbadge-${d.ref}">${badge(d.statut)}</td></tr>`;}
+function devisRow(d){return `<tr class="click" id="dr-${d.ref}" onclick="openDevis('${d.ref}')" ${rowAccent(d.statut)}><td><span class="oxa" style="color:var(--blue);font-weight:600">${d.ref}</span></td><td>${d.client}<div class="sub">${d.ville}</div></td><td style="color:var(--soft)">${d.prestation}</td><td><span class="num oxa">${fmt(d.montant)}</span></td><td style="color:var(--soft)">${d.dateEnvoi}</td><td id="dbadge-${d.ref}">${badge(d.statut)}</td></tr>`;}
 function factRow(f){
   const acts=f.statut!=='payee'?`<div onclick="event.stopPropagation()" style="display:flex;gap:6px">
     ${f.statut==='en retard'?`<button class="btn sm dang" onclick="relancerF('${f.client}',this)">Relancer</button>`:''}
     <button class="btn sm ok" onclick="markPaid('${f.ref}',this)">Payée</button>
   </div>`:'';
-  return `<tr class="click" id="fr-${f.ref}" onclick="openFact('${f.ref}')"><td><span class="oxa" style="color:var(--blue);font-weight:600">${f.ref}</span></td><td>${f.client}</td><td style="color:var(--soft)">${f.prestation}</td><td><span class="num oxa">${fmt(f.montant)}</span></td><td id="fech-${f.ref}" style="color:${f.statut==='en retard'?'var(--red)':'var(--soft)'}">${f.echeance}${f.jours?` <span style="font-size:11px">(+${f.jours}j)</span>`:''}</td><td id="fbadge-${f.ref}">${badge(f.statut)}</td><td>${acts}</td></tr>`;}
+  return `<tr class="click" id="fr-${f.ref}" onclick="openFact('${f.ref}')" ${rowAccent(f.statut)}><td><span class="oxa" style="color:var(--blue);font-weight:600">${f.ref}</span></td><td>${f.client}</td><td style="color:var(--soft)">${f.prestation}</td><td><span class="num oxa">${fmt(f.montant)}</span></td><td id="fech-${f.ref}" style="color:${f.statut==='en retard'?'var(--red)':'var(--soft)'}">${f.echeance}${f.jours?` <span style="font-size:11px">(+${f.jours}j)</span>`:''}</td><td id="fbadge-${f.ref}">${badge(f.statut)}</td><td>${acts}</td></tr>`;}
 
 function swTab(el,id){
   el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
@@ -628,8 +656,8 @@ function openCh(id){
     ${badge(c.statut)}
   </div>
   <div style="display:flex;align-items:center;gap:12px">
-    <div class="prog" style="flex:1"><span style="width:${c.avancement}%;background:${CTYPE_COLOR[c.type]}"></span></div>
-    <span class="oxa" style="font-size:16px;font-weight:700;color:${CTYPE_COLOR[c.type]}">${c.avancement} %</span>
+    <div class="prog" style="flex:1"><span id="ch-prog-${c.id}" style="width:${c.avancement}%;background:${CTYPE_COLOR[c.type]}"></span></div>
+    <span id="ch-pct-${c.id}" class="oxa" style="font-size:16px;font-weight:700;color:${CTYPE_COLOR[c.type]}">${c.avancement} %</span>
   </div>
 </div>
 <div class="grid2" style="margin-bottom:14px">
@@ -644,49 +672,95 @@ function openCh(id){
 <div class="card">
   <div class="card-title">Journal de chantier</div>
   <div id="journal-${id}">${renderJournal(c)}</div>
-  <div style="display:flex;gap:10px;margin-top:14px">
-    <input class="sinp" id="jinp-${id}" placeholder="Nouvelle entrée..." style="flex:1">
+  <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+    <input class="sinp" id="jinp-${id}" placeholder="Nouvelle entrée..." style="flex:1;min-width:200px">
+    <label class="btn" style="cursor:pointer" title="Ajouter une photo">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Photo
+      <input type="file" id="jphoto-${id}" accept="image/*" style="display:none" onchange="previewJPhoto(${id})">
+    </label>
     <button class="btn prim" onclick="addJournal(${id})">Ajouter</button>
   </div>
+  <div id="jphoto-preview-${id}" style="margin-top:8px"></div>
 </div>
 ${c.note?`<div class="card mt"><div class="card-title">Note</div><div style="font-size:13.5px;color:var(--soft)">${c.note}</div></div>`:''}`;
 }
 function renderChk(c){return Object.keys(c.checklist).map(k=>`<div class="chk ${c.checklist[k]?'done':''}" onclick="togChk(${c.id},'${k}')"><div class="chk-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="chk-lbl">${CHK_LABELS[k]}</span></div>`).join('');}
-function renderJournal(c){if(!c.journal.length)return '<div style="color:var(--soft);font-size:13.5px">Aucune entrée.</div>';return c.journal.map(j=>`<div class="jentry"><div class="jd">${j.date}</div><div class="jt">${j.texte}</div></div>`).join('');}
-function togChk(id,key){const c=CHANTIERS.find(x=>x.id===id);c.checklist[key]=!c.checklist[key];document.getElementById('chk-'+id).innerHTML=renderChk(c);}
+function renderJournal(c){
+  if(!c.journal.length)return '<div style="color:var(--soft);font-size:13.5px">Aucune entrée.</div>';
+  return c.journal.map(j=>`<div class="jentry">
+    <div class="jd">${j.date}</div>
+    <div class="jt" style="flex:1">
+      <div>${j.texte}</div>
+      ${j.photo?`<img src="${j.photo}" style="margin-top:8px;max-width:100%;max-height:180px;border-radius:7px;border:1px solid var(--bor);object-fit:cover;cursor:pointer" onclick="openPhotoModal('${j.photo}')" alt="photo chantier">`:'' }
+    </div>
+  </div>`).join('');
+}
+function openPhotoModal(src){openM(`<div class="mh"><div class="oxa" style="font-weight:700">Photo chantier</div><button class="mx" onclick="closeM()">×</button></div><div class="mb" style="text-align:center"><img src="${src}" style="max-width:100%;max-height:70vh;border-radius:8px;object-fit:contain"></div>`);}
+function togChk(id,key){
+  const c=CHANTIERS.find(x=>x.id===id);
+  c.checklist[key]=!c.checklist[key];
+  const done=Object.values(c.checklist).filter(Boolean).length;
+  const total=Object.keys(c.checklist).length;
+  c.avancement=Math.round((done/total)*100);
+  document.getElementById('chk-'+id).innerHTML=renderChk(c);
+  const pb=document.getElementById('ch-prog-'+id);if(pb)pb.style.width=c.avancement+'%';
+  const pt=document.getElementById('ch-pct-'+id);if(pt)pt.textContent=c.avancement+' %';
+}
+let _jPhotoData={};
+function previewJPhoto(id){
+  const fi=document.getElementById('jphoto-'+id);
+  if(!fi.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    _jPhotoData[id]=e.target.result;
+    document.getElementById('jphoto-preview-'+id).innerHTML=`<img src="${e.target.result}" style="height:60px;border-radius:6px;border:1px solid var(--bor);object-fit:cover"> <span style="font-size:12px;color:var(--green)">Photo prête</span>`;
+  };
+  r.readAsDataURL(fi.files[0]);
+}
 function addJournal(id){
   const c=CHANTIERS.find(x=>x.id===id);const inp=document.getElementById('jinp-'+id);
-  if(!inp.value.trim())return;
-  const d=new Date();c.journal.push({date:`${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`,texte:inp.value.trim()});inp.value='';
+  if(!inp.value.trim()&&!_jPhotoData[id])return;
+  const d=new Date();
+  c.journal.push({date:`${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`,texte:inp.value.trim()||'Photo ajoutée',photo:_jPhotoData[id]||null});
+  inp.value='';_jPhotoData[id]=null;
+  const fp=document.getElementById('jphoto-'+id);if(fp)fp.value='';
+  const pp=document.getElementById('jphoto-preview-'+id);if(pp)pp.innerHTML='';
   document.getElementById('journal-'+id).innerHTML=renderJournal(c);
 }
 function backCh(){document.getElementById('ch-fiche').style.display='none';document.getElementById('ch-list').style.display='block';}
 
 /* ── CALENDRIER ── */
+let calMode='week',calWeekOff=0;
+const DAY_NAMES=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const EV_COLOR={clim:'var(--blue)',sdb:'var(--green)',chauf:'var(--amber)',plomb:'var(--soft)'};
+
 VIEWS.calendrier=function(){
-  const days=[['Lun','22'],['Mar','23'],['Mer','24'],['Jeu','25'],['Ven','26']];
-  const keys=['lun','mar','mer','jeu','ven'];
-  const slots=['08h','10h','12h','14h','16h'];
-  let hdr=`<div class="cal-hdr" style="min-height:auto"></div>`+days.map(([d,n])=>`<div class="cal-hdr"><div style="color:var(--soft)">${d}</div><div class="oxa" style="font-size:18px;font-weight:700">${n}</div></div>`).join('');
-  let rows=slots.map((s,si)=>`<div class="cal-time">${s}</div>`+keys.map(k=>`<div>${(CAL[k]||[]).filter(e=>e.slot===si).map(e=>`<div class="cal-ev ev-${e.type}">${e.t}</div>`).join('')}</div>`).join('')).join('');
+  const totalEv=EVENTS.length;
+  const thisWeek=EVENTS.filter(e=>e.date>='2026-06-22'&&e.date<='2026-06-28').length;
   return `
-<div class="ph"><h2>Planning</h2><p>Semaine du 22 au 26 juin 2026</p></div>
-<div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
-  <div class="kpi"><div class="kpi-label">Interventions</div><div class="kpi-val oxa" style="color:var(--blue)">5</div><div class="kpi-sub">cette semaine</div></div>
-  <div class="kpi"><div class="kpi-label">Jours occupés</div><div class="kpi-val oxa">5/5</div><div class="kpi-sub up">semaine complète</div></div>
-  <div class="kpi"><div class="kpi-label">Types</div><div class="kpi-val oxa" style="font-size:18px;margin-top:10px">2 Clim · 3 SDB</div><div class="kpi-sub">par intervention</div></div>
+<div class="ph"><h2>Planning</h2><p>Agenda juin 2026</p></div>
+<div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+  <div class="kpi"><div class="kpi-label">Cette semaine</div><div class="kpi-val oxa" style="color:var(--blue)">${thisWeek}</div><div class="kpi-sub">interventions</div></div>
+  <div class="kpi"><div class="kpi-label">Jours occupés</div><div class="kpi-val oxa">5/5</div><div class="kpi-sub up">semaine pleine</div></div>
+  <div class="kpi"><div class="kpi-label">Total juin</div><div class="kpi-val oxa">${totalEv}</div><div class="kpi-sub">interventions</div></div>
+  <div class="kpi"><div class="kpi-label">Semaines libres</div><div class="kpi-val oxa" style="color:var(--amber)">2</div><div class="kpi-sub warn">S27 · S28</div></div>
 </div>
 <div class="card">
-  <div class="sec-row">
-    <div class="card-title" style="margin:0">Semaine 25</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+    <div style="display:flex;gap:0;border:1px solid var(--bor);border-radius:8px;overflow:hidden">
+      <button class="btn sm" id="cal-btn-week" onclick="setCalMode('week')" style="border:none;border-radius:0;background:var(--blue);color:#0a1a26;font-weight:600">Semaine</button>
+      <button class="btn sm" id="cal-btn-month" onclick="setCalMode('month')" style="border:none;border-left:1px solid var(--bor);border-radius:0">Mois</button>
+    </div>
     <div style="display:flex;gap:8px">
-      <button class="btn sm">← Préc.</button>
-      <button class="btn sm" style="color:var(--blue);border-color:var(--blue)">Aujourd'hui</button>
-      <button class="btn sm">Suiv. →</button>
-      <button class="btn sm ok">↓ ICS</button>
+      <button class="btn sm" onclick="calNav(-1)">← Préc.</button>
+      <button class="btn sm" style="color:var(--blue);border-color:var(--blue)" onclick="calNav(0)">Aujourd'hui</button>
+      <button class="btn sm" onclick="calNav(1)">Suiv. →</button>
+      <button class="btn prim sm" onclick="openAddEvent()">+ Événement</button>
+      <button class="btn sm ok" onclick="exportICS()">↓ ICS</button>
     </div>
   </div>
-  <div class="cal-grid">${hdr+rows}</div>
+  <div id="cal-body"></div>
   <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--soft);flex-wrap:wrap">
     <span><span class="dot" style="background:var(--blue)"></span> Clim</span>
     <span><span class="dot" style="background:var(--green)"></span> SDB</span>
@@ -699,6 +773,109 @@ VIEWS.calendrier=function(){
 </div>`;
 };
 
+function setCalMode(m){
+  calMode=m;
+  const bw=document.getElementById('cal-btn-week');
+  const bm=document.getElementById('cal-btn-month');
+  if(bw)bw.style.cssText=m==='week'?'border:none;border-radius:0;background:var(--blue);color:#0a1a26;font-weight:600':'border:none;border-radius:0';
+  if(bm)bm.style.cssText=m==='month'?'border:none;border-left:1px solid var(--bor);border-radius:0;background:var(--blue);color:#0a1a26;font-weight:600':'border:none;border-left:1px solid var(--bor);border-radius:0';
+  renderCal();
+}
+function calNav(dir){if(dir===0){calWeekOff=0;}else{calWeekOff+=dir;}renderCal();}
+function renderCal(){const el=document.getElementById('cal-body');if(el)el.innerHTML=calMode==='week'?renderCalWeek():renderCalMonth();}
+
+function renderCalWeek(){
+  const base=new Date('2026-06-22');base.setDate(base.getDate()+calWeekOff*7);
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(base);d.setDate(d.getDate()+i);return d;});
+  const HOURS=['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+  const todayIso='2026-06-22';
+  let html=`<div style="display:grid;grid-template-columns:52px repeat(7,1fr);border:1px solid var(--bor);border-radius:var(--r);overflow:hidden;overflow-x:auto">`;
+  html+=`<div style="border-bottom:1px solid var(--bor);background:rgba(255,255,255,.02)"></div>`;
+  html+=days.map(d=>{
+    const iso=d.toISOString().slice(0,10);
+    const isToday=iso===todayIso;
+    const evCnt=EVENTS.filter(e=>e.date===iso).length;
+    return `<div style="text-align:center;padding:8px 4px;border-bottom:1px solid var(--bor);border-left:1px solid var(--bor);background:${isToday?'var(--blueBg)':'rgba(255,255,255,.02)'}">
+      <div style="font-size:11px;color:var(--soft)">${DAY_NAMES[(d.getDay()+6)%7]}</div>
+      <div class="oxa" style="font-size:18px;font-weight:700;color:${isToday?'var(--blue)':'inherit'}">${d.getDate()}</div>
+      ${evCnt?`<div style="font-size:10px;color:var(--blue)">${evCnt} interv.</div>`:''}
+    </div>`;
+  }).join('');
+  HOURS.forEach(h=>{
+    html+=`<div style="font-size:10px;color:var(--mute);font-family:'Oxanium';text-align:right;padding:4px 6px 4px 2px;border-bottom:1px solid var(--bor);border-right:1px solid var(--bor);padding-top:8px">${h}</div>`;
+    days.forEach(d=>{
+      const iso=d.toISOString().slice(0,10);
+      const evs=EVENTS.filter(e=>e.date===iso&&e.debut===h);
+      const isToday=iso===todayIso;
+      html+=`<div style="border-left:1px solid var(--bor);border-bottom:1px solid var(--bor);min-height:48px;padding:3px;${isToday?'background:rgba(56,189,248,.03)':''}">
+        ${evs.map(e=>`<div class="cal-ev ev-${e.type}" style="cursor:pointer" onclick="openEventModal(${e.id})"><div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titre}</div><div style="font-size:10px;opacity:.75">${e.debut}–${e.fin}</div></div>`).join('')}
+      </div>`;
+    });
+  });
+  html+=`</div>`;
+  return html;
+}
+
+function renderCalMonth(){
+  const year=2026,month=5;
+  const firstDow=new Date(year,month,1).getDay();
+  const startOff=firstDow===0?6:firstDow-1;
+  const daysInMonth=30;const todayDay=22;
+  let html=`<div style="display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--bor);border-radius:var(--r);overflow:hidden">`;
+  html+=DAY_NAMES.map(d=>`<div style="text-align:center;padding:8px 4px;font-size:11px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--bor);background:rgba(255,255,255,.02)">${d}</div>`).join('');
+  for(let i=0;i<startOff;i++)html+=`<div style="border-bottom:1px solid var(--bor);border-right:1px solid var(--bor);min-height:80px;background:rgba(0,0,0,.15)"></div>`;
+  for(let day=1;day<=daysInMonth;day++){
+    const iso=`2026-06-${String(day).padStart(2,'0')}`;
+    const evs=EVENTS.filter(e=>e.date===iso);
+    const col=(startOff+day-1)%7;const isWE=col>=5;const isToday=day===todayDay;
+    html+=`<div style="min-height:80px;padding:6px;border-bottom:1px solid var(--bor);${col<6?'border-right:1px solid var(--bor);':''}${isWE?'background:rgba(0,0,0,.12);':''}cursor:pointer" onclick="openDayEvents('${iso}')">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;margin-bottom:4px;font-size:12px;font-family:'Oxanium';font-weight:600;${isToday?'background:var(--blue);color:#0a1a26':'color:var(--soft)'}">${day}</div>
+      ${evs.slice(0,2).map(e=>`<div class="cal-ev ev-${e.type}" style="font-size:10px;padding:2px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" onclick="event.stopPropagation();openEventModal(${e.id})">${e.titre}</div>`).join('')}
+      ${evs.length>2?`<div style="font-size:10px;color:var(--soft)">+${evs.length-2} autres</div>`:''}
+    </div>`;
+  }
+  html+=`</div>`;return html;
+}
+
+function openEventModal(id){
+  const e=EVENTS.find(x=>x.id===id);if(!e)return;
+  const col=EV_COLOR[e.type]||'var(--soft)';
+  openM(`<div class="mh"><div><div class="oxa" style="font-weight:700;font-size:17px">${e.titre}</div><div style="color:var(--soft);font-size:13px;margin-top:3px">${e.date.split('-').reverse().join('/')} · ${e.debut}–${e.fin}</div></div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">
+    <div class="li-r"><div class="li-lbl">Lieu</div><div>${e.lieu}</div></div>
+    <div class="li-r"><div class="li-lbl">Type</div><div><span class="badge b-encours" style="color:${col};border:1px solid ${col}40">${e.type.toUpperCase()}</span></div></div>
+  </div><div class="mf"><button class="btn" onclick="closeM()">Fermer</button></div>`);
+}
+function openDayEvents(iso){
+  const evs=EVENTS.filter(e=>e.date===iso);
+  if(!evs.length){openAddEvent(iso);return;}
+  openM(`<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">${iso.split('-').reverse().join('/')}</div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">${evs.map(e=>`<div class="li-r" style="cursor:pointer" onclick="closeM();openEventModal(${e.id})"><div><div style="font-weight:500">${e.titre}</div><div class="sub">${e.debut}–${e.fin} · ${e.lieu}</div></div><span class="badge" style="background:rgba(255,255,255,.05);color:${EV_COLOR[e.type]||'var(--soft)'}">${e.type}</span></div>`).join('')}</div>
+  <div class="mf"><button class="btn prim sm" onclick="closeM();openAddEvent('${iso}')">+ Ajouter</button><button class="btn" onclick="closeM()">Fermer</button></div>`);
+}
+function openAddEvent(iso){
+  iso=iso||'2026-06-22';
+  openM(`<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">Nouvel événement</div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">
+    <div class="frow"><label class="flbl">Titre / Client</label><input class="finp" id="ev-titre" placeholder="Ex: Dupont — Clim split"></div>
+    <div class="frow"><div class="grid2"><div><label class="flbl">Date</label><input class="finp" type="date" id="ev-date" value="${iso}"></div><div><label class="flbl">Type</label><select class="finp" id="ev-type"><option value="clim">Climatisation</option><option value="sdb">Rénovation SDB</option><option value="chauf">Chauffe-eau</option><option value="plomb">Plomberie</option></select></div></div></div>
+    <div class="frow"><div class="grid2"><div><label class="flbl">Début</label><input class="finp" type="time" id="ev-debut" value="08:00"></div><div><label class="flbl">Fin</label><input class="finp" type="time" id="ev-fin" value="17:00"></div></div></div>
+    <div class="frow" style="margin:0"><label class="flbl">Lieu</label><input class="finp" id="ev-lieu" placeholder="Adresse du chantier"></div>
+  </div>
+  <div class="mf"><button class="btn" onclick="closeM()">Annuler</button><button class="btn prim" onclick="saveEvent()">Créer</button></div>`);
+}
+function saveEvent(){
+  const t=document.getElementById('ev-titre').value.trim();const date=document.getElementById('ev-date').value;
+  if(!t||!date){alert('Titre et date requis.');return;}
+  EVENTS.push({id:Math.max(...EVENTS.map(e=>e.id))+1,date,debut:document.getElementById('ev-debut').value,fin:document.getElementById('ev-fin').value,titre:t,type:document.getElementById('ev-type').value,lieu:document.getElementById('ev-lieu').value||'—'});
+  closeM();renderCal();
+}
+function exportICS(){
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SaniPilot//FR\r\n';
+  EVENTS.forEach(e=>{const d=e.date.replace(/-/g,'');ics+=`BEGIN:VEVENT\r\nDTSTART:${d}T${e.debut.replace(':','')}00\r\nDTEND:${d}T${e.fin.replace(':','')}00\r\nSUMMARY:${e.titre}\r\nLOCATION:${e.lieu}\r\nEND:VEVENT\r\n`;});
+  ics+='END:VCALENDAR';
+  const a=document.createElement('a');a.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);a.download='sanitenergie.ics';a.click();
+}
 /* ── FOURNISSEURS ── */
 let curFourn='ballon';
 VIEWS.fournisseurs=function(){
@@ -875,6 +1052,114 @@ VIEWS.reglages=function(){return `
   </div>
 </div>`;};
 function pickTon(el){el.parentElement.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('on'));el.classList.add('on');}
+
+
+/* ── DEVIS VOCAL ── */
+let voiceRecog=null;
+function openVoiceDevis(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const supported=!!SR;
+  openM(`<div class="mh">
+    <div><div class="oxa" style="font-weight:700;font-size:17px">Assistant vocal — Nouveau devis</div>
+    <div style="color:var(--soft);font-size:13px;margin-top:3px">${supported?'Dictez les informations, je remplis le formulaire.':'Votre navigateur ne supporte pas la reconnaissance vocale. Remplissez manuellement.'}</div></div>
+    <button class="mx" onclick="stopVoice();closeM()">×</button></div>
+  <div class="mb">
+    <div class="frow"><label class="flbl">Client</label><input class="finp" id="vd-client" placeholder="Nom du client"></div>
+    <div class="frow"><label class="flbl">Prestation</label><input class="finp" id="vd-presta" placeholder="Ex: Climatisation split, Rénovation SDB..."></div>
+    <div class="frow"><div class="grid2">
+      <div><label class="flbl">Montant TTC (€)</label><input class="finp" type="number" id="vd-montant" placeholder="0"></div>
+      <div><label class="flbl">Ville</label><input class="finp" id="vd-ville" placeholder="Perpignan..."></div>
+    </div></div>
+    ${supported?`
+    <div id="voice-status" style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--bor);border-radius:8px;margin-top:4px;background:var(--bg)">
+      <button id="voice-btn" class="btn prim" onclick="toggleVoice()" style="flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Parler
+      </button>
+      <div id="voice-txt" style="font-size:13px;color:var(--soft)">Cliquez sur Parler puis dictez — ex: <em>"Client Dupont, climatisation, 3 200 euros, Perpignan"</em></div>
+    </div>`:''}
+  </div>
+  <div class="mf">
+    <button class="btn" onclick="stopVoice();closeM()">Annuler</button>
+    <button class="btn prim" onclick="saveVoiceDevis()">Créer le devis</button>
+  </div>`);
+}
+
+let _voiceActive=false;
+function toggleVoice(){
+  if(_voiceActive){stopVoice();return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  voiceRecog=new SR();voiceRecog.lang='fr-FR';voiceRecog.interimResults=true;voiceRecog.maxAlternatives=1;
+  const btn=document.getElementById('voice-btn');
+  const txt=document.getElementById('voice-txt');
+  btn.textContent='⏹ Stop';btn.classList.add('dang');btn.classList.remove('prim');
+  txt.textContent='En écoute...';txt.style.color='var(--red)';
+  _voiceActive=true;
+  voiceRecog.onresult=e=>{
+    const t=Array.from(e.results).map(r=>r[0].transcript).join(' ');
+    txt.textContent='Transcription : '+t;
+    if(e.results[0].isFinal){parseVoiceInput(t);stopVoice();}
+  };
+  voiceRecog.onerror=()=>{txt.textContent='Erreur micro. Vérifiez les permissions.';txt.style.color='var(--red)';stopVoice();};
+  voiceRecog.onend=()=>{if(_voiceActive)stopVoice();};
+  voiceRecog.start();
+}
+function stopVoice(){
+  _voiceActive=false;
+  if(voiceRecog){try{voiceRecog.stop();}catch(e){}}
+  const btn=document.getElementById('voice-btn');
+  if(btn){btn.innerHTML=\`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Parler\`;btn.classList.remove('dang');btn.classList.add('prim');}
+}
+function parseVoiceInput(t){
+  t=t.toLowerCase();
+  // extract client: after "client" keyword
+  const cl=t.match(/client\s+([\w\s\-]+?)(?:\s*,|\s+climatisation|\s+plomberie|\s+sdb|\s+rénovation|\s+chauffe|$)/);
+  if(cl){const inp=document.getElementById('vd-client');if(inp)inp.value=cl[1].trim().replace(/\b\w/g,c=>c.toUpperCase());}
+  // extract montant: number followed by euro
+  const amt=t.match(/(\d[\d\s]*)(?:euros?|€)/);
+  if(amt){const inp=document.getElementById('vd-montant');if(inp)inp.value=amt[1].replace(/\s/g,'');}
+  // extract prestation
+  const pmap={climatisation:'Climatisation split',clim:'Climatisation split',sdb:'Rénovation SDB','salle de bain':'Rénovation SDB','chauffe-eau':'Chauffe-eau thermodynamique',chauffe:'Chauffe-eau thermodynamique',plomberie:'Dépannage plomberie'};
+  for(const [k,v] of Object.entries(pmap)){if(t.includes(k)){const inp=document.getElementById('vd-presta');if(inp)inp.value=v;break;}}
+  // extract ville
+  const villes=['perpignan','canet','pia','rivesaltes','saint-estève','le soler'];
+  for(const v of villes){if(t.includes(v)){const inp=document.getElementById('vd-ville');if(inp)inp.value=v.replace(/\b\w/g,c=>c.toUpperCase());break;}}
+  const txt=document.getElementById('voice-txt');
+  if(txt){txt.textContent='Formulaire rempli — vérifiez et cliquez Créer.';txt.style.color='var(--green)';}
+}
+function saveVoiceDevis(){
+  const client=document.getElementById('vd-client')?.value.trim();
+  const presta=document.getElementById('vd-presta')?.value.trim();
+  const montant=parseFloat(document.getElementById('vd-montant')?.value)||0;
+  const ville=document.getElementById('vd-ville')?.value.trim()||'Perpignan';
+  if(!client||!presta){alert('Client et prestation requis.');return;}
+  const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
+  const ref='DV-'+String(num).padStart(3,'0');
+  const today=new Date();const dd=String(today.getDate()).padStart(2,'0'),mm=String(today.getMonth()+1).padStart(2,'0'),yy=today.getFullYear();
+  DEVIS.unshift({ref,client,ville,prestation:presta,montant,dateEnvoi:`${dd}/${mm}/${yy}`,statut:'dormant',lignes:[{desc:presta,qte:1,unit:'ff',pu:montant,total:montant}]});
+  stopVoice();closeM();go('devis');
+}
+function openNewDevis(){
+  openM(`<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">Nouveau devis</div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">
+    <div class="frow"><label class="flbl">Client</label><input class="finp" id="nd-client" placeholder="Nom du client"></div>
+    <div class="frow"><label class="flbl">Prestation</label><select class="finp" id="nd-presta"><option>Climatisation split</option><option>Climatisation multi-split</option><option>Rénovation SDB</option><option>Chauffe-eau thermodynamique</option><option>Entretien clim</option><option>Dépannage plomberie</option></select></div>
+    <div class="frow"><div class="grid2"><div><label class="flbl">Montant TTC</label><input class="finp" type="number" id="nd-montant" placeholder="0"></div><div><label class="flbl">Ville</label><input class="finp" id="nd-ville" placeholder="Perpignan"></div></div></div>
+  </div>
+  <div class="mf"><button class="btn" onclick="closeM()">Annuler</button><button class="btn prim" onclick="saveNewDevis()">Créer</button></div>`);
+}
+function saveNewDevis(){
+  const client=document.getElementById('nd-client')?.value.trim();
+  const presta=document.getElementById('nd-presta')?.value;
+  const montant=parseFloat(document.getElementById('nd-montant')?.value)||0;
+  const ville=document.getElementById('nd-ville')?.value.trim()||'Perpignan';
+  if(!client){alert('Client requis.');return;}
+  const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
+  const ref='DV-'+String(num).padStart(3,'0');
+  const today=new Date();const dd=String(today.getDate()).padStart(2,'0'),mm=String(today.getMonth()+1).padStart(2,'0'),yy=today.getFullYear();
+  DEVIS.unshift({ref,client,ville,prestation:presta,montant,dateEnvoi:`${dd}/${mm}/${yy}`,statut:'dormant',lignes:[{desc:presta,qte:1,unit:'ff',pu:montant,total:montant}]});
+  closeM();go('devis');
+}
 
 /* ── INIT ── */
 buildNav();
