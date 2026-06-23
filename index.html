@@ -276,18 +276,18 @@ const FACTURES=[
 ];
 
 const CLIENTS=[
-{id:1,nom:'SCI Les Albères',ville:'Canet-en-Roussillon',type:'Professionnel',ca:14200,statut:'actif',tags:['SCI','gros volume'],note:'Gestionnaire: M. Roca. Chantiers réguliers.',tel:'04 68 12 34 56',prochaine:'Bilan chantier SDB semaine prochaine',historique:['DV-045 signé — 6 500 €','FA-042 en retard — 2 400 €']},
-{id:2,nom:'Batipro 66',ville:'Perpignan',type:'Constructeur',ca:32600,statut:'actif',tags:['sous-traitance'],note:'Référent: P. Durand. Contrat cadre annuel.',tel:'04 68 98 76 54',prochaine:'Relance FA-041 — 2 100 €',historique:['FA-041 en retard — 2 100 €','FA-038 payée — 8 400 €']},
-{id:3,nom:'Thomas Verdaguer',ville:'Perpignan',type:'Particulier',ca:5600,statut:'actif',tags:['fidèle'],note:'Très satisfait, recommande Sanitenergie.',tel:'06 34 56 78 90',prochaine:'Suivi installation chauffe-eau',historique:['DV-044 signé — 2 800 €','FA-040 en attente — 1 340 €']},
-{id:4,nom:'Camille Font',ville:'Perpignan',type:'Particulière',ca:5200,statut:'actif',tags:[],note:'RDV préféré le matin.',tel:'06 67 89 01 23',prochaine:'Clôture chantier SDB',historique:['DV-041 signé — 5 200 €','FA-039 en attente — 5 200 €']},
-{id:5,nom:'Patrick Serra',ville:'Saint-Estève',type:'Particulier',ca:9400,statut:'actif',tags:['gros budget'],note:'',tel:'06 90 12 34 56',prochaine:'Relance DV-038',historique:['DV-038 dormant — 5 800 €']},
-{id:6,nom:'Laurent Mas',ville:'Rivesaltes',type:'Particulier',ca:7800,statut:'actif',tags:[],note:'',tel:'06 56 78 90 12',prochaine:'Relance DV-042',historique:['DV-042 dormant — 4 100 €']},
-{id:7,nom:'Marie Estève',ville:'Canet',type:'Particulière',ca:3200,statut:'prospect',tags:['devis dormant'],note:'Hésite, préfère SMS.',tel:'06 23 45 67 89',prochaine:'Relance DV-046',historique:['DV-046 dormant — 3 200 €']},
-{id:8,nom:'Michel Fabre',ville:'Pia',type:'Particulier',ca:4800,statut:'prospect',tags:['devis dormant'],note:'Budget confirmé.',tel:'06 78 90 12 34',prochaine:'Relance DV-040',historique:['DV-040 dormant — 4 800 €']},
-{id:9,nom:'Isabelle Olive',ville:'Perpignan',type:'Particulière',ca:3500,statut:'prospect',tags:['devis dormant'],note:'',tel:'06 89 01 23 45',prochaine:'Relance DV-039',historique:['DV-039 dormant — 3 500 €']},
-{id:10,nom:'Jean-Pierre Roca',ville:'Perpignan',type:'Particulier',ca:1840,statut:'actif',tags:[],note:'',tel:'06 12 34 56 78',prochaine:'Relance DV-047',historique:['DV-047 dormant — 105 €']},
-{id:11,nom:'Bruno Castel',ville:'Le Soler',type:'Particulier',ca:420,statut:'actif',tags:[],note:'',tel:'06 01 23 45 67',prochaine:'—',historique:['FA-037 payée — 105 €']},
-{id:12,nom:'Nathalie Puig',ville:'Pia',type:'Particulière',ca:190,statut:'actif',tags:[],note:'',tel:'06 45 67 89 01',prochaine:'—',historique:['DV-043 refusé — 95 €']},
+{id:1,nom:'SCI Les Albères',ville:'Canet-en-Roussillon',categorie:'Professionnel',type:'SCI',ca:14200,statut:'actif',pipeline:'fidele',score:4,tags:['SCI','gros volume'],note:'Gestionnaire: M. Roca. Chantiers réguliers, paiements parfois tardifs.',tel:'04 68 12 34 56',email:'contact@alberes.fr',prochaine:'Bilan chantier SDB semaine prochaine',interactions:[{date:'15/06',type:'appel',note:'Confirmation avancement chantier SDB.'},{date:'08/06',type:'chantier',note:'Début rénovation SDB — DV-045.'},{date:'02/05',type:'devis',note:'Devis DV-045 envoyé — 6 500 €.'}],historique:['DV-045 signé — 6 500 €','FA-042 en retard — 2 400 €']},
+{id:2,nom:'Batipro 66',ville:'Perpignan',categorie:'Professionnel',type:'Constructeur',ca:32600,statut:'actif',pipeline:'fidele',score:5,tags:['sous-traitance','prioritaire'],note:'Référent: P. Durand. Contrat cadre annuel. Client le plus important.',tel:'04 68 98 76 54',email:'durand@batipro66.fr',prochaine:'Relance FA-041 — 2 100 €',interactions:[{date:'22/06',type:'chantier',note:'Lot B clim en cours.'},{date:'15/06',type:'appel',note:'Planification lot B.'},{date:'01/05',type:'facture',note:'FA-038 payée — 8 400 €.'}],historique:['FA-041 en retard — 2 100 €','FA-038 payée — 8 400 €']},
+{id:3,nom:'Thomas Verdaguer',ville:'Perpignan',categorie:'Particulier',type:'Propriétaire',ca:5600,statut:'actif',pipeline:'fidele',score:5,tags:['fidèle','recommande'],note:'Très satisfait, recommande Sanitenergie à ses voisins.',tel:'06 34 56 78 90',email:'t.verdaguer@gmail.com',prochaine:'Suivi installation chauffe-eau',interactions:[{date:'17/06',type:'reception',note:'Réception chauffe-eau sans réserve.'},{date:'14/06',type:'facture',note:'FA-040 émise — 1 340 €.'},{date:'07/06',type:'devis',note:'DV-044 signé — 2 800 €.'}],historique:['DV-044 signé — 2 800 €','FA-040 en attente — 1 340 €']},
+{id:4,nom:'Camille Font',ville:'Perpignan',categorie:'Particulier',type:'Propriétaire',ca:5200,statut:'actif',pipeline:'fidele',score:4,tags:[],note:'RDV préféré le matin avant 9h.',tel:'06 67 89 01 23',email:'camille.font@outlook.fr',prochaine:'Clôture chantier SDB',interactions:[{date:'04/06',type:'reception',note:'Chantier SDB terminé, client satisfait.'},{date:'01/06',type:'chantier',note:'Début rénovation SDB.'}],historique:['DV-041 signé — 5 200 €','FA-039 en attente — 5 200 €']},
+{id:5,nom:'Patrick Serra',ville:'Saint-Estève',categorie:'Particulier',type:'Propriétaire',ca:9400,statut:'actif',pipeline:'devis_envoye',score:3,tags:['gros budget'],note:'A comparé plusieurs devis. Budget confirmé, attend la bonne offre.',tel:'06 90 12 34 56',email:'',prochaine:'Relance DV-038',interactions:[{date:'20/05',type:'devis',note:'DV-038 envoyé — 5 800 €.'},{date:'18/05',type:'visite',note:'Visite technique SDB.'}],historique:['DV-038 dormant — 5 800 €']},
+{id:6,nom:'Laurent Mas',ville:'Rivesaltes',categorie:'Particulier',type:'Propriétaire',ca:7800,statut:'actif',pipeline:'devis_envoye',score:3,tags:[],note:'Projet multi-split pour maison de 150m². Délai flexible.',tel:'06 56 78 90 12',email:'',prochaine:'Relance DV-042',interactions:[{date:'03/06',type:'devis',note:'DV-042 envoyé — 4 100 €.'},{date:'01/06',type:'visite',note:'Visite technique clim.'}],historique:['DV-042 dormant — 4 100 €']},
+{id:7,nom:'Marie Estève',ville:'Canet',categorie:'Particulier',type:'Locataire',ca:3200,statut:'prospect',pipeline:'devis_envoye',score:2,tags:['devis dormant'],note:'Hésite, préfère être contactée par SMS. Accord propriétaire obtenu.',tel:'06 23 45 67 89',email:'',prochaine:'Relance DV-046 par SMS',interactions:[{date:'10/06',type:'devis',note:'DV-046 envoyé — 3 200 €.'},{date:'08/06',type:'visite',note:'Visite et mesures effectuées.'}],historique:['DV-046 dormant — 3 200 €']},
+{id:8,nom:'Michel Fabre',ville:'Pia',categorie:'Particulier',type:'Propriétaire',ca:4800,statut:'prospect',pipeline:'devis_envoye',score:3,tags:['devis dormant'],note:'Budget confirmé. Attend retour congés fin juillet.',tel:'06 78 90 12 34',email:'m.fabre@gmail.com',prochaine:'Relance DV-040 début juillet',interactions:[{date:'28/05',type:'devis',note:'DV-040 envoyé — 4 800 €.'},{date:'25/05',type:'visite',note:'Visite technique chauffe-eau 270L.'}],historique:['DV-040 dormant — 4 800 €']},
+{id:9,nom:'Isabelle Olive',ville:'Perpignan',categorie:'Particulier',type:'Propriétaire',ca:3500,statut:'prospect',pipeline:'devis_envoye',score:2,tags:['devis dormant'],note:'Projet retardé, a déménagé récemment. Recontacter en août.',tel:'06 89 01 23 45',email:'',prochaine:'Relance DV-039 en août',interactions:[{date:'25/05',type:'devis',note:'DV-039 envoyé — 3 500 €.'}],historique:['DV-039 dormant — 3 500 €']},
+{id:10,nom:'Jean-Pierre Roca',ville:'Perpignan',categorie:'Particulier',type:'Locataire',ca:1840,statut:'actif',pipeline:'devis_envoye',score:2,tags:[],note:'Dépannage urgent. Budget limité.',tel:'06 12 34 56 78',email:'',prochaine:'Relance DV-047',interactions:[{date:'12/06',type:'devis',note:'DV-047 envoyé — 105 €.'}],historique:['DV-047 dormant — 105 €']},
+{id:11,nom:'Bruno Castel',ville:'Le Soler',categorie:'Particulier',type:'Propriétaire',ca:420,statut:'actif',pipeline:'fidele',score:3,tags:[],note:'',tel:'06 01 23 45 67',email:'',prochaine:'—',interactions:[{date:'12/05',type:'facture',note:'FA-037 payée — 105 €.'}],historique:['FA-037 payée — 105 €']},
+{id:12,nom:'Nathalie Puig',ville:'Pia',categorie:'Particulier',type:'Propriétaire',ca:190,statut:'actif',pipeline:'prospect',score:1,tags:[],note:'A refusé DV-043. Motif: budget.',tel:'06 45 67 89 01',email:'',prochaine:'—',interactions:[{date:'05/06',type:'devis',note:'DV-043 refusé — 95 €.'}],historique:['DV-043 refusé — 95 €']},
 ];
 
 const CHANTIERS=[
@@ -976,81 +976,328 @@ function avColor(id){return AV_COLORS[id%AV_COLORS.length];}
 function initials(n){return n.split(' ').filter(w=>/[A-ZÀÉÈÊÎÙÛÂ]/.test(w[0])).slice(0,2).map(w=>w[0]).join('').toUpperCase()||n.slice(0,2).toUpperCase();}
 let crmFilter='all';
 VIEWS.clients=function(){
+  const caTotal=CLIENTS.reduce((a,c)=>a+c.ca,0);
+  const actifs=CLIENTS.filter(c=>c.statut==='actif').length;
+  const prospects=CLIENTS.filter(c=>c.statut==='prospect').length;
+  const caProf=CLIENTS.filter(c=>c.categorie==='Professionnel').reduce((a,c)=>a+c.ca,0);
   return `
-<div class="ph"><h2>Clients</h2><p id="cl-count">${CLIENTS.length} clients</p></div>
+<div class="ph"><h2>CRM · Clients</h2><p>Pipeline commercial et gestion de la relation client</p></div>
+
+<div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+  <div class="kpi"><div class="kpi-label">CA total clients</div><div class="kpi-val oxa" style="color:var(--blue)">${caTotal.toLocaleString('fr-FR')} €</div><div class="kpi-sub">${CLIENTS.length} clients</div></div>
+  <div class="kpi"><div class="kpi-label">Clients actifs</div><div class="kpi-val oxa" style="color:var(--green)">${actifs}</div><div class="kpi-sub up">en portefeuille</div></div>
+  <div class="kpi"><div class="kpi-label">Prospects chauds</div><div class="kpi-val oxa" style="color:var(--amber)">${prospects}</div><div class="kpi-sub warn">devis en attente</div></div>
+  <div class="kpi"><div class="kpi-label">CA Professionnels</div><div class="kpi-val oxa" style="color:var(--blue)">${caProf.toLocaleString('fr-FR')} €</div><div class="kpi-sub">B2B</div></div>
+</div>
+
 <div id="cl-list">
-  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-    <input class="sinp" id="clsrch" placeholder="Rechercher..." oninput="renderCl()" style="flex:1;min-width:180px">
-    <div style="display:flex;gap:6px">
-      <button class="btn sm prim crf" onclick="setCrf(this,'all')">Tous</button>
-      <button class="btn sm crf" onclick="setCrf(this,'actif')">Actifs</button>
-      <button class="btn sm crf" onclick="setCrf(this,'prospect')">Prospects</button>
+  <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+    <input class="sinp" id="clsrch" placeholder="Rechercher un client, une ville..." oninput="renderCl()" style="flex:1;min-width:200px">
+    <select class="finp" id="cl-cat" onchange="renderCl()" style="width:160px;background:var(--bg)">
+      <option value="">Toutes catégories</option>
+      <option value="Professionnel">Professionnels</option>
+      <option value="Particulier">Particuliers</option>
+    </select>
+    <div style="display:flex;gap:0;border:1px solid var(--bor);border-radius:8px;overflow:hidden">
+      <button class="btn sm crv on" id="crv-liste" onclick="setCrv(this,'liste')" style="border:none;border-radius:0;background:var(--blue);color:#0a1a26;font-weight:600">☰ Liste</button>
+      <button class="btn sm crv" id="crv-kanban" onclick="setCrv(this,'kanban')" style="border:none;border-left:1px solid var(--bor);border-radius:0">⊞ Pipeline</button>
     </div>
+    <button class="btn prim sm" onclick="openNewClient()">+ Client</button>
   </div>
-  <div class="card" style="padding:0;overflow:hidden"><table class="tbl" id="cl-tbl">
-    <thead><tr><th></th><th>Nom · Ville</th><th>Type</th><th>CA total</th><th>Statut</th><th>Prochaine action</th></tr></thead>
-    <tbody id="cl-body"></tbody>
-  </table></div>
+  <div id="cl-view"></div>
 </div>
 <div id="cl-fiche" style="display:none"></div>`;
 };
+
+let crmView='liste';
+function setCrv(el,v){
+  crmView=v;
+  document.querySelectorAll('.crv').forEach(b=>b.style.cssText=b.id==='crv-'+v?'border:none;border-radius:0;background:var(--blue);color:#0a1a26;font-weight:600':'border:none;border-left:1px solid var(--bor);border-radius:0');
+  renderCl();
+}
+
 function renderCl(){
   const q=(document.getElementById('clsrch')?.value||'').toLowerCase();
+  const cat=document.getElementById('cl-cat')?.value||'';
   let list=CLIENTS.filter(c=>crmFilter==='all'||c.statut===crmFilter);
-  if(q)list=list.filter(c=>c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q));
-  document.getElementById('cl-count').textContent=list.length+' client'+(list.length!==1?'s':'');
-  const tb=document.getElementById('cl-body');
-  if(tb)tb.innerHTML=list.map(c=>`<tr class="click" onclick="openCl(${c.id})">
-    <td><div class="av-c" style="background:${avColor(c.id)}">${initials(c.nom)}</div></td>
-    <td><div style="font-weight:600">${c.nom}</div><div class="sub">${c.ville}</div></td>
-    <td style="color:var(--soft)">${c.type}</td>
-    <td><span class="oxa" style="font-weight:600">${fmt(c.ca)}</span></td>
-    <td>${badge(c.statut)}</td>
-    <td style="color:var(--soft);font-size:13px">${c.prochaine}</td>
-  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--soft);padding:20px">Aucun résultat.</td></tr>';
+  if(cat)list=list.filter(c=>c.categorie===cat);
+  if(q)list=list.filter(c=>c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q)||c.tags.some(t=>t.toLowerCase().includes(q)));
+  const el=document.getElementById('cl-view');
+  if(!el)return;
+  el.innerHTML=crmView==='kanban'?renderKanban(list):renderListe(list);
 }
-function setCrf(el,f){crmFilter=f;el.parentElement.querySelectorAll('.crf').forEach(b=>{b.classList.remove('prim');});el.classList.add('prim');renderCl();}
+
+function renderListe(list){
+  if(!list.length)return '<div class="card" style="text-align:center;color:var(--soft);padding:32px">Aucun résultat.</div>';
+  const prof=list.filter(c=>c.categorie==='Professionnel');
+  const part=list.filter(c=>c.categorie==='Particulier');
+  let html='';
+  function section(title,items,col){
+    if(!items.length)return '';
+    const caS=items.reduce((a,c)=>a+c.ca,0);
+    return `<div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:${col};text-transform:uppercase;letter-spacing:.8px">${title}</div>
+        <div style="flex:1;height:1px;background:var(--bor)"></div>
+        <div style="font-size:12px;color:var(--soft)">${items.length} client${items.length>1?'s':''} · <span class="oxa" style="color:${col}">${caS.toLocaleString('fr-FR')} €</span></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="tbl">
+          <thead><tr><th></th><th>Nom</th><th>Ville</th><th>CA total</th><th>Pipeline</th><th>Score</th><th>Prochaine action</th></tr></thead>
+          <tbody>${items.sort((a,b)=>b.ca-a.ca).map(c=>`<tr class="click" onclick="openCl(${c.id})">
+            <td><div class="av-c" style="background:${avColor(c.id)}">${initials(c.nom)}</div></td>
+            <td><div style="font-weight:600">${c.nom}</div><div class="sub">${c.tags.map(t=>`<span class="chip">${t}</span>`).join('')||c.type}</div></td>
+            <td style="color:var(--soft)">${c.ville}</td>
+            <td><span class="oxa" style="font-weight:700;color:${c.ca>=10000?'var(--blue)':c.ca>=3000?'var(--green)':'inherit'}">${c.ca.toLocaleString('fr-FR')} €</span></td>
+            <td>${pipelineBadge(c.pipeline)}</td>
+            <td>${scoreStars(c.score)}</td>
+            <td style="color:var(--soft);font-size:12.5px;max-width:180px">${c.prochaine}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+  html+=section('Professionnels & Entreprises',prof,'var(--blue)');
+  html+=section('Particuliers',part,'var(--green)');
+  return html;
+}
+
+function renderKanban(list){
+  const stages=[
+    {key:'prospect',label:'Prospects',col:'var(--soft)',icon:'?'},
+    {key:'devis_envoye',label:'Devis envoyé',col:'var(--amber)',icon:'→'},
+    {key:'signe',label:'Signé',col:'var(--blue)',icon:'✓'},
+    {key:'fidele',label:'Clients fidèles',col:'var(--green)',icon:'★'},
+  ];
+  return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start">
+    ${stages.map(s=>{
+      const cols=list.filter(c=>c.pipeline===s.key);
+      const caS=cols.reduce((a,c)=>a+c.ca,0);
+      return `<div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:0 2px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${s.col}"></div>
+          <div style="font-size:12px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;flex:1">${s.label}</div>
+          <div class="oxa" style="font-size:11px;color:${s.col}">${cols.length}</div>
+        </div>
+        ${caS?`<div style="font-size:11px;color:var(--mute);margin-bottom:8px;padding:0 2px">${caS.toLocaleString('fr-FR')} € CA</div>`:''}
+        ${cols.sort((a,b)=>b.ca-a.ca).map(c=>`<div class="card" style="padding:14px 16px;margin-bottom:8px;cursor:pointer;border-left:3px solid ${s.col};transition:.12s" onclick="openCl(${c.id})"
+          onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background='var(--sur)'">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div class="av-c" style="width:32px;height:32px;font-size:11px;border-radius:7px;background:${avColor(c.id)}">${initials(c.nom)}</div>
+            <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nom}</div><div style="font-size:11px;color:var(--soft)">${c.ville}</div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="oxa" style="font-size:13px;font-weight:700;color:${c.ca>=10000?'var(--blue)':c.ca>=3000?'var(--green)':'inherit'}">${c.ca.toLocaleString('fr-FR')} €</span>
+            <span style="font-size:11px">${scoreStars(c.score)}</span>
+          </div>
+          ${c.prochaine&&c.prochaine!=='—'?`<div style="font-size:11px;color:var(--amber);margin-top:6px;padding:4px 8px;background:var(--amberBg);border-radius:5px">${c.prochaine}</div>`:''}
+        </div>`).join('')||`<div style="padding:16px;text-align:center;color:var(--mute);font-size:12px;border:1px dashed var(--bor);border-radius:8px">—</div>`}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function pipelineBadge(p){
+  const map={prospect:['b-dormant','Prospect'],devis_envoye:['b-attente','Devis envoyé'],signe:['b-encours','Signé'],fidele:['b-signe','Fidèle']};
+  const [cls,lbl]=map[p]||['b-dormant','—'];
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+function scoreStars(n){
+  let s='';for(let i=1;i<=5;i++)s+='<span style="color:'+(i<=n?'var(--amber)':'var(--bor2)')+';font-size:13px">★</span>';
+  return s;
+}
+function setCrf(el,f){crmFilter=f;renderCl();}
+
 function openCl(id){
   const c=CLIENTS.find(x=>x.id===id);
   document.getElementById('cl-list').style.display='none';
   const f=document.getElementById('cl-fiche');f.style.display='block';
   const nbDv=DEVIS.filter(d=>d.client===c.nom).length;
   const nbFa=FACTURES.filter(fa=>fa.client===c.nom).length;
+  const taux=nbDv?Math.round(DEVIS.filter(d=>d.client===c.nom&&d.statut==='signe').length/nbDv*100):0;
   f.innerHTML=`
 <button class="back-btn" onclick="backCl()">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
   Retour aux clients
 </button>
 <div class="card" style="margin-bottom:14px">
-  <div style="display:flex;align-items:center;gap:16px">
-    <div class="av-c" style="width:52px;height:52px;font-size:18px;border-radius:12px;background:${avColor(c.id)}">${initials(c.nom)}</div>
-    <div style="flex:1"><div style="font-size:21px;font-family:'Oxanium';font-weight:700">${c.nom}</div><div style="font-size:13.5px;color:var(--soft);margin-top:3px">${c.ville} · ${c.type} · <a href="tel:${c.tel}" style="color:var(--blue)">${c.tel}</a></div></div>
-    ${badge(c.statut)}
-  </div>
-</div>
-<div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
-  <div class="kpi"><div class="kpi-label">CA total</div><div class="kpi-val oxa" style="color:var(--blue)">${fmt(c.ca)}</div></div>
-  <div class="kpi"><div class="kpi-label">Devis émis</div><div class="kpi-val oxa">${nbDv}</div></div>
-  <div class="kpi"><div class="kpi-label">Factures</div><div class="kpi-val oxa">${nbFa}</div></div>
-</div>
-<div class="grid2">
-  <div class="card"><div class="card-title">Historique</div>
-    ${c.historique.map(h=>{
-      const col=h.includes('payée')||h.includes('signé')?'var(--green)':h.includes('retard')||h.includes('refusé')?'var(--red)':'var(--amber)';
-      return `<div class="info-row"><span class="info-lbl" style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:${col}"></span>${h.split(' — ')[0]}</span><span class="info-val">${h.split(' — ')[1]||''}</span></div>`;
-    }).join('')}
-  </div>
-  <div class="card"><div class="card-title">Prochaine action</div>
-    <div style="background:var(--amberBg);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--amber);margin-bottom:16px">${c.prochaine}</div>
-    <div class="card-title" style="margin-top:6px">Note interne</div>
-    <textarea class="finp" id="cnote-${id}" rows="4">${c.note}</textarea>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
-      <button class="btn prim sm" onclick="saveCNote(${id})">Enregistrer</button>
-      <span id="cnoted-${id}" style="font-size:12px;color:var(--green);display:none">✓ Enregistré</span>
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div class="av-c" style="width:56px;height:56px;font-size:20px;border-radius:14px;background:${avColor(c.id)};flex-shrink:0">${initials(c.nom)}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:22px;font-family:'Oxanium';font-weight:700">${c.nom}</div>
+      <div style="font-size:13px;color:var(--soft);margin-top:4px;display:flex;flex-wrap:wrap;gap:12px">
+        <span>${c.type} · ${c.categorie}</span>
+        <span>·</span>
+        <a href="tel:${c.tel}" style="color:var(--blue)">${c.tel}</a>
+        ${c.email?`<span>·</span><a href="mailto:${c.email}" style="color:var(--blue)">${c.email}</a>`:''}
+      </div>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+        ${pipelineBadge(c.pipeline)} ${badge(c.statut)} ${c.tags.map(t=>`<span class="chip">${t}</span>`).join('')}
+      </div>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div style="font-size:11px;color:var(--soft);margin-bottom:4px">Score client</div>
+      <div style="font-size:18px">${scoreStars(c.score)}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn sm" onclick="window.open('tel:${c.tel}')">📞 Appeler</button>
+        <button class="btn sm prim" onclick="closeM();go('devis')">+ Devis</button>
+      </div>
     </div>
   </div>
 </div>
-${c.tags.length?`<div class="card mt">${c.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div>`:''}`;
+
+<div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+  <div class="kpi"><div class="kpi-label">CA total</div><div class="kpi-val oxa" style="color:var(--blue)">${c.ca.toLocaleString('fr-FR')} €</div></div>
+  <div class="kpi"><div class="kpi-label">Devis émis</div><div class="kpi-val oxa">${nbDv}</div></div>
+  <div class="kpi"><div class="kpi-label">Factures</div><div class="kpi-val oxa">${nbFa}</div></div>
+  <div class="kpi"><div class="kpi-label">Taux conversion</div><div class="kpi-val oxa" style="color:var(--green)">${taux} %</div></div>
+</div>
+
+<div class="tabs" id="cl-tabs">
+  <div class="tab on" onclick="swClTab(this,'clt-activite')">Activité</div>
+  <div class="tab" onclick="swClTab(this,'clt-docs')">Devis & Factures</div>
+  <div class="tab" onclick="swClTab(this,'clt-notes')">Notes & Actions</div>
+</div>
+
+<div class="tabp on" id="clt-activite">
+  <div class="card">
+    <div class="card-title">Historique des interactions</div>
+    <div style="position:relative">
+      <div style="position:absolute;left:16px;top:0;bottom:0;width:1px;background:var(--bor);z-index:0"></div>
+      ${c.interactions.map(it=>{
+        const icol={appel:'var(--blue)',chantier:'var(--green)',devis:'var(--amber)',facture:'var(--green)',visite:'var(--blue)',reception:'var(--green)'}[it.type]||'var(--soft)';
+        const ilbl={appel:'Appel',chantier:'Chantier',devis:'Devis',facture:'Facture',visite:'Visite',reception:'Réception'}[it.type]||it.type;
+        return `<div style="display:flex;gap:14px;padding:12px 0;position:relative;z-index:1">
+          <div style="width:32px;height:32px;border-radius:50%;background:${icol}22;border:2px solid ${icol};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:${icol}">${ilbl.slice(0,2).toUpperCase()}</div>
+          <div style="flex:1;padding-top:6px">
+            <div style="font-size:13.5px">${it.note}</div>
+            <div style="font-size:11px;color:var(--mute);margin-top:3px">${it.date} · <span style="color:${icol}">${ilbl}</span></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--bor)">
+      <select class="finp" id="ci-type-${id}" style="width:160px;background:var(--bg)">
+        <option value="appel">Appel</option><option value="visite">Visite</option><option value="devis">Devis</option><option value="chantier">Chantier</option><option value="facture">Facture</option>
+      </select>
+      <input class="sinp" id="ci-note-${id}" placeholder="Note..." style="flex:1">
+      <button class="btn prim sm" onclick="addInteraction(${id})">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabp" id="clt-docs">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">Devis</div>
+    ${DEVIS.filter(d=>d.client===c.nom).length?
+      `<table class="tbl"><thead><tr><th>Réf.</th><th>Prestation</th><th>Montant</th><th>Date</th><th>Statut</th></tr></thead><tbody>
+      ${DEVIS.filter(d=>d.client===c.nom).map(d=>`<tr class="click" onclick="closeM();openDevis('${d.ref}')">
+        <td><span class="oxa" style="color:var(--blue);font-weight:600">${d.ref}</span></td>
+        <td style="color:var(--soft)">${d.prestation}</td>
+        <td><span class="oxa">${d.montant.toLocaleString('fr-FR')} €</span></td>
+        <td style="color:var(--soft)">${d.dateEnvoi}</td>
+        <td>${badge(d.statut)}</td>
+      </tr>`).join('')}</tbody></table>`
+      :'<p style="color:var(--soft)">Aucun devis.</p>'}
+  </div>
+  <div class="card">
+    <div class="card-title">Factures</div>
+    ${FACTURES.filter(fa=>fa.client===c.nom).length?
+      `<table class="tbl"><thead><tr><th>Réf.</th><th>Prestation</th><th>Montant</th><th>Échéance</th><th>Statut</th></tr></thead><tbody>
+      ${FACTURES.filter(fa=>fa.client===c.nom).map(fa=>`<tr class="click" onclick="openFact('${fa.ref}')">
+        <td><span class="oxa" style="color:var(--blue);font-weight:600">${fa.ref}</span></td>
+        <td style="color:var(--soft)">${fa.prestation}</td>
+        <td><span class="oxa">${fa.montant.toLocaleString('fr-FR')} €</span></td>
+        <td style="color:${fa.statut==='en retard'?'var(--red)':'var(--soft)'}">${fa.echeance}</td>
+        <td>${badge(fa.statut)}</td>
+      </tr>`).join('')}</tbody></table>`
+      :'<p style="color:var(--soft)">Aucune facture.</p>'}
+  </div>
+</div>
+
+<div class="tabp" id="clt-notes">
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Prochaine action</div>
+      <div style="background:var(--amberBg);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--amber);margin-bottom:16px">${c.prochaine}</div>
+      <div class="card-title">Pipeline</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${['prospect','devis_envoye','signe','fidele'].map(p=>{
+          const lbl={prospect:'Prospect',devis_envoye:'Devis envoyé',signe:'Signé',fidele:'Client fidèle'}[p];
+          const on=c.pipeline===p;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;border:1px solid var(--bor);cursor:pointer;${on?'background:var(--blueBg);border-color:var(--blue);':''}" onclick="setClientPipeline(${id},'${p}')">
+            <div style="width:8px;height:8px;border-radius:50%;background:${on?'var(--blue)':'var(--bor2)'}"></div>
+            <span style="font-size:13px" class="${on?'oxa':''}">${lbl}</span>
+            ${on?'<svg style="margin-left:auto;width:14px;height:14px;stroke:var(--blue);fill:none;stroke-width:2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Note interne</div>
+      <textarea class="finp" id="cnote-${id}" rows="6">${c.note}</textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+        <button class="btn prim sm" onclick="saveCNote(${id})">Enregistrer</button>
+        <span id="cnoted-${id}" style="font-size:12px;color:var(--green);display:none">✓ Enregistré</span>
+      </div>
+      <div class="card-title" style="margin-top:20px">Score client</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        ${[1,2,3,4,5].map(n=>`<button onclick="setScore(${id},${n})" style="font-size:20px;background:none;border:none;cursor:pointer;opacity:${n<=c.score?1:.3};transition:.12s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=${n<=c.score?1:.3}">★</button>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function swClTab(el,id){
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('#cl-fiche .tabp').forEach(p=>p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+function addInteraction(id){
+  const c=CLIENTS.find(x=>x.id===id);
+  const note=document.getElementById('ci-note-'+id)?.value.trim();
+  const type=document.getElementById('ci-type-'+id)?.value||'appel';
+  if(!note)return;
+  const d=new Date();
+  const date=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+  c.interactions.unshift({date,type,note});
+  document.getElementById('ci-note-'+id).value='';
+  // re-render activity tab
+  openCl(id);setTimeout(()=>swClTab(document.querySelector('#cl-tabs .tab'),document.getElementById('clt-activite')?'clt-activite':''),10);
+}
+function setClientPipeline(id,p){
+  const c=CLIENTS.find(x=>x.id===id);c.pipeline=p;
+  openCl(id);setTimeout(()=>swClTab(document.querySelectorAll('#cl-tabs .tab')[2],'clt-notes'),10);
+}
+function setScore(id,n){
+  const c=CLIENTS.find(x=>x.id===id);c.score=n;
+  openCl(id);setTimeout(()=>swClTab(document.querySelectorAll('#cl-tabs .tab')[2],'clt-notes'),10);
+}
+function openNewClient(){
+  openM(`<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">Nouveau client</div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">
+    <div class="grid2">
+      <div class="frow"><label class="flbl">Nom / Société</label><input class="finp" id="nc-nom"></div>
+      <div class="frow"><label class="flbl">Ville</label><input class="finp" id="nc-ville" placeholder="Perpignan"></div>
+    </div>
+    <div class="grid2">
+      <div class="frow"><label class="flbl">Téléphone</label><input class="finp" id="nc-tel" type="tel"></div>
+      <div class="frow"><label class="flbl">Email</label><input class="finp" id="nc-email" type="email"></div>
+    </div>
+    <div class="grid2">
+      <div class="frow"><label class="flbl">Catégorie</label><select class="finp" id="nc-cat"><option value="Particulier">Particulier</option><option value="Professionnel">Professionnel</option></select></div>
+      <div class="frow"><label class="flbl">Type</label><input class="finp" id="nc-type" placeholder="Propriétaire, SCI..."></div>
+    </div>
+  </div>
+  <div class="mf"><button class="btn" onclick="closeM()">Annuler</button><button class="btn prim" onclick="saveNewClient()">Créer</button></div>`);
+}
+function saveNewClient(){
+  const nom=document.getElementById('nc-nom')?.value.trim();
+  if(!nom){alert('Nom requis.');return;}
+  const id=Math.max(...CLIENTS.map(c=>c.id))+1;
+  CLIENTS.push({id,nom,ville:document.getElementById('nc-ville')?.value||'',categorie:document.getElementById('nc-cat')?.value||'Particulier',type:document.getElementById('nc-type')?.value||'Propriétaire',ca:0,statut:'prospect',pipeline:'prospect',score:0,tags:[],note:'',tel:document.getElementById('nc-tel')?.value||'',email:document.getElementById('nc-email')?.value||'',prochaine:'—',interactions:[],historique:[]});
+  closeM();go('clients');
 }
 function saveCNote(id){const c=CLIENTS.find(x=>x.id===id);c.note=document.getElementById('cnote-'+id).value;const s=document.getElementById('cnoted-'+id);s.style.display='inline';setTimeout(()=>s.style.display='none',2000);}
 function backCl(){document.getElementById('cl-fiche').style.display='none';document.getElementById('cl-list').style.display='block';}
