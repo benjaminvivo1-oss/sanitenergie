@@ -2,811 +2,884 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SANITENERGIE — Tableau de bord</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SaniPilot · Sanitenergie</title>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
---canvas:#0F1923;--surface:#19232F;--surf2:#1F2D3D;
---ink:#E8EAED;--inkSoft:#B4BCCE;--muted:#6B7490;--line:#273040;
---cobalt:#2BA8DC;--cobaltSoft:#0C2E3D;
---terra:#E05A3A;--terraSoft:#2E1810;
---sage:#3AAB6A;--sageSoft:#142A1E;
---ochre:#D4A43C;--ochreSoft:#2A2010;
---violet:#8B7CF6;--violetSoft:#1E1B4B;
+  --bg:#0D1117;--sur:#161C24;--bor:#1E2A36;--bor2:#243040;
+  --ink:#E2E8F0;--soft:#94A3B8;--mute:#4B5A6E;
+  --blue:#38BDF8;--blueBg:#0A2030;
+  --red:#F87171;--redBg:#2A1414;
+  --green:#4ADE80;--greenBg:#142414;
+  --amber:#FBBF24;--amberBg:#241E08;
+  --r:10px;--rL:14px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--canvas);color:var(--ink);font-family:'Space Grotesk',sans-serif;font-size:14px;line-height:1.5}
-h1,h2,h3,h4,.num,.oxa{font-family:'Oxanium',sans-serif}
-::-webkit-scrollbar{width:9px;height:9px}
-::-webkit-scrollbar-track{background:var(--canvas)}
-::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
-a{color:inherit;text-decoration:none}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6}
+button,input,select,textarea{font-family:'Inter',sans-serif;font-size:14px}
+.oxa{font-family:'Oxanium',sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bor2);border-radius:3px}
 
-.app{display:flex;min-height:100vh}
-.sidebar{width:248px;background:var(--surface);border-right:1px solid var(--line);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:50}
-.brand{padding:22px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
-.brand .logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--cobalt),var(--violet));display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:800;font-size:18px;color:#fff}
-.brand .bn{font-family:'Oxanium';font-weight:700;font-size:16px;letter-spacing:.5px}
-.brand .bs{font-size:11px;color:var(--muted)}
-.nav{flex:1;padding:14px 12px;overflow-y:auto}
-.nav-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:9px;color:var(--inkSoft);cursor:pointer;margin-bottom:3px;font-weight:500;position:relative;transition:.15s}
-.nav-item:hover{background:var(--surf2);color:var(--ink)}
-.nav-item.active{background:var(--cobaltSoft);color:var(--cobalt)}
-.nav-item.active svg{stroke:var(--cobalt)}
-.nav-item svg{width:19px;height:19px;stroke:var(--muted);fill:none;stroke-width:1.8;flex-shrink:0}
-.nav-item .badge{margin-left:auto;background:var(--terra);color:#fff;font-size:11px;font-weight:700;padding:1px 8px;border-radius:10px;font-family:'Oxanium'}
-.nav-foot{padding:12px;border-top:1px solid var(--line)}
-.main{flex:1;margin-left:248px;min-width:0}
-.topbar{height:64px;border-bottom:1px solid var(--line);background:rgba(15,25,35,.85);backdrop-filter:blur(8px);position:sticky;top:0;z-index:40;display:flex;align-items:center;padding:0 28px;gap:18px}
-.topbar h1{font-size:19px;font-weight:700}
-.topbar .sub{font-size:12px;color:var(--muted)}
-.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px}
-.rge{display:flex;align-items:center;gap:7px;background:var(--sageSoft);color:var(--sage);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid rgba(58,171,106,.3)}
-.userchip{display:flex;align-items:center;gap:9px}
-.userchip .av{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--terra),var(--ochre));display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:700;color:#fff;font-size:13px}
-.content{padding:28px}
-.view{display:none}
-.view.active{display:block;animation:fade .25s}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ─── LAYOUT ─── */
+.shell{display:flex;height:100vh;overflow:hidden}
+.side{width:220px;flex-shrink:0;background:var(--sur);border-right:1px solid var(--bor);display:flex;flex-direction:column;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.body{flex:1;overflow-y:auto;padding:32px}
+.inner{max-width:860px;margin:0 auto}
 
-.card{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-.section-title{font-size:13px;font-weight:600;color:var(--inkSoft);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.mt{margin-top:20px}
-.row{display:flex;align-items:center}
+/* ─── SIDEBAR ─── */
+.logo{padding:20px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:800;font-size:15px;color:#0a1a26;flex-shrink:0}
+.logo-name{font-family:'Oxanium';font-weight:700;font-size:14px;color:var(--ink)}
+.logo-sub{font-size:11px;color:var(--soft);margin-top:1px}
+.nav{padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:2px}
+.nav-sep{height:1px;background:var(--bor);margin:8px 0}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--soft);cursor:pointer;font-size:13.5px;font-weight:500;transition:background .12s,color .12s;user-select:none}
+.ni:hover{background:rgba(255,255,255,.04);color:var(--ink)}
+.ni.on{background:var(--blueBg);color:var(--blue)}
+.ni svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
+.ni .dot{margin-left:auto;min-width:20px;height:20px;background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Oxanium';padding:0 5px}
+.side-foot{padding:14px 10px;border-top:1px solid var(--bor)}
 
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px 20px;position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
-.kpi.c-cobalt::before{background:var(--cobalt)}.kpi.c-terra::before{background:var(--terra)}
-.kpi.c-sage::before{background:var(--sage)}.kpi.c-ochre::before{background:var(--ochre)}.kpi.c-violet::before{background:var(--violet)}
-.kpi .k-label{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
-.kpi .k-val{font-family:'Oxanium';font-size:30px;font-weight:700;margin-top:6px}
-.kpi .k-sub{font-size:12px;margin-top:4px;color:var(--inkSoft)}
-.up{color:var(--sage)}.down{color:var(--terra)}
+/* ─── TOPBAR ─── */
+.top{height:56px;border-bottom:1px solid var(--bor);display:flex;align-items:center;padding:0 32px;gap:16px;flex-shrink:0;background:var(--sur)}
+.top-title{font-family:'Oxanium';font-weight:700;font-size:17px}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.rge-badge{display:flex;align-items:center;gap:6px;background:var(--greenBg);color:var(--green);border:1px solid rgba(74,222,128,.2);border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600}
+.avatar{width:32px;height:32px;border-radius:8px;background:var(--blueBg);color:var(--blue);font-family:'Oxanium';font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bor2)}
 
-.hero{background:linear-gradient(120deg,var(--terraSoft),var(--surface));border:1px solid rgba(224,90,58,.35);border-radius:14px;padding:22px 24px;display:flex;align-items:center;gap:22px}
-.hero .hicon{width:48px;height:48px;border-radius:11px;background:var(--terra);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.hero .hicon svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2}
-.hero .ht{font-size:13px;color:var(--inkSoft)}
-.hero .hv{font-family:'Oxanium';font-size:26px;font-weight:700;color:var(--terra)}
+/* ─── PAGE HEADER ─── */
+.ph{margin-bottom:28px}
+.ph h2{font-family:'Oxanium';font-weight:700;font-size:20px;margin-bottom:4px}
+.ph p{font-size:13.5px;color:var(--soft)}
 
-.btn{display:inline-flex;align-items:center;gap:7px;background:var(--surf2);border:1px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:9px;font-family:'Space Grotesk';font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
-.btn:hover{border-color:var(--cobalt);color:var(--cobalt)}
-.btn.primary{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
-.btn.primary:hover{background:#229fd4;color:#fff}
-.btn.danger{background:var(--terra);border-color:var(--terra);color:#fff}
-.btn.danger:hover{background:#cf4e30;color:#fff}
-.btn.sage{background:var(--sage);border-color:var(--sage);color:#fff}
-.btn.sage:hover{background:#32935a;color:#fff}
-.btn.sm{padding:6px 12px;font-size:12px}
-.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+/* ─── CARDS ─── */
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rL);padding:22px 24px}
+.card+.card{margin-top:16px}
+.card-title{font-size:11px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px}
 
-.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Oxanium'}
-.t-signe{background:var(--sageSoft);color:var(--sage)}
-.t-dormant{background:var(--ochreSoft);color:var(--ochre)}
-.t-refuse{background:var(--terraSoft);color:var(--terra)}
-.t-attente{background:var(--cobaltSoft);color:var(--cobalt)}
-.t-retard{background:var(--terraSoft);color:var(--terra)}
-.t-payee{background:var(--sageSoft);color:var(--sage)}
-.t-encours{background:var(--cobaltSoft);color:var(--cobalt)}
-.t-planifie{background:var(--ochreSoft);color:var(--ochre)}
-.t-termine{background:var(--sageSoft);color:var(--sage)}
-.t-actif{background:var(--sageSoft);color:var(--sage)}
-.t-prospect{background:var(--violetSoft);color:var(--violet)}
-.chip{display:inline-block;background:var(--surf2);border:1px solid var(--line);color:var(--inkSoft);padding:2px 9px;border-radius:14px;font-size:11px;margin-right:5px}
+/* ─── KPI ROW ─── */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rL);padding:18px 20px}
+.kpi-label{font-size:12px;color:var(--soft);font-weight:500;margin-bottom:8px}
+.kpi-val{font-family:'Oxanium';font-size:26px;font-weight:700;line-height:1}
+.kpi-sub{font-size:12px;color:var(--soft);margin-top:6px}
+.kpi-sub.up{color:var(--green)}.kpi-sub.down{color:var(--red)}.kpi-sub.warn{color:var(--amber)}
 
-.pbar{height:8px;background:var(--surf2);border-radius:6px;overflow:hidden}
-.pbar>span{display:block;height:100%;border-radius:6px;background:var(--cobalt)}
+/* ─── ALERT BAND ─── */
+.alert{background:var(--redBg);border:1px solid rgba(248,113,113,.25);border-radius:var(--rL);padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.alert-val{font-family:'Oxanium';font-size:22px;font-weight:700;color:var(--red);white-space:nowrap}
+.alert-txt{flex:1;font-size:13px;color:var(--soft);line-height:1.5}
 
-.lcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;cursor:pointer;transition:.15s;margin-bottom:12px}
-.lcard:hover{border-color:var(--cobalt);transform:translateY(-1px)}
-.lcard .lc-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.lcard .lc-ref{font-family:'Oxanium';font-weight:700;color:var(--cobalt);font-size:14px}
-.lcard .lc-amt{margin-left:auto;font-family:'Oxanium';font-weight:700;font-size:17px}
-.lcard .lc-meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
-.flash{animation:flash 1.4s}
-@keyframes flash{0%{box-shadow:0 0 0 0 rgba(58,171,106,.7);border-color:var(--sage)}100%{box-shadow:0 0 0 14px rgba(58,171,106,0);border-color:var(--line)}}
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--bor2);color:var(--ink);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:.12s;white-space:nowrap}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.prim{background:var(--blue);border-color:var(--blue);color:#0a1a26;font-weight:600}
+.btn.prim:hover{opacity:.88}
+.btn.dang{background:var(--redBg);border-color:rgba(248,113,113,.4);color:var(--red)}
+.btn.dang:hover{border-color:var(--red)}
+.btn.ok{background:var(--greenBg);border-color:rgba(74,222,128,.4);color:var(--green)}
+.btn.ok:hover{border-color:var(--green)}
+.btn.sm{padding:5px 11px;font-size:12px}
 
-.tabs{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--line)}
-.tab{padding:10px 16px;cursor:pointer;color:var(--muted);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
-.tab.active{color:var(--cobalt);border-color:var(--cobalt)}
-.tabpane{display:none}.tabpane.active{display:block}
+/* ─── BADGE ─── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Oxanium';white-space:nowrap}
+.b-signe{background:var(--greenBg);color:var(--green)}
+.b-dormant{background:var(--amberBg);color:var(--amber)}
+.b-refuse{background:var(--redBg);color:var(--red)}
+.b-attente{background:var(--blueBg);color:var(--blue)}
+.b-retard{background:var(--redBg);color:var(--red)}
+.b-payee{background:var(--greenBg);color:var(--green)}
+.b-encours{background:var(--blueBg);color:var(--blue)}
+.b-planifie{background:var(--amberBg);color:var(--amber)}
+.b-termine{background:var(--greenBg);color:var(--green)}
+.b-actif{background:var(--greenBg);color:var(--green)}
+.b-prospect{background:var(--amberBg);color:var(--amber)}
 
-table{width:100%;border-collapse:collapse}
-th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600}
-td{padding:13px 12px;border-bottom:1px solid var(--line);font-size:13px}
-tr:hover td{background:var(--surf2)}
-.best-row td{background:rgba(58,171,106,.06)}
+/* ─── TABLE ─── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;color:var(--soft);font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:9px 12px;border-bottom:1px solid var(--bor);text-align:left}
+.tbl td{padding:13px 12px;border-bottom:1px solid var(--bor);font-size:13.5px;color:var(--ink);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.click{cursor:pointer}
+.tbl tr.click:hover td{background:rgba(255,255,255,.025)}
+.tbl .num{font-family:'Oxanium';font-weight:600;font-size:15px}
+.tbl .sub{font-size:12px;color:var(--soft);margin-top:2px}
+.best-row td{background:rgba(74,222,128,.04)}
 
-.overlay{position:fixed;inset:0;background:rgba(8,14,20,.72);backdrop-filter:blur(3px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px}
-.overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--line);border-radius:15px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;animation:pop .2s}
-@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
-.modal .m-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
-.modal .m-body{padding:20px 22px}
-.modal .m-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
-.m-close{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;line-height:1}
-.li-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
-.li-row .d{color:var(--inkSoft)}.li-row .q{color:var(--muted);font-size:12px}
+/* ─── PROGRESS ─── */
+.prog{height:6px;background:var(--bor2);border-radius:4px;overflow:hidden}
+.prog span{display:block;height:100%;border-radius:4px;background:var(--blue)}
 
-.barchart{display:flex;align-items:flex-end;gap:16px;height:180px;padding-top:10px}
-.barcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
-.barpair{display:flex;gap:4px;align-items:flex-end;height:100%;width:100%;justify-content:center}
-.bar{width:14px;border-radius:4px 4px 0 0;position:relative;cursor:pointer;transition:.15s}
-.bar.b-env{background:var(--surf2);border:1px solid var(--line)}
-.bar.b-sig{background:var(--cobalt)}
-.bar:hover{opacity:.8}
-.bar .tip{position:absolute;bottom:105%;left:50%;transform:translateX(-50%);background:var(--canvas);border:1px solid var(--line);padding:4px 8px;border-radius:6px;font-size:11px;white-space:nowrap;display:none;z-index:5;font-family:'Oxanium'}
-.bar:hover .tip{display:block}
-.barcol .lab{font-size:11px;color:var(--muted)}
+/* ─── CHECKLIST ─── */
+.chk{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bor);cursor:pointer}
+.chk:last-child{border:none}
+.chk-box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--bor2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.12s}
+.chk.done .chk-box{background:var(--green);border-color:var(--green)}
+.chk-box svg{width:12px;height:12px;stroke:#111;stroke-width:3;fill:none;display:none}
+.chk.done .chk-box svg{display:block}
+.chk.done .chk-lbl{color:var(--soft);text-decoration:line-through}
+.chk-lbl{font-size:13.5px}
 
-.hp{margin-bottom:14px}
-.hp .hp-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
-.hp .hp-top .v{font-family:'Oxanium';font-weight:600}
+/* ─── JOURNAL ─── */
+.jentry{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bor)}
+.jentry:last-child{border:none}
+.jentry .jd{font-family:'Oxanium';font-size:12px;font-weight:600;color:var(--blue);width:48px;flex-shrink:0;margin-top:1px}
+.jentry .jt{font-size:13.5px;color:var(--soft)}
 
-.weekgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.daycell{background:var(--surf2);border:1px solid var(--line);border-radius:9px;padding:12px;text-align:center}
-.daycell .dn{font-size:11px;color:var(--muted)}
-.daycell .dv{font-family:'Oxanium';font-size:18px;font-weight:700;margin-top:4px}
-.daycell.creux{border-color:var(--ochre);background:var(--ochreSoft)}
-.creuxbadge{font-size:10px;color:var(--ochre);margin-top:4px;font-weight:600}
+/* ─── CALENDAR ─── */
+.cal-grid{display:grid;grid-template-columns:52px repeat(5,1fr);border:1px solid var(--bor);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.cal-grid>div{border-right:1px solid var(--bor);border-bottom:1px solid var(--bor);padding:8px 10px}
+.cal-grid>div:last-child,.cal-grid>div:nth-child(6n){border-right:none}
+.cal-hdr{background:rgba(255,255,255,.02);font-size:12px;font-weight:600;text-align:center;padding:10px 8px!important;min-height:auto!important}
+.cal-time{font-size:11px;color:var(--mute);font-family:'Oxanium';text-align:right;padding-top:6px!important}
+.cal-ev{border-radius:5px;padding:4px 8px;font-size:11.5px;font-weight:500;margin-bottom:3px}
+.ev-clim{background:var(--blueBg);color:var(--blue);border-left:2px solid var(--blue)}
+.ev-sdb{background:var(--greenBg);color:var(--green);border-left:2px solid var(--green)}
+.ev-chauf{background:var(--amberBg);color:var(--amber);border-left:2px solid var(--amber)}
+.ev-plomb{border:1px solid var(--bor2);color:var(--soft);border-left:2px solid var(--soft)}
 
-.funnel{display:flex;align-items:stretch;gap:0}
-.fstage{flex:1;background:var(--surf2);border:1px solid var(--line);padding:16px;text-align:center}
-.fstage:first-child{border-radius:10px 0 0 10px}
-.fstage:last-child{border-radius:0 10px 10px 0}
-.fstage .fl{font-size:11px;color:var(--muted);text-transform:uppercase}
-.fstage .fv{font-family:'Oxanium';font-size:24px;font-weight:700;margin-top:4px}
-.farr{display:flex;align-items:center;color:var(--muted);font-size:20px;padding:0 4px}
+/* ─── PBAR ─── */
+.pbar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.pbar-lbl{width:140px;font-size:13px;color:var(--soft);flex-shrink:0}
+.pbar-track{flex:1;height:5px;background:var(--bor2);border-radius:3px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:3px}
+.pbar-val{font-family:'Oxanium';font-size:13px;font-weight:600;width:64px;text-align:right;flex-shrink:0}
 
-.calgrid{display:grid;grid-template-columns:54px repeat(5,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.calgrid>div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;min-height:60px}
-.calhd{background:var(--surf2);font-weight:600;text-align:center;font-size:12px;min-height:auto!important}
-.caltime{color:var(--muted);font-size:11px;text-align:right;font-family:'Oxanium'}
-.calev{border-radius:6px;padding:5px 8px;font-size:11px;font-weight:600;margin-bottom:4px}
-.ev-clim{background:var(--cobaltSoft);color:var(--cobalt);border-left:3px solid var(--cobalt)}
-.ev-sdb{background:var(--sageSoft);color:var(--sage);border-left:3px solid var(--sage)}
-.ev-plomb{background:var(--violetSoft);color:var(--violet);border-left:3px solid var(--violet)}
-.ev-chauf{background:var(--ochreSoft);color:var(--ochre);border-left:3px solid var(--ochre)}
+/* ─── FICHE (back + detail) ─── */
+.back-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;color:var(--soft);background:none;border:none;cursor:pointer;margin-bottom:20px;padding:0}
+.back-btn:hover{color:var(--ink)}
+.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bor);font-size:13.5px}
+.info-row:last-child{border:none}
+.info-lbl{color:var(--soft)}
+.info-val{font-weight:500;text-align:right}
 
-.seqstep{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
-.seqstep:last-child{border:none}
-.seqdot{width:30px;height:30px;border-radius:50%;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'Oxanium';font-weight:700;color:var(--muted);flex-shrink:0}
-.seqstep.active .seqdot{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
-.seqstep.danger .seqdot{background:var(--terra);border-color:var(--terra);color:#fff}
+/* ─── MODAL ─── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
+.overlay.on{display:flex}
+.modal{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rL);width:min(580px,100%);max-height:88vh;overflow-y:auto;animation:mpop .2s}
+@keyframes mpop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.mh{padding:20px 24px;border-bottom:1px solid var(--bor);display:flex;align-items:flex-start;gap:12px}
+.mb{padding:20px 24px}
+.mf{padding:16px 24px;border-top:1px solid var(--bor);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.mx{background:none;border:none;color:var(--soft);cursor:pointer;font-size:20px;line-height:1;margin-left:auto}
+.li-r{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bor);font-size:13.5px}
+.li-r:last-child{border:none}
+.li-lbl{color:var(--soft)}
 
-.av-c{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:700;color:#fff;flex-shrink:0}
+/* ─── FORM ─── */
+.frow{margin-bottom:14px}
+.flbl{display:block;font-size:12px;font-weight:500;color:var(--soft);margin-bottom:5px}
+.finp{width:100%;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:9px 12px;color:var(--ink);outline:none;transition:.12s}
+.finp:focus{border-color:var(--blue)}
+textarea.finp{resize:vertical;min-height:72px}
+select.finp{cursor:pointer}
+.radio-row{display:flex;gap:8px}
+.radio-opt{flex:1;text-align:center;padding:9px;border:1px solid var(--bor);border-radius:8px;cursor:pointer;font-size:13px;color:var(--soft);transition:.12s}
+.radio-opt.on{border-color:var(--blue);color:var(--blue);background:var(--blueBg)}
 
-.checkitem{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
-.checkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.checkitem.done .checkbox{background:var(--sage);border-color:var(--sage)}
-.checkitem.done .checkbox svg{stroke:#fff}
-.checkbox svg{width:13px;height:13px;stroke:transparent;stroke-width:3;fill:none}
-.checkitem.done .clab{color:var(--muted);text-decoration:line-through}
+/* ─── SEARCH INPUT ─── */
+.sinp{width:100%;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:9px 14px;color:var(--ink);outline:none;transition:.12s}
+.sinp:focus{border-color:var(--blue)}
 
-.jentry{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
-.jentry .jdate{font-family:'Oxanium';font-size:12px;color:var(--cobalt);font-weight:600;flex-shrink:0;width:50px}
+/* ─── TABS ─── */
+.tabs{display:flex;border-bottom:1px solid var(--bor);margin-bottom:20px}
+.tab{padding:10px 16px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--soft);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.12s}
+.tab.on{color:var(--blue);border-color:var(--blue);font-weight:600}
+.tabp{display:none}.tabp.on{display:block}
 
-.field{margin-bottom:16px}
-.field label{display:block;font-size:12px;color:var(--inkSoft);margin-bottom:6px;font-weight:500}
-.field input,.field textarea,.field select{width:100%;background:var(--canvas);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--ink);font-family:'Space Grotesk';font-size:13px}
-.field input:focus,.field textarea:focus{outline:none;border-color:var(--cobalt)}
-.radio-row{display:flex;gap:10px}
-.radio-opt{flex:1;border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:13px}
-.radio-opt.sel{border-color:var(--cobalt);background:var(--cobaltSoft);color:var(--cobalt)}
+/* ─── MISC ─── */
+.chip{display:inline-block;background:var(--bor2);color:var(--soft);padding:2px 8px;border-radius:12px;font-size:11px;margin:2px 2px 0 0}
+.sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mt{margin-top:16px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block}
+.av-c{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:700;color:#fff;font-size:13px;flex-shrink:0}
 
-.search{width:100%;background:var(--canvas);border:1px solid var(--line);border-radius:9px;padding:11px 14px;color:var(--ink);font-family:'Space Grotesk';font-size:13px}
-.search:focus{outline:none;border-color:var(--cobalt)}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.alert-box{background:var(--ochreSoft);border:1px solid rgba(212,164,60,.35);color:var(--ochre);border-radius:10px;padding:13px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
+@media(max-width:700px){
+  .side{display:none}
+  .kpis{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo">SE</div>
-      <div><div class="bn">SANITENERGIE</div><div class="bs">Plomberie · Clim · Chauffe-eau</div></div>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="side">
+  <div class="logo">
+    <div class="logo-icon">SE</div>
+    <div><div class="logo-name">Sanitenergie</div><div class="logo-sub">Pia · 66380</div></div>
+  </div>
+  <nav class="nav" id="nav"></nav>
+  <div class="side-foot">
+    <div class="ni" data-v="reglages">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Réglages</span>
     </div>
-    <nav class="nav" id="nav"></nav>
-    <div class="nav-foot">
-      <div class="nav-item" data-view="reglages">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span>Réglages</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="top">
+    <div class="top-title" id="topTitle">Tableau de bord</div>
+    <div class="top-right">
+      <div class="rge-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        RGE certifié
       </div>
+      <div class="avatar">MB</div>
     </div>
-  </aside>
-  <div class="main">
-    <div class="topbar">
-      <div><h1 id="topTitle">Tableau de bord</h1><div class="sub">Lundi 22 juin 2026 · Pia (66)</div></div>
-      <div class="right">
-        <div class="rge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Certifié RGE</div>
-        <div class="userchip"><div class="av">MB</div><div><div style="font-size:13px;font-weight:600">Mickael Basty</div><div style="font-size:11px;color:var(--muted)">Gérant</div></div></div>
-      </div>
-    </div>
-    <div class="content" id="content"></div>
+  </div>
+  <div class="body">
+    <div class="inner" id="content"></div>
   </div>
 </div>
-<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
 
 <script>
+/* ══ DATA ══ */
 const DEVIS=[
-{ref:'DV-047',client:'Jean-Pierre Roca',ville:'Perpignan',prestation:'Dépannage plomberie',montant:105,dateEnvoi:'12/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre dépannage",qte:1,unit:'ff',pu:87.5,total:87.5},{desc:'Fournitures',qte:1,unit:'ff',pu:17.5,total:17.5}]},
-{ref:'DV-046',client:'Marie Estève',ville:'Canet-en-Roussillon',prestation:'Installation climatisation',montant:3200,dateEnvoi:'10/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre pose split",qte:2,unit:'j',pu:700,total:1400},{desc:'Unité intérieure + extérieure',qte:1,unit:'ff',pu:1500,total:1500},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
-{ref:'DV-045',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation salle de bain',montant:6500,dateEnvoi:'08/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre SDB",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements sanitaires',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Carrelage et étanchéité',qte:1,unit:'ff',pu:1200,total:1200}]},
-{ref:'DV-044',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:2800,dateEnvoi:'07/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre pose ballon",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L Atlantic Calypso',qte:1,unit:'u',pu:1600,total:1600},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
-{ref:'DV-043',client:'Nathalie Puig',ville:'Pia',prestation:'Entretien climatisation',montant:95,dateEnvoi:'05/06/2026',statut:'refuse',lignes:[{desc:'Forfait entretien annuel split',qte:1,unit:'ff',pu:95,total:95}]},
-{ref:'DV-042',client:'Laurent Mas',ville:'Rivesaltes',prestation:'Installation climatisation',montant:4100,dateEnvoi:'03/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre multi-split",qte:3,unit:'j',pu:700,total:2100},{desc:'Unités x2 + ext.',qte:1,unit:'ff',pu:1700,total:1700},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
-{ref:'DV-041',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation salle de bain',montant:5200,dateEnvoi:'01/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre SDB",qte:4,unit:'j',pu:700,total:2800},{desc:'Équipements',qte:1,unit:'ff',pu:1600,total:1600},{desc:'Revêtements',qte:1,unit:'ff',pu:800,total:800}]},
-{ref:'DV-040',client:'Michel Fabre',ville:'Pia',prestation:'Chauffe-eau thermodynamique',montant:4800,dateEnvoi:'28/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre + dépose",qte:1,unit:'j',pu:1000,total:1000},{desc:'Ballon 270L',qte:1,unit:'u',pu:2800,total:2800},{desc:'Raccordements',qte:1,unit:'ff',pu:1000,total:1000}]},
-{ref:'DV-039',client:'Isabelle Olive',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:3500,dateEnvoi:'25/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L',qte:1,unit:'u',pu:2300,total:2300},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
-{ref:'DV-038',client:'Patrick Serra',ville:'Saint-Estève',prestation:'Rénovation salle de bain',montant:5800,dateEnvoi:'20/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre SDB",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Revêtements',qte:1,unit:'ff',pu:500,total:500}]},
-{ref:'DV-037',client:'François Coll',ville:'Canet',prestation:'Installation climatisation',montant:2900,dateEnvoi:'18/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:2,unit:'j',pu:700,total:1400},{desc:'Split 3.5kW Daikin',qte:1,unit:'u',pu:1200,total:1200},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
-{ref:'DV-036',client:'Sophie Guitart',ville:'Perpignan',prestation:'Entretien climatisation',montant:95,dateEnvoi:'17/05/2026',statut:'dormant',lignes:[{desc:'Forfait entretien annuel',qte:1,unit:'ff',pu:95,total:95}]},
+{ref:'DV-047',client:'Jean-Pierre Roca',ville:'Perpignan',prestation:'Dépannage plomberie',montant:105,dateEnvoi:'12/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:1,unit:'ff',pu:87.5,total:87.5},{desc:'Fournitures',qte:1,unit:'ff',pu:17.5,total:17.5}]},
+{ref:'DV-046',client:'Marie Estève',ville:'Canet',prestation:'Climatisation split',montant:3200,dateEnvoi:'10/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre pose",qte:2,unit:'j',pu:700,total:1400},{desc:'Unité int. + ext.',qte:1,unit:'ff',pu:1500,total:1500},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-045',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation SDB',montant:6500,dateEnvoi:'08/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre SDB",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements sanitaires',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Carrelage + étanchéité',qte:1,unit:'ff',pu:1200,total:1200}]},
+{ref:'DV-044',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermo.',montant:2800,dateEnvoi:'07/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L Atlantic',qte:1,unit:'u',pu:1600,total:1600},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
+{ref:'DV-043',client:'Nathalie Puig',ville:'Pia',prestation:'Entretien clim.',montant:95,dateEnvoi:'05/06/2026',statut:'refuse',lignes:[{desc:'Forfait entretien annuel',qte:1,unit:'ff',pu:95,total:95}]},
+{ref:'DV-042',client:'Laurent Mas',ville:'Rivesaltes',prestation:'Climatisation multi-split',montant:4100,dateEnvoi:'03/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:3,unit:'j',pu:700,total:2100},{desc:'Unités x2 + ext.',qte:1,unit:'ff',pu:1700,total:1700},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-041',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation SDB',montant:5200,dateEnvoi:'01/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre",qte:4,unit:'j',pu:700,total:2800},{desc:'Équipements',qte:1,unit:'ff',pu:1600,total:1600},{desc:'Revêtements',qte:1,unit:'ff',pu:800,total:800}]},
+{ref:'DV-040',client:'Michel Fabre',ville:'Pia',prestation:'Chauffe-eau thermo.',montant:4800,dateEnvoi:'28/05/2026',statut:'dormant',lignes:[{desc:"M.O. + dépose",qte:1,unit:'j',pu:1000,total:1000},{desc:'Ballon 270L',qte:1,unit:'u',pu:2800,total:2800},{desc:'Raccordements',qte:1,unit:'ff',pu:1000,total:1000}]},
+{ref:'DV-039',client:'Isabelle Olive',ville:'Perpignan',prestation:'Chauffe-eau thermo.',montant:3500,dateEnvoi:'25/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L',qte:1,unit:'u',pu:2300,total:2300},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
+{ref:'DV-038',client:'Patrick Serra',ville:'Saint-Estève',prestation:'Rénovation SDB',montant:5800,dateEnvoi:'20/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Revêtements',qte:1,unit:'ff',pu:500,total:500}]},
+{ref:'DV-037',client:'François Coll',ville:'Canet',prestation:'Climatisation split',montant:2900,dateEnvoi:'18/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:2,unit:'j',pu:700,total:1400},{desc:'Split 3.5kW Daikin',qte:1,unit:'u',pu:1200,total:1200},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-036',client:'Sophie Guitart',ville:'Perpignan',prestation:'Entretien clim.',montant:95,dateEnvoi:'17/05/2026',statut:'dormant',lignes:[{desc:'Forfait entretien annuel',qte:1,unit:'ff',pu:95,total:95}]},
 ];
+
 const FACTURES=[
-{ref:'FA-042',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation SDB acompte',montant:2400,montantHT:2182,tva:218,dateEmission:'10/06/2026',echeance:'10/07/2026',statut:'en retard',devisRef:'DV-045',jours:32},
-{ref:'FA-041',client:'Batipro 66',ville:'Perpignan',prestation:'Installation clim solde',montant:2100,montantHT:1909,tva:191,dateEmission:'25/05/2026',echeance:'25/06/2026',statut:'en retard',devisRef:null,jours:18},
-{ref:'FA-040',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermodynamique',montant:1340,montantHT:1218,tva:122,dateEmission:'14/06/2026',echeance:'14/07/2026',statut:'en attente',devisRef:'DV-044',jours:null},
+{ref:'FA-042',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation SDB — acompte',montant:2400,montantHT:2182,tva:218,dateEmission:'10/06/2026',echeance:'10/07/2026',statut:'en retard',devisRef:'DV-045',jours:32},
+{ref:'FA-041',client:'Batipro 66',ville:'Perpignan',prestation:'Clim — solde',montant:2100,montantHT:1909,tva:191,dateEmission:'25/05/2026',echeance:'25/06/2026',statut:'en retard',devisRef:null,jours:18},
+{ref:'FA-040',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermo.',montant:1340,montantHT:1218,tva:122,dateEmission:'14/06/2026',echeance:'14/07/2026',statut:'en attente',devisRef:'DV-044',jours:null},
 {ref:'FA-039',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation SDB',montant:5200,montantHT:4727,tva:473,dateEmission:'02/06/2026',echeance:'02/07/2026',statut:'en attente',devisRef:'DV-041',jours:null},
-{ref:'FA-038',client:'Batipro 66',ville:'Perpignan',prestation:'Installation clim lot A',montant:8400,montantHT:7636,tva:764,dateEmission:'20/05/2026',echeance:'20/06/2026',statut:'payee',devisRef:null,jours:null},
+{ref:'FA-038',client:'Batipro 66',ville:'Perpignan',prestation:'Clim lot A',montant:8400,montantHT:7636,tva:764,dateEmission:'20/05/2026',echeance:'20/06/2026',statut:'payee',devisRef:null,jours:null},
 {ref:'FA-037',client:'Bruno Castel',ville:'Le Soler',prestation:'Dépannage plomberie',montant:105,montantHT:95,tva:10,dateEmission:'12/05/2026',echeance:'12/06/2026',statut:'payee',devisRef:null,jours:null},
 ];
+
 const CLIENTS=[
-{id:1,nom:'SCI Les Albères',ville:'Canet-en-Roussillon',type:'Professionnel',ca:14200,statut:'actif',tags:['gros volume','SCI'],note:'Gestionnaire: M. Roca. Chantiers réguliers.',tel:'04 68 12 34 56',prochaine:'Bilan chantier SDB semaine prochaine',historique:['DV-045 signé — 6 500 €','FA-042 en retard — 2 400 €']},
-{id:2,nom:'Batipro 66',ville:'Perpignan',type:'Constructeur',ca:32600,statut:'actif',tags:['constructeur','sous-traitance'],note:'Référent: P. Durand. Contrat cadre annuel.',tel:'04 68 98 76 54',prochaine:'Relance FA-041 — 2 100 €',historique:['FA-041 en retard — 2 100 €','FA-038 payée — 8 400 €']},
-{id:3,nom:'Thomas Verdaguer',ville:'Perpignan',type:'Particulier',ca:5600,statut:'actif',tags:['fidèle'],note:'Très satisfait, recommande Sanitenergie.',tel:'06 34 56 78 90',prochaine:'Suivi après installation chauffe-eau',historique:['DV-044 signé — 2 800 €','FA-040 en attente — 1 340 €']},
+{id:1,nom:'SCI Les Albères',ville:'Canet-en-Roussillon',type:'Professionnel',ca:14200,statut:'actif',tags:['SCI','gros volume'],note:'Gestionnaire: M. Roca. Chantiers réguliers.',tel:'04 68 12 34 56',prochaine:'Bilan chantier SDB semaine prochaine',historique:['DV-045 signé — 6 500 €','FA-042 en retard — 2 400 €']},
+{id:2,nom:'Batipro 66',ville:'Perpignan',type:'Constructeur',ca:32600,statut:'actif',tags:['sous-traitance'],note:'Référent: P. Durand. Contrat cadre annuel.',tel:'04 68 98 76 54',prochaine:'Relance FA-041 — 2 100 €',historique:['FA-041 en retard — 2 100 €','FA-038 payée — 8 400 €']},
+{id:3,nom:'Thomas Verdaguer',ville:'Perpignan',type:'Particulier',ca:5600,statut:'actif',tags:['fidèle'],note:'Très satisfait, recommande Sanitenergie.',tel:'06 34 56 78 90',prochaine:'Suivi installation chauffe-eau',historique:['DV-044 signé — 2 800 €','FA-040 en attente — 1 340 €']},
 {id:4,nom:'Camille Font',ville:'Perpignan',type:'Particulière',ca:5200,statut:'actif',tags:[],note:'RDV préféré le matin.',tel:'06 67 89 01 23',prochaine:'Clôture chantier SDB',historique:['DV-041 signé — 5 200 €','FA-039 en attente — 5 200 €']},
 {id:5,nom:'Patrick Serra',ville:'Saint-Estève',type:'Particulier',ca:9400,statut:'actif',tags:['gros budget'],note:'',tel:'06 90 12 34 56',prochaine:'Relance DV-038',historique:['DV-038 dormant — 5 800 €']},
 {id:6,nom:'Laurent Mas',ville:'Rivesaltes',type:'Particulier',ca:7800,statut:'actif',tags:[],note:'',tel:'06 56 78 90 12',prochaine:'Relance DV-042',historique:['DV-042 dormant — 4 100 €']},
-{id:7,nom:'Marie Estève',ville:'Canet-en-Roussillon',type:'Particulière',ca:3200,statut:'prospect',tags:['devis dormant'],note:'Hésite, préfère SMS.',tel:'06 23 45 67 89',prochaine:'Relance DV-046',historique:['DV-046 dormant — 3 200 €']},
+{id:7,nom:'Marie Estève',ville:'Canet',type:'Particulière',ca:3200,statut:'prospect',tags:['devis dormant'],note:'Hésite, préfère SMS.',tel:'06 23 45 67 89',prochaine:'Relance DV-046',historique:['DV-046 dormant — 3 200 €']},
 {id:8,nom:'Michel Fabre',ville:'Pia',type:'Particulier',ca:4800,statut:'prospect',tags:['devis dormant'],note:'Budget confirmé.',tel:'06 78 90 12 34',prochaine:'Relance DV-040',historique:['DV-040 dormant — 4 800 €']},
 {id:9,nom:'Isabelle Olive',ville:'Perpignan',type:'Particulière',ca:3500,statut:'prospect',tags:['devis dormant'],note:'',tel:'06 89 01 23 45',prochaine:'Relance DV-039',historique:['DV-039 dormant — 3 500 €']},
 {id:10,nom:'Jean-Pierre Roca',ville:'Perpignan',type:'Particulier',ca:1840,statut:'actif',tags:[],note:'',tel:'06 12 34 56 78',prochaine:'Relance DV-047',historique:['DV-047 dormant — 105 €']},
 {id:11,nom:'Bruno Castel',ville:'Le Soler',type:'Particulier',ca:420,statut:'actif',tags:[],note:'',tel:'06 01 23 45 67',prochaine:'—',historique:['FA-037 payée — 105 €']},
 {id:12,nom:'Nathalie Puig',ville:'Pia',type:'Particulière',ca:190,statut:'actif',tags:[],note:'',tel:'06 45 67 89 01',prochaine:'—',historique:['DV-043 refusé — 95 €']},
 ];
-const CHANTIERS_DATA=[
-{id:1,client:'SCI Les Albères',ville:'Canet',adresse:'28 bd de la Mer',prestation:'Rénovation salle de bain',avancement:60,statut:'en cours',debut:'08/06',fin:'26/06',type:'sdb',note:'Carrelage posé, sanitaires en cours.',contactSurPlace:'M. Roca — 04 68 12 34 56',codeAcces:'Digicode: 1842B',checklist:{devis:true,acompte:true,materiau:true,execution:false,reception:false},journal:[{date:'08/06',texte:'Dépose ancien carrelage effectuée.'},{date:'15/06',texte:'Nouveau carrelage posé. Sanitaires en cours.'}]},
-{id:2,client:'Batipro 66',ville:'Perpignan',adresse:'ZAC Nord',prestation:'Installation climatisation (lots)',avancement:30,statut:'en cours',debut:'22/06',fin:'24/06',type:'clim',note:'Lot B à poser semaine prochaine.',contactSurPlace:'P. Durand — 04 68 98 76 54',codeAcces:'',checklist:{devis:true,acompte:true,materiau:false,execution:false,reception:false},journal:[{date:'22/06',texte:'Lot A posé et testé.'}]},
-{id:3,client:'André Dupont',ville:'Perpignan',adresse:'15 rue Victor Hugo',prestation:'Rénovation salle de bain',avancement:0,statut:'planifié',debut:'24/06',fin:'26/06',type:'sdb',note:'',contactSurPlace:'M. Dupont — 06 55 44 33 22',codeAcces:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false},journal:[]},
-{id:4,client:'François Coll',ville:'Canet',adresse:'9 av. de la Plage',prestation:'Installation climatisation',avancement:0,statut:'planifié',debut:'28/06',fin:'28/06',type:'clim',note:'',contactSurPlace:'M. Coll — 06 77 88 99 00',codeAcces:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false},journal:[]},
-{id:5,client:'Thomas Verdaguer',ville:'Perpignan',adresse:'3 impasse des Roses',prestation:'Chauffe-eau thermodynamique',avancement:100,statut:'terminé',debut:'15/06',fin:'17/06',type:'chauf',note:'Client satisfait. Facture émise.',contactSurPlace:'M. Verdaguer — 06 34 56 78 90',codeAcces:'',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true},journal:[{date:'17/06',texte:'Installation terminée. Réception sans réserve.'}]},
-{id:6,client:'Camille Font',ville:'Perpignan',adresse:'12 rue des Mimosas',prestation:'Rénovation salle de bain',avancement:100,statut:'terminé',debut:'02/06',fin:'04/06',type:'sdb',note:'Réceptionné sans réserve.',contactSurPlace:'Mme Font — 06 67 89 01 23',codeAcces:'',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true},journal:[{date:'04/06',texte:'Chantier terminé. Client a signé la réception.'}]},
+
+const CHANTIERS=[
+{id:1,client:'SCI Les Albères',ville:'Canet',adresse:'28 bd de la Mer',prestation:'Rénovation SDB',avancement:60,statut:'en cours',debut:'08/06',fin:'26/06',type:'sdb',note:'Carrelage posé, sanitaires en cours.',contactSurPlace:'M. Roca — 04 68 12 34 56',codeAcces:'Digicode : 1842B',checklist:{devis:true,acompte:true,materiau:true,execution:false,reception:false},journal:[{date:'08/06',texte:'Dépose ancien carrelage.'},{date:'15/06',texte:'Nouveau carrelage posé. Sanitaires en cours.'}]},
+{id:2,client:'Batipro 66',ville:'Perpignan',adresse:'ZAC Nord',prestation:'Climatisation (lots)',avancement:30,statut:'en cours',debut:'22/06',fin:'24/06',type:'clim',note:'Lot B à poser semaine prochaine.',contactSurPlace:'P. Durand — 04 68 98 76 54',codeAcces:'',checklist:{devis:true,acompte:true,materiau:false,execution:false,reception:false},journal:[{date:'22/06',texte:'Lot A posé et testé.'}]},
+{id:3,client:'André Dupont',ville:'Perpignan',adresse:'15 rue Victor Hugo',prestation:'Rénovation SDB',avancement:0,statut:'planifié',debut:'24/06',fin:'26/06',type:'sdb',note:'',contactSurPlace:'M. Dupont — 06 55 44 33 22',codeAcces:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false},journal:[]},
+{id:4,client:'François Coll',ville:'Canet',adresse:'9 av. de la Plage',prestation:'Climatisation split',avancement:0,statut:'planifié',debut:'28/06',fin:'28/06',type:'clim',note:'',contactSurPlace:'M. Coll — 06 77 88 99 00',codeAcces:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false},journal:[]},
+{id:5,client:'Thomas Verdaguer',ville:'Perpignan',adresse:'3 imp. des Roses',prestation:'Chauffe-eau thermo.',avancement:100,statut:'terminé',debut:'15/06',fin:'17/06',type:'chauf',note:'Client satisfait. Facture émise.',contactSurPlace:'M. Verdaguer — 06 34 56 78 90',codeAcces:'',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true},journal:[{date:'17/06',texte:'Installation terminée. Réception sans réserve.'}]},
+{id:6,client:'Camille Font',ville:'Perpignan',adresse:'12 rue des Mimosas',prestation:'Rénovation SDB',avancement:100,statut:'terminé',debut:'02/06',fin:'04/06',type:'sdb',note:'Réceptionné sans réserve.',contactSurPlace:'Mme Font — 06 67 89 01 23',codeAcces:'',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true},journal:[{date:'04/06',texte:'Chantier terminé. Client a signé.'}]},
 ];
+
 const FOURN={
 ballon:{title:'Ballon thermodynamique 200L Atlantic Calypso',economie:124,rows:[
-{nom:'ProMat 66',ref:'Atlantic Calypso 200L',prix:248,delai:'7j',dispo:'Limité',best:true},
-{nom:'Thermor Pro',ref:'Atlantic Calypso 200L',prix:262,delai:'3j',dispo:'Disponible'},
-{nom:'Clim+Pro',ref:'Atlantic Calypso 200L',prix:289,delai:'5j',dispo:'Disponible'},
-{nom:'BricoDepot Pro',ref:'Atlantic Calypso 200L',prix:310,delai:'1j',dispo:'Disponible'}]},
+  {nom:'ProMat 66',ref:'Atlantic Calypso 200L',prix:248,delai:'7 j',dispo:'Limité',best:true},
+  {nom:'Thermor Pro',ref:'Atlantic Calypso 200L',prix:262,delai:'3 j',dispo:'Disponible',best:false},
+  {nom:'Clim+Pro',ref:'Atlantic Calypso 200L',prix:289,delai:'5 j',dispo:'Disponible',best:false},
+  {nom:'BricoDepot Pro',ref:'Atlantic Calypso 200L',prix:310,delai:'1 j',dispo:'Disponible',best:false},
+]},
 clim:{title:'Split Mitsubishi MSZ-AP 3.5kW',economie:185,rows:[
-{nom:'ProMat 66',ref:'Mitsubishi MSZ-AP35VG',prix:875,delai:'5j',dispo:'Disponible',best:true},
-{nom:'Frigor Sud',ref:'Mitsubishi MSZ-AP35VG',prix:910,delai:'1j',dispo:'Disponible'},
-{nom:'Clim+Pro',ref:'Mitsubishi MSZ-AP35VG',prix:960,delai:'2j',dispo:'Disponible'},
-{nom:'Atlantic Pro',ref:'Daikin FTXC35C',prix:1060,delai:'4j',dispo:'Disponible'}]},
+  {nom:'ProMat 66',ref:'Mitsubishi MSZ-AP35VG',prix:875,delai:'5 j',dispo:'Disponible',best:true},
+  {nom:'Frigor Sud',ref:'Mitsubishi MSZ-AP35VG',prix:910,delai:'1 j',dispo:'Disponible',best:false},
+  {nom:'Clim+Pro',ref:'Mitsubishi MSZ-AP35VG',prix:960,delai:'2 j',dispo:'Disponible',best:false},
+  {nom:'Atlantic Pro',ref:'Daikin FTXC35C',prix:1060,delai:'4 j',dispo:'Disponible',best:false},
+]},
 mitigeur:{title:'Mitigeur thermostatique Hansgrohe Ecostat',economie:47,rows:[
-{nom:'Sanitaire 66',ref:'Hansgrohe Ecostat 1001CL',prix:138,delai:'2j',dispo:'Disponible',best:true},
-{nom:'ProMat 66',ref:'Hansgrohe Ecostat 1001CL',prix:145,delai:'3j',dispo:'Disponible'},
-{nom:'BricoDepot Pro',ref:'Hansgrohe Ecostat 1001CL',prix:152,delai:'1j',dispo:'Disponible'},
-{nom:'SDB Direct',ref:'Grohe Grohtherm 800',prix:185,delai:'5j',dispo:'Limité'}]},
+  {nom:'Sanitaire 66',ref:'Hansgrohe Ecostat 1001CL',prix:138,delai:'2 j',dispo:'Disponible',best:true},
+  {nom:'ProMat 66',ref:'Hansgrohe Ecostat 1001CL',prix:145,delai:'3 j',dispo:'Disponible',best:false},
+  {nom:'BricoDepot Pro',ref:'Hansgrohe Ecostat 1001CL',prix:152,delai:'1 j',dispo:'Disponible',best:false},
+  {nom:'SDB Direct',ref:'Grohe Grohtherm 800',prix:185,delai:'5 j',dispo:'Limité',best:false},
+]},
 };
-const CAL_EVENTS={
-'lun':[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
-'mar':[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
-'mer':[{slot:1,t:'Dupont — SDB',type:'sdb'}],
-'jeu':[{slot:1,t:'Dupont — SDB',type:'sdb'}],
-'ven':[{slot:1,t:'Dupont — SDB',type:'sdb'}],
-};
-const fmt=n=>n.toLocaleString('fr-FR')+' €';
-const ICON={check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'};
 
-const NAVITEMS=[
+const CAL={
+lun:[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
+mar:[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
+mer:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+jeu:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+ven:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+};
+
+const CHK_LABELS={devis:'Devis signé',acompte:'Acompte reçu',materiau:'Matériel commandé',execution:'Travaux exécutés',reception:'Réception client'};
+const BADGE_CLS={signe:'b-signe',dormant:'b-dormant',refuse:'b-refuse','en attente':'b-attente','en retard':'b-retard',payee:'b-payee','en cours':'b-encours',planifié:'b-planifie',terminé:'b-termine',actif:'b-actif',prospect:'b-prospect'};
+const BADGE_LBL={signe:'Signé',dormant:'Dormant',refuse:'Refusé','en attente':'En attente','en retard':'En retard',payee:'Payée','en cours':'En cours',planifié:'Planifié',terminé:'Terminé',actif:'Actif',prospect:'Prospect'};
+const fmt=n=>n.toLocaleString('fr-FR')+' €';
+function badge(s){return `<span class="badge ${BADGE_CLS[s]||'b-dormant'}">${BADGE_LBL[s]||s}</span>`;}
+
+/* ── CORE ── */
+const VIEWS={};
+let caChart=null;
+
+const NAV_ITEMS=[
 {v:'dashboard',l:'Tableau de bord',i:'<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>'},
-{v:'devis',l:'Devis & Facturation',i:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'},
-{v:'relances',l:'Relances',i:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',badge:11},
+{v:'devis',l:'Devis & Factures',i:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'},
+{v:'relances',l:'Relances',i:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',dot:DEVIS.filter(d=>d.statut==='dormant').length+FACTURES.filter(f=>f.statut==='en retard').length},
 {v:'chantiers',l:'Chantiers',i:'<path d="M2 22h20"/><path d="M6 18V9l6-4 6 4v9"/><rect x="9" y="13" width="6" height="5"/>'},
 {v:'calendrier',l:'Calendrier',i:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
 {v:'fournisseurs',l:'Fournisseurs',i:'<path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'},
 {v:'clients',l:'Clients',i:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/>'},
 ];
+
+const TITLES={dashboard:'Tableau de bord',devis:'Devis & Factures',relances:'Relances',chantiers:'Chantiers',calendrier:'Calendrier',fournisseurs:'Fournisseurs',clients:'Clients',reglages:'Réglages'};
+
 function buildNav(){
-  document.getElementById('nav').innerHTML=NAVITEMS.map(n=>`<div class="nav-item" data-view="${n.v}"><svg viewBox="0 0 24 24">${n.i}</svg><span>${n.l}</span>${n.badge?`<span class="badge">${n.badge}</span>`:''}</div>`).join('');
+  document.getElementById('nav').innerHTML=NAV_ITEMS.map(n=>
+    `<div class="ni" data-v="${n.v}">
+      <svg viewBox="0 0 24 24">${n.i}</svg>
+      <span>${n.l}</span>
+      ${n.dot?`<span class="dot">${n.dot}</span>`:''}
+    </div>`
+  ).join('');
+  document.querySelectorAll('.ni').forEach(el=>el.addEventListener('click',()=>go(el.dataset.v)));
+  document.querySelector('.side-foot .ni').addEventListener('click',()=>go('reglages'));
 }
-const TITLES={dashboard:'Tableau de bord',devis:'Devis & Facturation',relances:'Relances',chantiers:'Chantiers',calendrier:'Calendrier',fournisseurs:'Fournisseurs',clients:'Clients',reglages:'Réglages'};
-let currentView='dashboard';
-function setView(v){
-  currentView=v;
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
-  document.getElementById('topTitle').textContent=TITLES[v];
-  renderView(v);
-}
-function renderView(v){
-  document.getElementById('content').innerHTML=`<div class="view active">${VIEWS[v]()}</div>`;
-  if(v==='dashboard') drawLineChart();
-  if(v==='fournisseurs') initFourn();
-  if(v==='clients') initClients();
-}
-function openModal(html){document.getElementById('modal').innerHTML=html;document.getElementById('overlay').classList.add('open');}
-function closeModal(){document.getElementById('overlay').classList.remove('open');}
-document.addEventListener('click',e=>{if(e.target.id==='overlay')closeModal();});
 
-const VIEWS={};
+function go(v){
+  document.querySelectorAll('.ni').forEach(el=>el.classList.toggle('on',el.dataset.v===v));
+  document.getElementById('topTitle').textContent=TITLES[v]||v;
+  document.getElementById('content').innerHTML=VIEWS[v]?VIEWS[v]():'';
+  if(v==='dashboard')initDash();
+  if(v==='fournisseurs'){curFourn='ballon';renderFourn('ballon');}
+  if(v==='clients'){crmFilter='all';renderClients();}
+}
 
+/* ── MODAL ── */
+function openM(html){document.getElementById('modal').innerHTML=html;document.getElementById('overlay').classList.add('on');}
+function closeM(){document.getElementById('overlay').classList.remove('on');}
+document.addEventListener('click',e=>{if(e.target.id==='overlay')closeM();});
+const mc=()=>`closeM()`;
+
+/* ── DASHBOARD ── */
 VIEWS.dashboard=function(){
-  const prestations=[['Climatisation',8400,'cobalt'],['Rénovation SDB',6500,'sage'],['Chauffe-eau',3140,'ochre'],['Plomberie',1160,'violet']];
-  const maxP=Math.max(...prestations.map(p=>p[1]));
-  const bars=[['Jan',9,5],['Fév',11,6],['Mar',14,9],['Avr',12,7],['Mai',16,10],['Juin',18,12]];
-  const maxBar=18;
-  const pipeline=[['Devis envoyés',8,24500,'cobalt'],['En relance',5,17800,'ochre'],['Négociation',2,9300,'violet'],['Signés ce mois',3,12840,'sage']];
-  const maxPipe=24500;
-  const weeks=[['S25',5,false],['S26',4,false],['S27',2,true],['S28',1,true]];
-  const prov=[['Bouche-à-oreille',42,'sage'],['Site web',24,'cobalt'],['Constructeurs',18,'violet'],['Anciens clients',16,'ochre']];
+  const dormCnt=DEVIS.filter(d=>d.statut==='dormant').length;
+  const dormAmt=DEVIS.filter(d=>d.statut==='dormant').reduce((a,d)=>a+d.montant,0);
+  const retardAmt=FACTURES.filter(f=>f.statut==='en retard').reduce((a,f)=>a+f.montant,0);
+  const total=dormAmt+retardAmt;
+  const recent=DEVIS.slice(0,5);
   return `
-  <div class="grid4">
-    <div class="kpi c-cobalt"><div class="k-label">CA Juin</div><div class="k-val">19 200 €</div><div class="k-sub up">▲ +12,3% vs mai</div></div>
-    <div class="kpi c-ochre"><div class="k-label">Devis sans réponse</div><div class="k-val">8</div><div class="k-sub">24 500 € en jeu</div></div>
-    <div class="kpi c-sage"><div class="k-label">Taux conversion</div><div class="k-val">68 %</div><div class="k-sub up">▲ +3 pts</div></div>
-    <div class="kpi c-terra"><div class="k-label">CA signé (mois)</div><div class="k-val">12 840 €</div><div class="k-sub">3 devis signés</div></div>
-  </div>
-  <div class="mt hero">
-    <div class="hicon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-    <div><div class="ht">Encours à récupérer (devis dormants + factures en retard)</div><div class="hv">30 340 €</div></div>
-    <button class="btn primary" style="margin-left:auto" onclick="setView('relances')">Voir les relances</button>
-  </div>
-  <div class="grid2 mt">
-    <div class="card"><div class="section-title">Devis envoyés vs signés (6 mois)</div>
-      <div class="barchart">${bars.map(b=>`<div class="barcol"><div class="barpair">
-        <div class="bar b-env" style="height:${b[1]/maxBar*100}%"><span class="tip">${b[1]} envoyés</span></div>
-        <div class="bar b-sig" style="height:${b[2]/maxBar*100}%"><span class="tip">${b[2]} signés</span></div>
-      </div><div class="lab">${b[0]}</div></div>`).join('')}</div>
-      <div style="display:flex;gap:18px;margin-top:14px;font-size:12px;color:var(--muted)"><span><span style="display:inline-block;width:10px;height:10px;background:var(--surf2);border:1px solid var(--line);border-radius:2px;margin-right:5px"></span>Envoyés</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--cobalt);border-radius:2px;margin-right:5px"></span>Signés</span></div>
-    </div>
-    <div class="card"><div class="section-title">CA par prestation (mois)</div>
-      ${prestations.map(p=>`<div class="hp"><div class="hp-top"><span>${p[0]}</span><span class="v">${fmt(p[1])}</span></div><div class="pbar"><span style="width:${p[1]/maxP*100}%;background:var(--${p[2]})"></span></div></div>`).join('')}
-    </div>
-  </div>
-  <div class="grid2 mt">
-    <div class="card"><div class="section-title">Pipeline commercial</div>
-      ${pipeline.map(p=>`<div class="hp"><div class="hp-top"><span>${p[0]} · ${p[1]}</span><span class="v">${fmt(p[2])}</span></div><div class="pbar"><span style="width:${p[2]/maxPipe*100}%;background:var(--${p[3]})"></span></div></div>`).join('')}
-    </div>
-    <div class="card"><div class="section-title">Charge des semaines (jours occupés)</div>
-      <div class="weekgrid">${weeks.map(w=>`<div class="daycell ${w[2]?'creux':''}"><div class="dn">${w[0]}</div><div class="dv">${w[1]}/5</div>${w[2]?'<div class="creuxbadge">⚠ Creux</div>':''}</div>`).join('')}</div>
-      <div class="alert-box" style="margin-top:14px">⚠ S27 &amp; S28 sont creuses — relancez des devis chauds pour combler.</div>
-    </div>
-  </div>
-  <div class="card mt"><div class="section-title">Provenance des demandes</div>
-    ${prov.map(p=>`<div class="hp"><div class="hp-top"><span>${p[0]}</span><span class="v">${p[1]} %</span></div><div class="pbar"><span style="width:${p[1]}%;background:var(--${p[2]})"></span></div></div>`).join('')}
-  </div>
-  <div class="card mt"><div class="section-title">Chiffre d'affaires — 12 derniers mois</div>
-    <div style="height:280px"><canvas id="caChart"></canvas></div>
-  </div>`;
+<div class="ph"><h2>Bonjour Mickael</h2><p>Lundi 22 juin 2026 · Pia (66)</p></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="kpi-label">CA Juin 2026</div><div class="kpi-val oxa" style="color:var(--blue)">19 200 €</div><div class="kpi-sub up">+12,3 % vs mai</div></div>
+  <div class="kpi"><div class="kpi-label">Devis sans réponse</div><div class="kpi-val oxa" style="color:var(--red)">${dormCnt}</div><div class="kpi-sub warn">${fmt(dormAmt)} en jeu</div></div>
+  <div class="kpi"><div class="kpi-label">Taux de conversion</div><div class="kpi-val oxa">68 %</div><div class="kpi-sub up">+3 pts vs mai</div></div>
+  <div class="kpi"><div class="kpi-label">CA signé juin</div><div class="kpi-val oxa">12 840 €</div><div class="kpi-sub">7 devis convertis</div></div>
+</div>
+
+<div class="alert">
+  <div><div style="font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">À récupérer</div><div class="alert-val">${fmt(total)}</div></div>
+  <div class="alert-txt">${dormCnt} devis sans réponse et ${FACTURES.filter(f=>f.statut==='en retard').length} factures impayées. Une relance ciblée peut changer la donne.</div>
+  <button class="btn dang" onclick="go('relances')">Lancer les relances →</button>
+</div>
+
+<div class="card">
+  <div class="card-title">CA par prestation · Juin 2026</div>
+  <div class="pbar-row"><div class="pbar-lbl">Climatisation</div><div class="pbar-track"><div class="pbar-fill" style="width:45%;background:var(--blue)"></div></div><div class="pbar-val" style="color:var(--blue)">8 640 €</div></div>
+  <div class="pbar-row"><div class="pbar-lbl">Rénovation SDB</div><div class="pbar-track"><div class="pbar-fill" style="width:30%;background:var(--green)"></div></div><div class="pbar-val" style="color:var(--green)">5 760 €</div></div>
+  <div class="pbar-row"><div class="pbar-lbl">Chauffe-eau</div><div class="pbar-track"><div class="pbar-fill" style="width:15%;background:var(--amber)"></div></div><div class="pbar-val" style="color:var(--amber)">2 880 €</div></div>
+  <div class="pbar-row" style="margin:0"><div class="pbar-lbl">Plomberie</div><div class="pbar-track"><div class="pbar-fill" style="width:10%;background:var(--soft)"></div></div><div class="pbar-val" style="color:var(--soft)">1 920 €</div></div>
+</div>
+
+<div class="card mt">
+  <div class="card-title">Évolution du CA · 12 mois</div>
+  <div style="position:relative;height:180px"><canvas id="caChart"></canvas></div>
+</div>
+
+<div class="card mt">
+  <div class="sec-row"><div class="card-title" style="margin:0">Derniers devis</div><button class="btn sm" onclick="go('devis')">Voir tout →</button></div>
+  <table class="tbl">
+    <thead><tr><th>Référence</th><th>Client</th><th>Prestation</th><th>Montant</th><th>Statut</th></tr></thead>
+    <tbody>${recent.map(d=>`<tr class="click" onclick="openDevis('${d.ref}')"><td><span class="oxa" style="color:var(--blue);font-weight:600">${d.ref}</span></td><td>${d.client}</td><td style="color:var(--soft)">${d.prestation}</td><td><span class="num oxa">${fmt(d.montant)}</span></td><td>${badge(d.statut)}</td></tr>`).join('')}
+    </tbody>
+  </table>
+</div>`;
 };
-function drawLineChart(){
-  const ctx=document.getElementById('caChart');if(!ctx)return;
-  new Chart(ctx,{type:'line',data:{
-    labels:['Juil','Août','Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Juin'],
-    datasets:[{label:"CA mensuel (€)",data:[12400,9800,14200,16800,13900,11200,10800,13400,15900,17100,17100,19200],
-      borderColor:'#2BA8DC',backgroundColor:'rgba(43,168,220,.12)',fill:true,tension:.35,pointBackgroundColor:'#2BA8DC',pointRadius:3,borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{grid:{color:'#273040'},ticks:{color:'#6B7490'}},y:{grid:{color:'#273040'},ticks:{color:'#6B7490',callback:v=>v/1000+'k'}}}}});
+
+function initDash(){
+  if(caChart){caChart.destroy();caChart=null;}
+  const ctx=document.getElementById('caChart');
+  if(!ctx)return;
+  const g=ctx.getContext('2d').createLinearGradient(0,0,0,170);
+  g.addColorStop(0,'rgba(56,189,248,.18)');g.addColorStop(1,'rgba(56,189,248,0)');
+  caChart=new Chart(ctx,{type:'line',data:{
+    labels:['Jul','Août','Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Juin'],
+    datasets:[{data:[18200,11400,23800,25200,20600,15800,22400,20100,27800,29400,17100,19200],
+      borderColor:'#38BDF8',borderWidth:2,pointRadius:3,pointBackgroundColor:'#38BDF8',
+      pointBorderColor:'#0D1117',pointBorderWidth:1.5,fill:true,backgroundColor:g,tension:.4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{backgroundColor:'#161C24',titleColor:'#E2E8F0',bodyColor:'#94A3B8',padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.parsed.y.toLocaleString('fr-FR')+' €'}}},
+    scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5A6E',font:{size:11,family:'Inter'}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5A6E',font:{size:11,family:'Inter'},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}
+  }});
 }
 
+/* ── DEVIS & FACTURES ── */
 VIEWS.devis=function(){
   return `
-  <div class="card"><div class="section-title">Tunnel de conversion</div>
-    <div class="funnel">
-      <div class="fstage"><div class="fl">Envoyés</div><div class="fv">12</div></div>
-      <div class="farr">›</div>
-      <div class="fstage"><div class="fl">Relancés</div><div class="fv">8</div></div>
-      <div class="farr">›</div>
-      <div class="fstage"><div class="fl">Négociation</div><div class="fv">5</div></div>
-      <div class="farr">›</div>
-      <div class="fstage"><div class="fl">Signés</div><div class="fv">3</div></div>
-    </div>
+<div class="ph"><h2>Devis & Factures</h2><p>Pipeline commercial et suivi des paiements</p></div>
+<div class="card" style="margin-bottom:20px">
+  <div style="display:flex;gap:0">
+    <div style="flex:1;text-align:center;padding:14px 10px;border-right:1px solid var(--bor)"><div style="font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">À relancer</div><div class="oxa" style="font-size:26px;font-weight:700;color:var(--red)">${DEVIS.filter(d=>d.statut==='dormant').length}</div><div style="font-size:12px;color:var(--soft);margin-top:3px">${fmt(DEVIS.filter(d=>d.statut==='dormant').reduce((a,d)=>a+d.montant,0))}</div></div>
+    <div style="flex:1;text-align:center;padding:14px 10px;border-right:1px solid var(--bor)"><div style="font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">À facturer</div><div class="oxa" style="font-size:26px;font-weight:700;color:var(--amber)">${DEVIS.filter(d=>d.statut==='signe').length}</div><div style="font-size:12px;color:var(--soft);margin-top:3px">${fmt(DEVIS.filter(d=>d.statut==='signe').reduce((a,d)=>a+d.montant,0))}</div></div>
+    <div style="flex:1;text-align:center;padding:14px 10px;border-right:1px solid var(--bor)"><div style="font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Factures ouvertes</div><div class="oxa" style="font-size:26px;font-weight:700;color:var(--blue)">${FACTURES.filter(f=>f.statut!=='payee').length}</div><div style="font-size:12px;color:var(--red);margin-top:3px">dont ${FACTURES.filter(f=>f.statut==='en retard').length} en retard</div></div>
+    <div style="flex:1;text-align:center;padding:14px 10px;background:var(--greenBg);border-radius:0 var(--r) var(--r) 0"><div style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Encaissé</div><div class="oxa" style="font-size:26px;font-weight:700;color:var(--green)">${FACTURES.filter(f=>f.statut==='payee').length}</div><div style="font-size:12px;color:var(--soft);margin-top:3px">${fmt(FACTURES.filter(f=>f.statut==='payee').reduce((a,f)=>a+f.montant,0))}</div></div>
   </div>
-  <div class="tabs mt">
-    <div class="tab active" onclick="switchTab(this,'tab-devis')">Devis</div>
-    <div class="tab" onclick="switchTab(this,'tab-fact')">Factures</div>
+</div>
+<div class="tabs">
+  <div class="tab on" onclick="swTab(this,'t-devis')">Devis</div>
+  <div class="tab" onclick="swTab(this,'t-fact')">Factures</div>
+</div>
+<div class="tabp on" id="t-devis">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn prim">+ Nouveau devis</button></div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl"><thead><tr><th>Référence</th><th>Client · Ville</th><th>Prestation</th><th>Montant</th><th>Envoyé le</th><th>Statut</th></tr></thead>
+    <tbody id="dtbody">${DEVIS.map(devisRow).join('')}</tbody></table>
   </div>
-  <div class="tabpane active" id="tab-devis"><div id="devis-list">${DEVIS.map(devisCard).join('')}</div></div>
-  <div class="tabpane" id="tab-fact"><div id="fact-list">${FACTURES.map(factCard).join('')}</div></div>`;
+</div>
+<div class="tabp" id="t-fact">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn prim">+ Nouvelle facture</button></div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl"><thead><tr><th>Référence</th><th>Client</th><th>Prestation</th><th>TTC</th><th>Échéance</th><th>Statut</th><th></th></tr></thead>
+    <tbody id="ftbody">${FACTURES.map(factRow).join('')}</tbody></table>
+  </div>
+</div>`;
 };
-function switchTab(el,id){
-  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');
+
+function devisRow(d){return `<tr class="click" id="dr-${d.ref}" onclick="openDevis('${d.ref}')"><td><span class="oxa" style="color:var(--blue);font-weight:600">${d.ref}</span></td><td>${d.client}<div class="sub">${d.ville}</div></td><td style="color:var(--soft)">${d.prestation}</td><td><span class="num oxa">${fmt(d.montant)}</span></td><td style="color:var(--soft)">${d.dateEnvoi}</td><td id="dbadge-${d.ref}">${badge(d.statut)}</td></tr>`;}
+function factRow(f){
+  const acts=f.statut!=='payee'?`<div onclick="event.stopPropagation()" style="display:flex;gap:6px">
+    ${f.statut==='en retard'?`<button class="btn sm dang" onclick="relancerF('${f.client}',this)">Relancer</button>`:''}
+    <button class="btn sm ok" onclick="markPaid('${f.ref}',this)">Payée</button>
+  </div>`:'';
+  return `<tr class="click" id="fr-${f.ref}" onclick="openFact('${f.ref}')"><td><span class="oxa" style="color:var(--blue);font-weight:600">${f.ref}</span></td><td>${f.client}</td><td style="color:var(--soft)">${f.prestation}</td><td><span class="num oxa">${fmt(f.montant)}</span></td><td id="fech-${f.ref}" style="color:${f.statut==='en retard'?'var(--red)':'var(--soft)'}">${f.echeance}${f.jours?` <span style="font-size:11px">(+${f.jours}j)</span>`:''}</td><td id="fbadge-${f.ref}">${badge(f.statut)}</td><td>${acts}</td></tr>`;}
+
+function swTab(el,id){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('.tabp').forEach(p=>p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
 }
-const STATUTLAB={signe:'Signé',dormant:'Dormant',refuse:'Refusé'};
-function devisCard(d){
-  const bg=d.statut==='signe'?'background:var(--sageSoft);border-color:var(--sage)':'';
-  return `<div class="lcard" id="card-${d.ref}" style="${bg}" onclick="openDevis('${d.ref}')">
-    <div class="lc-head"><span class="lc-ref">${d.ref}</span><span class="tag t-${d.statut}" id="badge-${d.ref}">${STATUTLAB[d.statut]}</span><span class="lc-amt">${fmt(d.montant)}</span></div>
-    <div style="font-weight:600;margin-bottom:4px">${d.client} · ${d.prestation}</div>
-    <div class="lc-meta"><span>${d.ville}</span><span>Envoyé le ${d.dateEnvoi}</span></div>
-  </div>`;
+
+function lignes(ls){
+  let tot=0;
+  const rows=ls.map(l=>{tot+=l.total;return `<div class="li-r"><div><div>${l.desc}</div><div class="li-lbl" style="font-size:12px">${l.qte} ${l.unit} × ${fmt(l.pu)}</div></div><div class="oxa" style="font-weight:600">${fmt(l.total)}</div></div>`;}).join('');
+  return rows+`<div class="li-r" style="border:none;margin-top:6px"><div style="font-weight:600">Total TTC</div><div class="oxa" style="font-weight:700;font-size:19px;color:var(--blue)">${fmt(tot)}</div></div>`;
 }
-const FSTATUT={'en retard':'t-retard','en attente':'t-attente','payee':'t-payee'};
-const FSTATUTLAB={'en retard':'En retard','en attente':'En attente','payee':'Payée'};
-function factCard(f){
-  return `<div class="lcard${f._flash?' flash':''}" id="fcard-${f.ref}" onclick="openFact('${f.ref}')">
-    <div class="lc-head"><span class="lc-ref">${f.ref}</span><span class="tag ${FSTATUT[f.statut]}" id="fbadge-${f.ref}">${FSTATUTLAB[f.statut]}${f.jours?' ('+f.jours+'j)':''}</span><span class="lc-amt">${fmt(f.montant)}</span></div>
-    <div style="font-weight:600;margin-bottom:4px">${f.client} · ${f.prestation}</div>
-    <div class="lc-meta"><span>${f.ville}</span><span>Émise ${f.dateEmission}</span><span>Échéance ${f.echeance}</span></div>
-  </div>`;
-}
+
 function openDevis(ref){
-  const d=DEVIS.find(x=>x.ref===ref);
-  let foot=`<button class="btn" onclick="closeModal()">Fermer</button>`;
-  if(d.statut==='dormant'){foot=`<button class="btn" onclick="closeModal()">Fermer</button><button class="btn primary" onclick="alert('Relance envoyée à ${d.client}')">Relancer</button><button class="btn sage" onclick="marquerSigne('${d.ref}')">Marquer signé</button>`;}
-  else if(d.statut==='signe'){
-    const hasFact=FACTURES.some(f=>f.devisRef===d.ref);
-    foot=`<button class="btn" onclick="closeModal()">Fermer</button>`+(hasFact?'':`<button class="btn primary" onclick="creerFactureFromDevis('${d.ref}')">Créer la facture</button>`);
-  }
-  openModal(`
-    <div class="m-head"><div><div style="font-family:Oxanium;font-weight:700;font-size:18px;color:var(--cobalt)">${d.ref}</div><div style="color:var(--muted);font-size:13px;margin-top:3px">${d.client} · ${d.ville}</div></div><button class="m-close" onclick="closeModal()">×</button></div>
-    <div class="m-body">
-      <div style="display:flex;gap:10px;margin-bottom:16px"><span class="tag t-${d.statut}">${STATUTLAB[d.statut]}</span><span class="chip">${d.prestation}</span><span class="chip">Envoyé ${d.dateEnvoi}</span></div>
-      ${d.lignes.map(l=>`<div class="li-row"><div><div class="d">${l.desc}</div><div class="q">${l.qte} ${l.unit} × ${fmt(l.pu)}</div></div><div style="font-family:Oxanium;font-weight:600">${fmt(l.total)}</div></div>`).join('')}
-      <div class="li-row" style="border:none;margin-top:8px"><div style="font-weight:700">Total TTC</div><div style="font-family:Oxanium;font-weight:700;font-size:18px">${fmt(d.montant)}</div></div>
-    </div>
-    <div class="m-foot">${foot}</div>`);
+  const d=DEVIS.find(x=>x.ref===ref);if(!d)return;
+  const hasFact=FACTURES.some(f=>f.devisRef===d.ref);
+  let foot=`<button class="btn" onclick="${mc()}">Fermer</button>`;
+  if(d.statut==='dormant')foot+=`<button class="btn" onclick="relancerD('${d.client}',this)">Envoyer relance</button><button class="btn ok" onclick="markSigne('${d.ref}')">Marquer signé</button>`;
+  if(d.statut==='signe'&&!hasFact)foot+=`<button class="btn prim" onclick="creerFact('${d.ref}')">Créer la facture</button>`;
+  openM(`<div class="mh"><div><div class="oxa" style="font-weight:700;font-size:18px">${d.ref}</div><div style="color:var(--soft);font-size:13px;margin-top:3px">${d.client} · ${d.ville}</div></div>${badge(d.statut)}<button class="mx" onclick="${mc()}">×</button></div>
+  <div class="mb"><div style="font-size:13px;color:var(--soft);margin-bottom:14px">${d.prestation} · envoyé le ${d.dateEnvoi}</div>${lignes(d.lignes)}</div>
+  <div class="mf">${foot}</div>`);
 }
-function marquerSigne(ref){
-  const d=DEVIS.find(x=>x.ref===ref);d.statut='signe';
-  const card=document.getElementById('card-'+ref);
-  if(card){card.style.background='var(--sageSoft)';card.style.borderColor='var(--sage)';
-    const b=document.getElementById('badge-'+ref);b.className='tag t-signe';b.textContent='Signé';}
-  closeModal();
-}
-function creerFactureFromDevis(ref){
-  const d=DEVIS.find(x=>x.ref===ref);
-  const num=Math.max(...FACTURES.map(f=>+f.ref.split('-')[1]))+1;
-  const ht=Math.round(d.montant/1.1);
-  const nf={ref:'FA-0'+num,client:d.client,ville:d.ville,prestation:d.prestation,montant:d.montant,montantHT:ht,tva:d.montant-ht,dateEmission:'22/06/2026',echeance:'22/07/2026',statut:'en attente',devisRef:d.ref,jours:null,_flash:true};
-  FACTURES.unshift(nf);
-  closeModal();
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===1));
-  document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab-fact').classList.add('active');
-  document.getElementById('fact-list').innerHTML=FACTURES.map(factCard).join('');
-  setTimeout(()=>{nf._flash=false;},1500);
-}
+
 function openFact(ref){
-  const f=FACTURES.find(x=>x.ref===ref);
-  let foot=`<button class="btn" onclick="closeModal()">Fermer</button>`;
-  if(f.statut==='en retard') foot+=`<button class="btn primary" onclick="alert('Relance de paiement envoyée à ${f.client}')">Relancer</button>`;
-  if(f.statut!=='payee') foot+=`<button class="btn sage" onclick="marquerPayee('${f.ref}')">Marquer payée</button>`;
-  const link=f.devisRef?`<div class="li-row"><div class="d">Devis lié</div><div><a style="color:var(--cobalt);cursor:pointer;font-weight:600" onclick="closeModal();openDevis('${f.devisRef}')">${f.devisRef} ›</a></div></div>`:'';
-  openModal(`
-    <div class="m-head"><div><div style="font-family:Oxanium;font-weight:700;font-size:18px;color:var(--cobalt)">${f.ref}</div><div style="color:var(--muted);font-size:13px;margin-top:3px">${f.client} · ${f.ville}</div></div><button class="m-close" onclick="closeModal()">×</button></div>
-    <div class="m-body">
-      <div style="display:flex;gap:10px;margin-bottom:16px"><span class="tag ${FSTATUT[f.statut]}">${FSTATUTLAB[f.statut]}</span><span class="chip">${f.prestation}</span></div>
-      <div class="li-row"><div class="d">Émise le</div><div>${f.dateEmission}</div></div>
-      <div class="li-row"><div class="d">Échéance</div><div>${f.echeance}</div></div>
-      ${link}
-      <div class="li-row"><div class="d">Montant HT</div><div style="font-family:Oxanium">${fmt(f.montantHT)}</div></div>
-      <div class="li-row"><div class="d">TVA (10%)</div><div style="font-family:Oxanium">${fmt(f.tva)}</div></div>
-      <div class="li-row" style="border:none;margin-top:8px"><div style="font-weight:700">Total TTC</div><div style="font-family:Oxanium;font-weight:700;font-size:18px">${fmt(f.montant)}</div></div>
-    </div>
-    <div class="m-foot">${foot}</div>`);
+  const f=FACTURES.find(x=>x.ref===ref);if(!f)return;
+  let foot=`<button class="btn" onclick="${mc()}">Fermer</button>`;
+  if(f.statut==='en retard')foot+=`<button class="btn dang" onclick="relancerF('${f.client}',this)">Envoyer relance</button>`;
+  if(f.statut!=='payee')foot+=`<button class="btn ok" onclick="markPaid('${f.ref}');${mc()}">Marquer payée</button>`;
+  const devisLink=f.devisRef?`<div class="li-r"><div class="li-lbl">Devis lié</div><div><a style="color:var(--blue);cursor:pointer;font-weight:600" onclick="${mc()};openDevis('${f.devisRef}')">${f.devisRef} →</a></div></div>`:'';
+  openM(`<div class="mh"><div><div class="oxa" style="font-weight:700;font-size:18px">${f.ref}</div><div style="color:var(--soft);font-size:13px;margin-top:3px">${f.client} · ${f.ville}</div></div>${badge(f.statut)}<button class="mx" onclick="${mc()}">×</button></div>
+  <div class="mb">
+    <div class="li-r"><div class="li-lbl">Émise le</div><div>${f.dateEmission}</div></div>
+    <div class="li-r"><div class="li-lbl">Échéance</div><div style="color:${f.statut==='en retard'?'var(--red)':'inherit'}">${f.echeance}${f.jours?` — dépassée de ${f.jours} j`:''}</div></div>
+    ${devisLink}
+    <div class="li-r"><div class="li-lbl">Montant HT</div><div class="oxa" style="font-weight:600">${fmt(f.montantHT)}</div></div>
+    <div class="li-r"><div class="li-lbl">TVA 10 %</div><div>${fmt(f.tva)}</div></div>
+    <div class="li-r" style="border:none;margin-top:6px"><div style="font-weight:600">Total TTC</div><div class="oxa" style="font-weight:700;font-size:19px;color:var(--blue)">${fmt(f.montant)}</div></div>
+  </div><div class="mf">${foot}</div>`);
 }
-function marquerPayee(ref){
+
+function markSigne(ref){
+  const d=DEVIS.find(x=>x.ref===ref);d.statut='signe';
+  const b=document.getElementById('dbadge-'+ref);if(b)b.innerHTML=badge('signe');
+  closeM();
+}
+function markPaid(ref,btn){
   const f=FACTURES.find(x=>x.ref===ref);f.statut='payee';f.jours=null;
-  const b=document.getElementById('fbadge-'+ref);if(b){b.className='tag t-payee';b.textContent='Payée';}
-  closeModal();
+  const b=document.getElementById('fbadge-'+ref);if(b)b.innerHTML=badge('payee');
+  const e=document.getElementById('fech-'+ref);if(e)e.style.color='var(--soft)';
+  if(btn){btn.closest('td').innerHTML='';}
+  closeM();
+}
+function relancerD(client,btn){feedbackBtn(btn,'Envoyé ✓','ok');}
+function relancerF(client,btn){feedbackBtn(btn,'Envoyé ✓','ok');}
+function feedbackBtn(btn,txt,cls){
+  if(!btn)return;const orig=btn.textContent,oc=btn.className;
+  btn.textContent=txt;btn.className='btn sm '+cls;
+  setTimeout(()=>{btn.textContent=orig;btn.className=oc;},2500);
+}
+function creerFact(ref){
+  const d=DEVIS.find(x=>x.ref===ref);
+  const num=Math.max(...FACTURES.map(f=>+(f.ref.replace('FA-',''))||0))+1;
+  const padded='FA-0'+String(num).padStart(2,'0');
+  const ht=Math.round(d.montant/1.1);
+  FACTURES.unshift({ref:padded,client:d.client,ville:d.ville,prestation:d.prestation,montant:d.montant,montantHT:ht,tva:d.montant-ht,dateEmission:'22/06/2026',echeance:'22/07/2026',statut:'en attente',devisRef:d.ref,jours:null});
+  closeM();
+  go('devis');
+  setTimeout(()=>{swTab(document.querySelectorAll('.tab')[1],'t-fact');},50);
 }
 
+/* ── RELANCES ── */
 VIEWS.relances=function(){
-  const dormants=DEVIS.filter(d=>d.statut==='dormant');
+  const dorms=DEVIS.filter(d=>d.statut==='dormant');
+  const ages=[10,8,15,12,20,6,5,18,22,26,32,14];
   const retards=FACTURES.filter(f=>f.statut==='en retard');
+  const tot=dorms.reduce((a,d)=>a+d.montant,0)+retards.reduce((a,f)=>a+f.montant,0);
   return `
-  <div class="hero">
-    <div class="hicon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-    <div><div class="ht">Total à récupérer</div><div class="hv">30 340 €</div></div>
-    <button class="btn danger" style="margin-left:auto" onclick="alert('Lancement des 11 relances...')">Tout relancer (11)</button>
+<div class="ph"><h2>Relances</h2><p>Dossiers en attente d'action</p></div>
+<div class="alert" style="margin-bottom:20px">
+  <div><div style="font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Total à récupérer</div><div class="alert-val">${fmt(tot)}</div></div>
+  <div class="alert-txt">${dorms.length} devis + ${retards.length} factures en attente</div>
+  <button class="btn dang" onclick="lancerTout()">Tout relancer (${dorms.length+retards.length})</button>
+</div>
+<div class="card" style="margin-bottom:14px">
+  <div class="card-title">Devis sans réponse · ${dorms.length} dossiers</div>
+  ${dorms.length?`<table class="tbl"><thead><tr><th>Réf.</th><th>Client</th><th>Montant</th><th>Depuis</th><th></th></tr></thead><tbody>
+  ${dorms.map((d,i)=>`<tr><td><span class="oxa" style="color:var(--blue);font-weight:600">${d.ref}</span></td><td>${d.client}<div class="sub">${d.prestation}</div></td><td><span class="oxa">${fmt(d.montant)}</span></td><td style="color:var(--amber)">${ages[i]||7} j</td><td><button class="btn sm" onclick="relancerD('${d.client}',this)">Relancer</button></td></tr>`).join('')}
+  </tbody></table>`:'<p style="color:var(--soft);font-size:13.5px">Aucun devis sans réponse.</p>'}
+</div>
+<div class="card" style="margin-bottom:14px">
+  <div class="card-title">Factures impayées · ${retards.length} dossiers</div>
+  ${retards.length?`<table class="tbl"><thead><tr><th>Réf.</th><th>Client</th><th>Montant</th><th>Retard</th><th></th></tr></thead><tbody>
+  ${retards.map(f=>`<tr><td><span class="oxa" style="color:var(--blue);font-weight:600">${f.ref}</span></td><td>${f.client}</td><td><span class="oxa">${fmt(f.montant)}</span></td><td style="color:var(--red)">+${f.jours} j</td><td style="display:flex;gap:8px"><button class="btn sm dang" onclick="relancerF('${f.client}',this)">Relancer</button><button class="btn sm ok" onclick="markPaid('${f.ref}',this)">Payée</button></td></tr>`).join('')}
+  </tbody></table>`:'<p style="color:var(--soft);font-size:13.5px">Aucune facture impayée.</p>'}
+</div>
+<div class="grid2">
+  <div class="card"><div class="card-title">Séquence devis</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      ${[['J+2','SMS de courtoisie','Confirmer réception','blue'],['J+5','Email de relance','Rappel + disponibilité','blue'],['J+10','Appel téléphonique','Proposition visite','mute']].map(([d,a,n,c])=>`<div class="seqstep"><div class="oxa" style="font-size:11px;color:var(--${c==='mute'?'soft':'blue'});font-weight:700;width:36px;flex-shrink:0">${d}</div><div><div style="font-weight:500;font-size:13.5px">${a}</div><div style="font-size:12px;color:var(--soft)">${n}</div></div></div>`).join('')}
+    </div>
   </div>
-  <div class="grid2 mt">
-    <div>
-      <div class="section-title">Devis dormants (${dormants.length})</div>
-      ${dormants.map(d=>`<div class="lcard" style="cursor:default">
-        <div class="lc-head"><span class="lc-ref">${d.ref}</span><span class="tag t-dormant">Dormant</span><span class="lc-amt">${fmt(d.montant)}</span></div>
-        <div style="font-weight:600;margin-bottom:8px">${d.client} · ${d.prestation}</div>
-        <div class="row"><span class="lc-meta"><span>Envoyé ${d.dateEnvoi}</span></span><button class="btn sm primary" style="margin-left:auto" onclick="alert('Relance envoyée à ${d.client}')">Relancer</button></div>
-      </div>`).join('')}
+  <div class="card"><div class="card-title">Séquence factures</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      ${[['J+3','SMS de rappel','Rappel échéance','amber'],['J+8','Email formel','Mise en demeure douce','red'],['J+15','Courrier recommandé','Procédure recouvrement','red']].map(([d,a,n,c])=>`<div class="seqstep"><div class="oxa" style="font-size:11px;color:var(--${c});font-weight:700;width:36px;flex-shrink:0">${d}</div><div><div style="font-weight:500;font-size:13.5px">${a}</div><div style="font-size:12px;color:var(--soft)">${n}</div></div></div>`).join('')}
     </div>
-    <div>
-      <div class="section-title">Factures en retard (${retards.length})</div>
-      ${retards.map(f=>`<div class="lcard" style="cursor:default;border-color:rgba(224,90,58,.4)">
-        <div class="lc-head"><span class="lc-ref">${f.ref}</span><span class="tag t-retard">${f.jours}j de retard</span><span class="lc-amt">${fmt(f.montant)}</span></div>
-        <div style="font-weight:600;margin-bottom:8px">${f.client} · ${f.prestation}</div>
-        <div class="row"><span class="lc-meta"><span>Échéance ${f.echeance}</span></span><button class="btn sm danger" style="margin-left:auto" onclick="alert('Relance de paiement envoyée à ${f.client}')">Relancer</button></div>
-      </div>`).join('')}
-      <div class="section-title mt">Séquence devis</div>
-      <div class="card">
-        <div class="seqstep active"><div class="seqdot">J+2</div><div><div style="font-weight:600">SMS de relance</div><div style="font-size:12px;color:var(--muted)">Envoyé automatiquement</div></div></div>
-        <div class="seqstep active"><div class="seqdot">J+5</div><div><div style="font-weight:600">Email détaillé</div><div style="font-size:12px;color:var(--muted)">Étape en cours</div></div></div>
-        <div class="seqstep"><div class="seqdot">J+10</div><div><div style="font-weight:600">Appel téléphonique</div><div style="font-size:12px;color:var(--muted)">À venir</div></div></div>
-      </div>
-      <div class="section-title mt">Séquence facture</div>
-      <div class="card">
-        <div class="seqstep active"><div class="seqdot">J+3</div><div><div style="font-weight:600">SMS de rappel</div><div style="font-size:12px;color:var(--muted)">Envoyé</div></div></div>
-        <div class="seqstep danger"><div class="seqdot">J+8</div><div><div style="font-weight:600">Email mise en demeure</div><div style="font-size:12px;color:var(--terra)">Action urgente</div></div></div>
-        <div class="seqstep"><div class="seqdot">J+15</div><div><div style="font-weight:600">Courrier recommandé</div><div style="font-size:12px;color:var(--muted)">À venir</div></div></div>
-      </div>
-    </div>
-  </div>`;
+  </div>
+</div>`;
 };
+function lancerTout(){document.querySelectorAll('#content button.btn.sm:not(.ok):not(.dang)').forEach(b=>feedbackBtn(b,'Envoyé ✓','ok'));}
 
+/* ── CHANTIERS ── */
+const CTYPE_COLOR={sdb:'var(--green)',clim:'var(--blue)',chauf:'var(--amber)',plomb:'var(--soft)'};
 VIEWS.chantiers=function(){
-  return `<div id="chantiers-list">
-    <div class="grid3">${CHANTIERS_DATA.map(chantierCard).join('')}</div>
-  </div>
-  <div id="chantiers-fiche" style="display:none"></div>`;
+  return `
+<div class="ph"><h2>Chantiers</h2><p>Suivi en temps réel de vos interventions</p></div>
+<div id="ch-list">${renderChList()}</div>
+<div id="ch-fiche" style="display:none"></div>`;
 };
-const CSTATUT={'en cours':'t-encours','planifié':'t-planifie','terminé':'t-termine'};
-function chantierCard(c){
-  const done=Object.values(c.checklist).filter(Boolean).length;
-  return `<div class="lcard" onclick="openChantierFiche(${c.id})">
-    <div class="lc-head"><span class="tag ${CSTATUT[c.statut]}">${c.statut}</span><span style="margin-left:auto;font-size:12px;color:var(--muted)">${c.debut} → ${c.fin}</span></div>
-    <div style="font-weight:700;margin-bottom:3px">${c.client}</div>
-    <div style="font-size:12px;color:var(--inkSoft);margin-bottom:10px">${c.prestation} · ${c.ville}</div>
-    <div class="hp" style="margin-bottom:6px"><div class="hp-top"><span>Avancement</span><span class="v">${c.avancement}%</span></div><div class="pbar"><span style="width:${c.avancement}%"></span></div></div>
-    <div style="font-size:12px;color:var(--muted)">${done}/5 étapes complétées</div>
-  </div>`;
+function renderChList(){
+  return `<div class="card" style="padding:0;overflow:hidden"><table class="tbl">
+  <thead><tr><th>Client</th><th>Prestation</th><th>Avancement</th><th>Dates</th><th>Statut</th></tr></thead>
+  <tbody>${CHANTIERS.map(c=>{
+    const done=Object.values(c.checklist).filter(Boolean).length;
+    return `<tr class="click" onclick="openCh(${c.id})">
+      <td><div style="font-weight:600">${c.client}</div><div class="sub">${c.adresse} · ${c.ville}</div></td>
+      <td style="color:var(--soft)">${c.prestation}</td>
+      <td style="min-width:140px"><div style="display:flex;align-items:center;gap:10px"><div class="prog" style="flex:1"><span style="width:${c.avancement}%;background:${CTYPE_COLOR[c.type]}"></span></div><span class="oxa" style="font-size:13px;font-weight:600;color:${CTYPE_COLOR[c.type]};width:32px">${c.avancement}%</span></div><div style="font-size:11px;color:var(--mute);margin-top:3px">${done}/5 étapes</div></td>
+      <td style="color:var(--soft);font-size:13px">${c.debut} → ${c.fin}</td>
+      <td>${badge(c.statut)}</td>
+    </tr>`;}).join('')}
+  </tbody></table></div>`;
 }
-const CHECKLABELS={devis:'Devis signé',acompte:'Acompte reçu',materiau:'Matériel commandé',execution:'Exécution terminée',reception:'Réception client'};
-function openChantierFiche(id){
-  const c=CHANTIERS_DATA.find(x=>x.id===id);
-  document.getElementById('chantiers-list').style.display='none';
-  const f=document.getElementById('chantiers-fiche');f.style.display='block';
+function openCh(id){
+  const c=CHANTIERS.find(x=>x.id===id);
+  document.getElementById('ch-list').style.display='none';
+  const f=document.getElementById('ch-fiche');f.style.display='block';
   f.innerHTML=`
-    <button class="btn sm" onclick="backToChantiers()">← Retour aux chantiers</button>
-    <div class="card mt"><div class="row" style="gap:14px;align-items:flex-start">
-      <div><h2 style="font-size:22px">${c.client}</h2><div style="color:var(--muted);font-size:13px;margin-top:4px">${c.adresse} · ${c.ville}</div>
-      <div style="margin-top:8px;font-size:13px;color:var(--inkSoft)">${c.prestation}</div></div>
-      <span class="tag ${CSTATUT[c.statut]}" style="margin-left:auto">${c.statut}</span></div>
-      <div class="hp mt"><div class="hp-top"><span>Avancement du chantier</span><span class="v">${c.avancement}%</span></div><div class="pbar"><span style="width:${c.avancement}%"></span></div></div>
-    </div>
-    <div class="grid2 mt">
-      <div class="card"><div class="section-title">Étapes</div><div id="checklist-${id}">${renderChecklist(c)}</div></div>
-      <div class="card"><div class="section-title">Informations</div>
-        <div class="li-row"><div class="d">Contact sur place</div><div>${c.contactSurPlace}</div></div>
-        <div class="li-row"><div class="d">Code d'accès</div><div>${c.codeAcces||'—'}</div></div>
-        <div class="li-row"><div class="d">Début</div><div>${c.debut}</div></div>
-        <div class="li-row" style="border:none"><div class="d">Fin prévue</div><div>${c.fin}</div></div>
-      </div>
-    </div>
-    <div class="card mt"><div class="section-title">Journal de chantier</div>
-      <div id="journal-${id}">${renderJournal(c)}</div>
-      <div class="row mt" style="gap:10px"><input class="search" id="jinput-${id}" placeholder="Nouvelle note de chantier..." style="flex:1"><button class="btn primary" onclick="addJournalEntry(${id})">Ajouter</button></div>
-    </div>
-    <div class="card mt"><div class="section-title">Note</div><div style="color:var(--inkSoft)">${c.note||'Aucune note.'}</div></div>`;
+<button class="back-btn" onclick="backCh()">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  Retour aux chantiers
+</button>
+<div class="card" style="margin-bottom:14px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+    <div><div style="font-size:20px;font-weight:700;font-family:'Oxanium';margin-bottom:4px">${c.client}</div><div style="font-size:13px;color:var(--soft)">${c.adresse} · ${c.ville} · ${c.prestation}</div></div>
+    ${badge(c.statut)}
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="prog" style="flex:1"><span style="width:${c.avancement}%;background:${CTYPE_COLOR[c.type]}"></span></div>
+    <span class="oxa" style="font-size:16px;font-weight:700;color:${CTYPE_COLOR[c.type]}">${c.avancement} %</span>
+  </div>
+</div>
+<div class="grid2" style="margin-bottom:14px">
+  <div class="card"><div class="card-title">Étapes</div><div id="chk-${id}">${renderChk(c)}</div></div>
+  <div class="card"><div class="card-title">Informations</div>
+    <div class="info-row"><span class="info-lbl">Contact</span><span class="info-val">${c.contactSurPlace||'—'}</span></div>
+    <div class="info-row"><span class="info-lbl">Code d'accès</span><span class="info-val">${c.codeAcces||'—'}</span></div>
+    <div class="info-row"><span class="info-lbl">Début</span><span class="info-val">${c.debut}</span></div>
+    <div class="info-row"><span class="info-lbl">Fin prévue</span><span class="info-val">${c.fin}</span></div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-title">Journal de chantier</div>
+  <div id="journal-${id}">${renderJournal(c)}</div>
+  <div style="display:flex;gap:10px;margin-top:14px">
+    <input class="sinp" id="jinp-${id}" placeholder="Nouvelle entrée..." style="flex:1">
+    <button class="btn prim" onclick="addJournal(${id})">Ajouter</button>
+  </div>
+</div>
+${c.note?`<div class="card mt"><div class="card-title">Note</div><div style="font-size:13.5px;color:var(--soft)">${c.note}</div></div>`:''}`;
 }
-function renderChecklist(c){
-  return Object.keys(c.checklist).map(k=>`<div class="checkitem ${c.checklist[k]?'done':''}" onclick="toggleCheck(${c.id},'${k}')"><div class="checkbox">${ICON.check}</div><div class="clab">${CHECKLABELS[k]}</div></div>`).join('');
-}
-function renderJournal(c){
-  if(!c.journal.length) return '<div style="color:var(--muted);font-size:13px">Aucune entrée pour le moment.</div>';
-  return c.journal.map(j=>`<div class="jentry"><div class="jdate">${j.date}</div><div>${j.texte}</div></div>`).join('');
-}
-function toggleCheck(id,key){
-  const c=CHANTIERS_DATA.find(x=>x.id===id);c.checklist[key]=!c.checklist[key];
-  document.getElementById('checklist-'+id).innerHTML=renderChecklist(c);
-}
-function addJournalEntry(id){
-  const c=CHANTIERS_DATA.find(x=>x.id===id);const inp=document.getElementById('jinput-'+id);
+function renderChk(c){return Object.keys(c.checklist).map(k=>`<div class="chk ${c.checklist[k]?'done':''}" onclick="togChk(${c.id},'${k}')"><div class="chk-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="chk-lbl">${CHK_LABELS[k]}</span></div>`).join('');}
+function renderJournal(c){if(!c.journal.length)return '<div style="color:var(--soft);font-size:13.5px">Aucune entrée.</div>';return c.journal.map(j=>`<div class="jentry"><div class="jd">${j.date}</div><div class="jt">${j.texte}</div></div>`).join('');}
+function togChk(id,key){const c=CHANTIERS.find(x=>x.id===id);c.checklist[key]=!c.checklist[key];document.getElementById('chk-'+id).innerHTML=renderChk(c);}
+function addJournal(id){
+  const c=CHANTIERS.find(x=>x.id===id);const inp=document.getElementById('jinp-'+id);
   if(!inp.value.trim())return;
-  const d=new Date();const dt=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
-  c.journal.push({date:dt,texte:inp.value.trim()});inp.value='';
+  const d=new Date();c.journal.push({date:`${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`,texte:inp.value.trim()});inp.value='';
   document.getElementById('journal-'+id).innerHTML=renderJournal(c);
 }
-function backToChantiers(){document.getElementById('chantiers-fiche').style.display='none';document.getElementById('chantiers-list').style.display='block';}
+function backCh(){document.getElementById('ch-fiche').style.display='none';document.getElementById('ch-list').style.display='block';}
 
+/* ── CALENDRIER ── */
 VIEWS.calendrier=function(){
-  const days=['Lun 22','Mar 23','Mer 24','Jeu 25','Ven 26'];
+  const days=[['Lun','22'],['Mar','23'],['Mer','24'],['Jeu','25'],['Ven','26']];
   const keys=['lun','mar','mer','jeu','ven'];
   const slots=['08h','10h','12h','14h','16h'];
-  let grid='<div class="calhd"></div>'+days.map(d=>`<div class="calhd">${d}</div>`).join('');
-  slots.forEach((s,si)=>{
-    grid+=`<div class="caltime">${s}</div>`;
-    keys.forEach(k=>{
-      const evs=(CAL_EVENTS[k]||[]).filter(e=>e.slot===si);
-      grid+=`<div>${evs.map(e=>`<div class="calev ev-${e.type}">${e.t}</div>`).join('')}</div>`;
-    });
-  });
+  let hdr=`<div class="cal-hdr" style="min-height:auto"></div>`+days.map(([d,n])=>`<div class="cal-hdr"><div style="color:var(--soft)">${d}</div><div class="oxa" style="font-size:18px;font-weight:700">${n}</div></div>`).join('');
+  let rows=slots.map((s,si)=>`<div class="cal-time">${s}</div>`+keys.map(k=>`<div>${(CAL[k]||[]).filter(e=>e.slot===si).map(e=>`<div class="cal-ev ev-${e.type}">${e.t}</div>`).join('')}</div>`).join('')).join('');
   return `
-  <div class="grid3">
-    <div class="kpi c-cobalt"><div class="k-label">Interventions cette semaine</div><div class="k-val">5</div><div class="k-sub">2 chantiers actifs</div></div>
-    <div class="kpi c-sage"><div class="k-label">Jours occupés</div><div class="k-val">5/5</div><div class="k-sub">Semaine complète</div></div>
-    <div class="kpi c-ochre"><div class="k-label">Répartition</div><div class="k-val" style="font-size:18px;margin-top:10px">2 Clim · 3 SDB</div><div class="k-sub">par type d'intervention</div></div>
-  </div>
-  <div class="card mt"><div class="row" style="margin-bottom:16px;gap:10px">
-    <div class="section-title" style="margin:0">Semaine du 22 au 26 juin 2026</div>
-    <div style="margin-left:auto;display:flex;gap:8px">
-      <button class="btn sm" onclick="alert('Semaine précédente')">←</button>
-      <button class="btn sm" onclick="alert('Retour à aujourd\\'hui')">Aujourd'hui</button>
-      <button class="btn sm" onclick="alert('Semaine suivante')">→</button>
-      <button class="btn sm primary" onclick="alert('Export ICS en cours...')">↓ Exporter ICS</button>
+<div class="ph"><h2>Planning</h2><p>Semaine du 22 au 26 juin 2026</p></div>
+<div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+  <div class="kpi"><div class="kpi-label">Interventions</div><div class="kpi-val oxa" style="color:var(--blue)">5</div><div class="kpi-sub">cette semaine</div></div>
+  <div class="kpi"><div class="kpi-label">Jours occupés</div><div class="kpi-val oxa">5/5</div><div class="kpi-sub up">semaine complète</div></div>
+  <div class="kpi"><div class="kpi-label">Types</div><div class="kpi-val oxa" style="font-size:18px;margin-top:10px">2 Clim · 3 SDB</div><div class="kpi-sub">par intervention</div></div>
+</div>
+<div class="card">
+  <div class="sec-row">
+    <div class="card-title" style="margin:0">Semaine 25</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn sm">← Préc.</button>
+      <button class="btn sm" style="color:var(--blue);border-color:var(--blue)">Aujourd'hui</button>
+      <button class="btn sm">Suiv. →</button>
+      <button class="btn sm ok">↓ ICS</button>
     </div>
   </div>
-  <div class="calgrid">${grid}</div>
-  <div style="display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--muted)">
-    <span><span style="display:inline-block;width:10px;height:10px;background:var(--cobalt);border-radius:2px;margin-right:5px"></span>Clim</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:var(--sage);border-radius:2px;margin-right:5px"></span>SDB</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:var(--violet);border-radius:2px;margin-right:5px"></span>Plomberie</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:var(--ochre);border-radius:2px;margin-right:5px"></span>Chauffe-eau</span>
+  <div class="cal-grid">${hdr+rows}</div>
+  <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--soft);flex-wrap:wrap">
+    <span><span class="dot" style="background:var(--blue)"></span> Clim</span>
+    <span><span class="dot" style="background:var(--green)"></span> SDB</span>
+    <span><span class="dot" style="background:var(--amber)"></span> Chauffe-eau</span>
+    <span><span class="dot" style="background:var(--soft)"></span> Plomberie</span>
   </div>
-  <div class="alert-box" style="margin-top:14px">⚠ Cette semaine est complète. La semaine du 29/06 a 2 jours sans intervention — relancez des devis chauds.</div>
-  </div>`;
+</div>
+<div class="card mt" style="background:var(--amberBg);border-color:rgba(251,191,36,.2)">
+  <div style="font-size:13.5px;color:var(--amber)">⚠ Semaine 27 (30 juin) et S28 (7 juil.) sont libres — des relances peuvent les remplir.</div>
+</div>`;
 };
 
+/* ── FOURNISSEURS ── */
+let curFourn='ballon';
 VIEWS.fournisseurs=function(){
   return `
-  <div class="card"><input class="search" id="fournSearch" placeholder="Rechercher un fournisseur ou une référence..." oninput="searchFournisseurs(this.value)"></div>
-  <div id="fournNormal">
-    <div class="tabs mt">
-      <div class="tab active" data-cat="ballon" onclick="switchFourn(this,'ballon')">Ballon thermo</div>
-      <div class="tab" data-cat="clim" onclick="switchFourn(this,'clim')">Split clim</div>
-      <div class="tab" data-cat="mitigeur" onclick="switchFourn(this,'mitigeur')">Mitigeur</div>
-    </div>
-    <div id="fournTable"></div>
+<div class="ph"><h2>Fournisseurs</h2><p>Comparez les prix et choisissez le meilleur tarif</p></div>
+<div class="card" style="margin-bottom:14px">
+  <input class="sinp" id="fsrch" placeholder="Rechercher un fournisseur ou une référence produit..." oninput="searchFourn(this.value)">
+</div>
+<div id="f-normal">
+  <div class="tabs">
+    <div class="tab on" onclick="swFourn(this,'ballon')">Ballon thermo.</div>
+    <div class="tab" onclick="swFourn(this,'clim')">Split clim</div>
+    <div class="tab" onclick="swFourn(this,'mitigeur')">Mitigeur</div>
   </div>
-  <div id="fournSearchResults" style="display:none"></div>`;
+  <div id="ftable"></div>
+</div>
+<div id="f-search" style="display:none"></div>`;
 };
-let curFourn='ballon';
-function initFourn(){curFourn='ballon';renderFournTable('ballon');}
-function switchFourn(el,cat){
-  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  curFourn=cat;renderFournTable(cat);
-}
-function fournRows(rows){
-  return rows.map(r=>`<tr class="${r.best?'best-row':''}">
-    <td style="font-weight:600">${r.nom} ${r.best?'<span class="tag t-signe" style="margin-left:6px">Meilleur</span>':''}</td>
-    <td style="color:var(--inkSoft)">${r.ref}</td>
-    <td style="font-family:Oxanium;font-weight:700">${r.prix} €${r.best?'<span class="chip" style="margin-left:6px;background:var(--sageSoft);color:var(--sage);border:none">Best</span>':''}</td>
-    <td>${r.delai}</td>
-    <td><span class="tag ${r.dispo==='Disponible'?'t-signe':'t-dormant'}">${r.dispo}</span></td></tr>`).join('');
-}
-function fournTableHTML(cat){
+function fournTable(cat){
   const c=FOURN[cat];
-  return `<div class="card"><div class="section-title">${c.title}</div>
-    <table><thead><tr><th>Fournisseur</th><th>Référence</th><th>Prix HT</th><th>Délai</th><th>Disponibilité</th></tr></thead>
-    <tbody>${fournRows(c.rows)}</tbody></table>
-    <div class="alert-box" style="margin-top:16px;background:var(--sageSoft);border-color:rgba(58,171,106,.35);color:var(--sage)">💡 Économie potentielle de ${c.economie} € en choisissant le meilleur fournisseur.</div>
-  </div>`;
+  return `<div class="card" style="padding:0;overflow:hidden"><table class="tbl">
+  <thead><tr><th>Fournisseur</th><th>Référence</th><th>Prix HT</th><th>Délai</th><th>Disponibilité</th></tr></thead>
+  <tbody>${c.rows.map(r=>`<tr class="${r.best?'best-row':''}">
+    <td><div style="font-weight:600">${r.nom}</div>${r.best?'<div class="sub" style="color:var(--green)">Meilleur prix</div>':''}</td>
+    <td style="color:var(--soft)">${r.ref}</td>
+    <td><span class="oxa" style="font-weight:700;color:${r.best?'var(--green)':'inherit'}">${r.prix} €</span></td>
+    <td style="color:var(--soft)">${r.delai}</td>
+    <td><span class="badge ${r.dispo==='Disponible'?'b-signe':'b-dormant'}">${r.dispo}</span></td>
+  </tr>`).join('')}</tbody></table></div>
+  <div class="card mt" style="background:var(--greenBg);border-color:rgba(74,222,128,.2);color:var(--green)">Économie potentielle de <strong>${c.economie} € HT/unité</strong> en choisissant le meilleur fournisseur.</div>`;
 }
-function renderFournTable(cat){const el=document.getElementById('fournTable');if(el)el.innerHTML=fournTableHTML(cat);}
-function searchFournisseurs(q){
+function swFourn(el,cat){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  curFourn=cat;renderFourn(cat);
+}
+function renderFourn(cat){const el=document.getElementById('ftable');if(el)el.innerHTML=fournTable(cat);}
+function searchFourn(q){
   q=q.trim().toLowerCase();
-  const normal=document.getElementById('fournNormal');const res=document.getElementById('fournSearchResults');
-  if(!q){normal.style.display='block';res.style.display='none';renderFournTable(curFourn);return;}
-  normal.style.display='none';res.style.display='block';
+  const n=document.getElementById('f-normal'),s=document.getElementById('f-search');
+  if(!q){n.style.display='block';s.style.display='none';renderFourn(curFourn);return;}
+  n.style.display='none';s.style.display='block';
   let html='';
   Object.keys(FOURN).forEach(cat=>{
     const matches=FOURN[cat].rows.filter(r=>r.nom.toLowerCase().includes(q)||r.ref.toLowerCase().includes(q));
     if(matches.length){
-      html+=`<div class="card mt"><div class="section-title">${FOURN[cat].title}</div>
-      <table><thead><tr><th>Fournisseur</th><th>Référence</th><th>Prix HT</th><th>Délai</th><th>Disponibilité</th></tr></thead>
-      <tbody>${fournRows(matches)}</tbody></table></div>`;
+      html+=`<div style="font-size:11px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.7px;margin:16px 0 8px">${FOURN[cat].title}</div>
+      <div class="card" style="padding:0;overflow:hidden"><table class="tbl">
+      <thead><tr><th>Fournisseur</th><th>Référence</th><th>Prix HT</th><th>Délai</th><th>Disponibilité</th></tr></thead>
+      <tbody>${matches.map(r=>`<tr class="${r.best?'best-row':''}"><td><div style="font-weight:600">${r.nom}</div>${r.best?'<div class="sub" style="color:var(--green)">Meilleur prix</div>':''}</td><td style="color:var(--soft)">${r.ref}</td><td><span class="oxa" style="font-weight:700;color:${r.best?'var(--green)':'inherit'}">${r.prix} €</span></td><td style="color:var(--soft)">${r.delai}</td><td><span class="badge ${r.dispo==='Disponible'?'b-signe':'b-dormant'}">${r.dispo}</span></td></tr>`).join('')}
+      </tbody></table></div>`;
     }
   });
-  res.innerHTML=html||'<div class="card mt" style="text-align:center;color:var(--muted)">Aucun résultat.</div>';
+  s.innerHTML=html||'<div class="card" style="text-align:center;color:var(--soft)">Aucun résultat.</div>';
 }
 
-const AVCOLORS=['#2BA8DC','#E05A3A','#3AAB6A','#D4A43C','#8B7CF6'];
-function avColor(id){return AVCOLORS[id%AVCOLORS.length];}
-function initials(n){return (n.split(' ').filter(w=>w[0]&&w[0]===w[0].toUpperCase()).slice(0,2).map(w=>w[0]).join('')||n.slice(0,2)).toUpperCase();}
+/* ── CLIENTS ── */
+const AV_COLORS=['#38BDF8','#4ADE80','#FBBF24','#F87171','#A78BFA'];
+function avColor(id){return AV_COLORS[id%AV_COLORS.length];}
+function initials(n){return n.split(' ').filter(w=>/[A-ZÀÉÈÊÎÙÛÂ]/.test(w[0])).slice(0,2).map(w=>w[0]).join('').toUpperCase()||n.slice(0,2).toUpperCase();}
+let crmFilter='all';
 VIEWS.clients=function(){
-  return `<div id="clients-list">
-    <div class="card"><div class="row" style="gap:12px;flex-wrap:wrap">
-      <input class="search" id="clientSearch" placeholder="Rechercher un client..." style="flex:1;min-width:200px" oninput="renderClientList()">
-      <div style="display:flex;gap:8px"><button class="btn sm primary" data-f="all" onclick="setClientFilter(this,'all')">Tous</button>
-      <button class="btn sm" data-f="actif" onclick="setClientFilter(this,'actif')">Clients actifs</button>
-      <button class="btn sm" data-f="prospect" onclick="setClientFilter(this,'prospect')">Prospects</button></div>
-    </div></div>
-    <div class="grid3 mt" id="clientGrid"></div>
-  </div>
-  <div id="clients-fiche" style="display:none"></div>`;
-};
-let clientFilter='all';
-function initClients(){clientFilter='all';renderClientList();}
-function setClientFilter(el,f){clientFilter=f;el.parentElement.querySelectorAll('.btn').forEach(b=>b.classList.remove('primary'));el.classList.add('primary');renderClientList();}
-function renderClientList(){
-  const q=(document.getElementById('clientSearch')?.value||'').toLowerCase();
-  let list=CLIENTS.filter(c=>clientFilter==='all'||c.statut===clientFilter);
-  if(q)list=list.filter(c=>c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q));
-  document.getElementById('clientGrid').innerHTML=list.map(c=>`<div class="lcard" onclick="openClientFiche(${c.id})">
-    <div class="row" style="gap:12px;margin-bottom:10px"><div class="av-c" style="background:${avColor(c.id)}">${initials(c.nom)}</div>
-    <div><div style="font-weight:700">${c.nom}</div><div style="font-size:12px;color:var(--muted)">${c.ville} · ${c.type}</div></div>
-    <span class="tag t-${c.statut}" style="margin-left:auto">${c.statut==='actif'?'Actif':'Prospect'}</span></div>
-    <div class="row"><span style="font-family:Oxanium;font-weight:700;font-size:17px">${fmt(c.ca)}</span></div>
-    <div style="margin-top:8px">${c.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
-  </div>`).join('')||'<div style="color:var(--muted)">Aucun client.</div>';
-}
-function openClientFiche(id){
-  const c=CLIENTS.find(x=>x.id===id);
-  document.getElementById('clients-list').style.display='none';
-  const f=document.getElementById('clients-fiche');f.style.display='block';
-  const nbDevis=DEVIS.filter(d=>d.client===c.nom).length;
-  f.innerHTML=`
-  <button class="btn sm" onclick="backToClients()">← Retour aux clients</button>
-  <div class="card mt"><div class="row" style="gap:16px">
-    <div class="av-c" style="width:58px;height:58px;font-size:20px;background:${avColor(c.id)}">${initials(c.nom)}</div>
-    <div><h2 style="font-size:22px">${c.nom}</h2><div style="color:var(--muted);font-size:13px;margin-top:4px">${c.ville} · ${c.type} · ${c.tel}</div></div>
-    <span class="tag t-${c.statut}" style="margin-left:auto">${c.statut==='actif'?'Actif':'Prospect'}</span>
-  </div></div>
-  <div class="grid2 mt">
-    <div class="kpi c-cobalt"><div class="k-label">CA total</div><div class="k-val">${fmt(c.ca)}</div></div>
-    <div class="kpi c-violet"><div class="k-label">Devis émis</div><div class="k-val">${nbDevis}</div></div>
-  </div>
-  <div class="grid2 mt">
-    <div class="card"><div class="section-title">Historique</div>
-      ${c.historique.map(h=>`<div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid var(--line)"><span class="dot" style="background:${h.includes('payée')||h.includes('signé')?'var(--sage)':h.includes('retard')||h.includes('refusé')?'var(--terra)':'var(--ochre)'}"></span><span>${h}</span></div>`).join('')}
-    </div>
-    <div class="card"><div class="section-title">Prochaine action</div>
-      <div class="alert-box">${c.prochaine}</div>
-      <div class="section-title mt">Note interne</div>
-      <textarea id="clientNote-${id}" style="width:100%;min-height:90px;background:var(--canvas);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--ink);font-family:Space Grotesk">${c.note}</textarea>
-      <button class="btn sm primary mt" onclick="saveClientNote(${id})">Enregistrer la note</button>
-      <span id="noteSaved-${id}" style="color:var(--sage);font-size:12px;margin-left:10px;display:none">✓ Enregistré</span>
-    </div>
-  </div>`;
-}
-function saveClientNote(id){
-  const c=CLIENTS.find(x=>x.id===id);c.note=document.getElementById('clientNote-'+id).value;
-  const s=document.getElementById('noteSaved-'+id);s.style.display='inline';setTimeout(()=>s.style.display='none',2000);
-}
-function backToClients(){document.getElementById('clients-fiche').style.display='none';document.getElementById('clients-list').style.display='block';}
-
-VIEWS.reglages=function(){
   return `
-  <div class="grid2">
-    <div class="card"><div class="section-title">Mon entreprise</div>
-      <div class="field"><label>Nom</label><input value="SANITENERGIE"></div>
-      <div class="field"><label>SIRET</label><input value="892 451 678 00019"></div>
-      <div class="field"><label>Adresse</label><input value="14 rue de l'Industrie, 66380 Pia"></div>
-      <div class="field"><label>Téléphone</label><input value="04 68 00 00 00"></div>
-      <div class="field"><label>Email</label><input value="contact@sanitenergie.fr"></div>
-      <div class="field"><label>Certification RGE</label><input value="RGE QualiPAC — n° E-12345"></div>
+<div class="ph"><h2>Clients</h2><p id="cl-count">${CLIENTS.length} clients</p></div>
+<div id="cl-list">
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <input class="sinp" id="clsrch" placeholder="Rechercher..." oninput="renderCl()" style="flex:1;min-width:180px">
+    <div style="display:flex;gap:6px">
+      <button class="btn sm prim crf" onclick="setCrf(this,'all')">Tous</button>
+      <button class="btn sm crf" onclick="setCrf(this,'actif')">Actifs</button>
+      <button class="btn sm crf" onclick="setCrf(this,'prospect')">Prospects</button>
     </div>
-    <div>
-      <div class="card"><div class="section-title">Devis & Factures</div>
-        <div class="field"><label>Taux de TVA</label><select><option>10 % (rénovation)</option><option>20 % (standard)</option><option>5,5 % (énergie)</option></select></div>
-        <div class="field"><label>Conditions de paiement</label><input value="30 jours nets"></div>
-        <div class="field"><label>Prochain numéro de facture</label><input value="FA-043"></div>
-        <div class="field"><label>Mention pied de page</label><textarea style="min-height:70px">Assurance décennale MAAF n°123456 — Médiateur de la consommation: CNPM</textarea></div>
-      </div>
-      <div class="card mt"><div class="section-title">Relances automatiques</div>
-        <div class="field"><label>Délai 1ère relance devis (jours)</label><input value="2"></div>
-        <div class="field"><label>Délai 1ère relance facture (jours)</label><input value="3"></div>
-        <div class="field"><label>Ton des messages</label>
-          <div class="radio-row">
-            <div class="radio-opt sel" onclick="pickTon(this)">Cordial</div>
-            <div class="radio-opt" onclick="pickTon(this)">Formel</div>
-            <div class="radio-opt" onclick="pickTon(this)">Ferme</div>
-          </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden"><table class="tbl" id="cl-tbl">
+    <thead><tr><th></th><th>Nom · Ville</th><th>Type</th><th>CA total</th><th>Statut</th><th>Prochaine action</th></tr></thead>
+    <tbody id="cl-body"></tbody>
+  </table></div>
+</div>
+<div id="cl-fiche" style="display:none"></div>`;
+};
+function renderCl(){
+  const q=(document.getElementById('clsrch')?.value||'').toLowerCase();
+  let list=CLIENTS.filter(c=>crmFilter==='all'||c.statut===crmFilter);
+  if(q)list=list.filter(c=>c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q));
+  document.getElementById('cl-count').textContent=list.length+' client'+(list.length!==1?'s':'');
+  const tb=document.getElementById('cl-body');
+  if(tb)tb.innerHTML=list.map(c=>`<tr class="click" onclick="openCl(${c.id})">
+    <td><div class="av-c" style="background:${avColor(c.id)}">${initials(c.nom)}</div></td>
+    <td><div style="font-weight:600">${c.nom}</div><div class="sub">${c.ville}</div></td>
+    <td style="color:var(--soft)">${c.type}</td>
+    <td><span class="oxa" style="font-weight:600">${fmt(c.ca)}</span></td>
+    <td>${badge(c.statut)}</td>
+    <td style="color:var(--soft);font-size:13px">${c.prochaine}</td>
+  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--soft);padding:20px">Aucun résultat.</td></tr>';
+}
+function setCrf(el,f){crmFilter=f;el.parentElement.querySelectorAll('.crf').forEach(b=>{b.classList.remove('prim');});el.classList.add('prim');renderCl();}
+function openCl(id){
+  const c=CLIENTS.find(x=>x.id===id);
+  document.getElementById('cl-list').style.display='none';
+  const f=document.getElementById('cl-fiche');f.style.display='block';
+  const nbDv=DEVIS.filter(d=>d.client===c.nom).length;
+  const nbFa=FACTURES.filter(fa=>fa.client===c.nom).length;
+  f.innerHTML=`
+<button class="back-btn" onclick="backCl()">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  Retour aux clients
+</button>
+<div class="card" style="margin-bottom:14px">
+  <div style="display:flex;align-items:center;gap:16px">
+    <div class="av-c" style="width:52px;height:52px;font-size:18px;border-radius:12px;background:${avColor(c.id)}">${initials(c.nom)}</div>
+    <div style="flex:1"><div style="font-size:21px;font-family:'Oxanium';font-weight:700">${c.nom}</div><div style="font-size:13.5px;color:var(--soft);margin-top:3px">${c.ville} · ${c.type} · <a href="tel:${c.tel}" style="color:var(--blue)">${c.tel}</a></div></div>
+    ${badge(c.statut)}
+  </div>
+</div>
+<div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
+  <div class="kpi"><div class="kpi-label">CA total</div><div class="kpi-val oxa" style="color:var(--blue)">${fmt(c.ca)}</div></div>
+  <div class="kpi"><div class="kpi-label">Devis émis</div><div class="kpi-val oxa">${nbDv}</div></div>
+  <div class="kpi"><div class="kpi-label">Factures</div><div class="kpi-val oxa">${nbFa}</div></div>
+</div>
+<div class="grid2">
+  <div class="card"><div class="card-title">Historique</div>
+    ${c.historique.map(h=>{
+      const col=h.includes('payée')||h.includes('signé')?'var(--green)':h.includes('retard')||h.includes('refusé')?'var(--red)':'var(--amber)';
+      return `<div class="info-row"><span class="info-lbl" style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:${col}"></span>${h.split(' — ')[0]}</span><span class="info-val">${h.split(' — ')[1]||''}</span></div>`;
+    }).join('')}
+  </div>
+  <div class="card"><div class="card-title">Prochaine action</div>
+    <div style="background:var(--amberBg);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--amber);margin-bottom:16px">${c.prochaine}</div>
+    <div class="card-title" style="margin-top:6px">Note interne</div>
+    <textarea class="finp" id="cnote-${id}" rows="4">${c.note}</textarea>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+      <button class="btn prim sm" onclick="saveCNote(${id})">Enregistrer</button>
+      <span id="cnoted-${id}" style="font-size:12px;color:var(--green);display:none">✓ Enregistré</span>
+    </div>
+  </div>
+</div>
+${c.tags.length?`<div class="card mt">${c.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div>`:''}`;
+}
+function saveCNote(id){const c=CLIENTS.find(x=>x.id===id);c.note=document.getElementById('cnote-'+id).value;const s=document.getElementById('cnoted-'+id);s.style.display='inline';setTimeout(()=>s.style.display='none',2000);}
+function backCl(){document.getElementById('cl-fiche').style.display='none';document.getElementById('cl-list').style.display='block';}
+
+/* ── RÉGLAGES ── */
+VIEWS.reglages=function(){return `
+<div class="ph"><h2>Réglages</h2><p>Paramètres de votre entreprise</p></div>
+<div class="grid2">
+  <div class="card"><div class="card-title">Mon entreprise</div>
+    <div class="frow"><label class="flbl">Raison sociale</label><input class="finp" value="SANITENERGIE"></div>
+    <div class="frow"><label class="flbl">Dirigeant</label><input class="finp" value="Mickael Basty"></div>
+    <div class="frow"><label class="flbl">SIRET</label><input class="finp" value="892 451 678 00019"></div>
+    <div class="frow"><label class="flbl">Adresse</label><input class="finp" value="14 rue de l'Industrie, 66380 Pia"></div>
+    <div class="frow"><label class="flbl">Téléphone</label><input class="finp" value="04 68 00 00 00"></div>
+    <div class="frow" style="margin:0"><label class="flbl">Email</label><input class="finp" value="contact@sanitenergie.fr"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="card"><div class="card-title">Devis & Factures</div>
+      <div class="frow"><label class="flbl">TVA appliquée</label><select class="finp"><option>10 % — Rénovation énergétique</option><option>20 % — Standard</option><option>5,5 % — Économies d'énergie</option></select></div>
+      <div class="frow"><label class="flbl">Conditions de paiement</label><input class="finp" value="30 jours fin de mois"></div>
+      <div class="frow" style="margin:0"><label class="flbl">Mention pied de page</label><textarea class="finp" rows="3">RGE QualiPAC · Assurance décennale MAAF n°123456 · RCS Perpignan</textarea></div>
+    </div>
+    <div class="card"><div class="card-title">Relances automatiques</div>
+      <div class="frow"><label class="flbl">1ère relance devis (jours)</label><input class="finp" type="number" value="5"></div>
+      <div class="frow"><label class="flbl">1ère relance facture (jours après échéance)</label><input class="finp" type="number" value="7"></div>
+      <div class="frow" style="margin:0"><label class="flbl">Ton des messages</label>
+        <div class="radio-row">
+          <div class="radio-opt on" onclick="pickTon(this)">Cordial</div>
+          <div class="radio-opt" onclick="pickTon(this)">Formel</div>
+          <div class="radio-opt" onclick="pickTon(this)">Ferme</div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="card mt"><div class="section-title">Données</div>
-    <div class="row" style="gap:12px">
-      <button class="btn primary" onclick="alert('Export des données en cours...')">Exporter mes données</button>
-      <button class="btn danger" onclick="alert('Réinitialisation — action irréversible (démo)')">Réinitialiser</button>
+    <div style="display:flex;gap:10px">
+      <button class="btn prim" style="flex:1" onclick="alert('Réglages sauvegardés.')">Sauvegarder</button>
+      <button class="btn dang" onclick="alert('Réinitialisation — démo.')">Réinit.</button>
     </div>
-  </div>`;
-};
-function pickTon(el){el.parentElement.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');}
+  </div>
+</div>`;};
+function pickTon(el){el.parentElement.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('on'));el.classList.add('on');}
 
+/* ── INIT ── */
 buildNav();
-document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>setView(n.dataset.view)));
-setView('dashboard');
+go('dashboard');
+setTimeout(()=>{const s=document.querySelector('.side-foot .ni');if(s)s.dataset.v='reglages';},0);
 </script>
 </body>
 </html>
