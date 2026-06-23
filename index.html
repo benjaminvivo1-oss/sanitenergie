@@ -1322,92 +1322,158 @@ function pickTon(el){el.parentElement.querySelectorAll('.radio-opt').forEach(o=>
 
 
 /* ── DEVIS VOCAL ── */
-let voiceRecog=null;
+let voiceRecog=null,_voiceActive=false;
+
 function openVoiceDevis(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   const supported=!!SR;
+  // Re-use the same rich form, just add voice panel on top
+  _ndLignes=[];
+  const clientNames=CLIENTS.map(c=>`<option value="${c.nom}">`).join('');
+  const prestaOptions=Object.keys(CATALOGUE).map(k=>`<option value="${k}">${k}</option>`).join('');
   openM(`<div class="mh">
-    <div><div class="oxa" style="font-weight:700;font-size:17px">Assistant vocal — Nouveau devis</div>
-    <div style="color:var(--soft);font-size:13px;margin-top:3px">${supported?'Dictez les informations, je remplis le formulaire.':'Votre navigateur ne supporte pas la reconnaissance vocale. Remplissez manuellement.'}</div></div>
+    <div><div class="oxa" style="font-weight:700;font-size:17px">Nouveau devis — Assistant vocal</div>
+    <div style="color:var(--soft);font-size:12px;margin-top:2px">${supported?'Parlez puis vérifiez et ajustez les lignes.':'Micro non disponible — remplissez manuellement.'}</div></div>
     <button class="mx" onclick="stopVoice();closeM()">×</button></div>
-  <div class="mb">
-    <div class="frow"><label class="flbl">Client</label><input class="finp" id="vd-client" placeholder="Nom du client"></div>
-    <div class="frow"><label class="flbl">Prestation</label><input class="finp" id="vd-presta" placeholder="Ex: Climatisation split, Rénovation SDB..."></div>
-    <div class="frow"><div class="grid2">
-      <div><label class="flbl">Montant TTC (€)</label><input class="finp" type="number" id="vd-montant" placeholder="0"></div>
-      <div><label class="flbl">Ville</label><input class="finp" id="vd-ville" placeholder="Perpignan..."></div>
-    </div></div>
-    ${supported?`
-    <div id="voice-status" style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--bor);border-radius:8px;margin-top:4px;background:var(--bg)">
-      <button id="voice-btn" class="btn prim" onclick="toggleVoice()" style="flex-shrink:0">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+  <div class="mb" style="min-width:560px">
+    ${supported?`<div id="voice-panel" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--bor);border-radius:10px;margin-bottom:16px;background:var(--bg)">
+      <button id="voice-btn" onclick="toggleVoice()" style="flex-shrink:0;background:var(--blue);color:#0a1a26;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         Parler
       </button>
-      <div id="voice-txt" style="font-size:13px;color:var(--soft)">Cliquez sur Parler puis dictez — ex: <em>"Client Dupont, climatisation, 3 200 euros, Perpignan"</em></div>
+      <div id="voice-txt" style="font-size:12.5px;color:var(--soft);flex:1">Dites par ex : <em style="color:var(--ink)">"Client Dupont, climatisation split, Perpignan"</em></div>
     </div>`:''}
+    <datalist id="nd-cl-list">${clientNames}</datalist>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="frow" style="margin:0"><label class="flbl">Client</label><input class="finp" id="nd-client" list="nd-cl-list" placeholder="Nom ou société" oninput="ndAutoVille()"></div>
+      <div class="frow" style="margin:0"><label class="flbl">Ville</label><input class="finp" id="nd-ville" placeholder="Perpignan"></div>
+    </div>
+    <div class="frow"><label class="flbl">Prestation</label>
+      <select class="finp" id="nd-presta" onchange="ndLoadCatalogue()">
+        <option value="">— Choisir —</option>${prestaOptions}
+      </select>
+    </div>
+    <div id="nd-lignes-wrap" style="margin-top:14px;display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Détail des prestations</div>
+      <div style="display:grid;grid-template-columns:1fr 60px 50px 80px 80px 28px;gap:6px;align-items:center;margin-bottom:6px;padding:0 2px">
+        <div style="font-size:11px;color:var(--mute)">Description</div>
+        <div style="font-size:11px;color:var(--mute)">Qté</div>
+        <div style="font-size:11px;color:var(--mute)">Unité</div>
+        <div style="font-size:11px;color:var(--mute)">PU €</div>
+        <div style="font-size:11px;color:var(--mute)">Total</div>
+        <div></div>
+      </div>
+      <div id="nd-lignes"></div>
+      <button class="btn sm" style="margin-top:8px" onclick="ndAddLigne()">+ Ajouter une ligne</button>
+    </div>
+    <div id="nd-totaux" style="display:none;margin-top:16px;border-top:1px solid var(--bor);padding-top:14px">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div style="display:flex;gap:24px;font-size:13px;color:var(--soft)"><span>Total HT</span><span id="nd-ht" class="oxa" style="min-width:90px;text-align:right">0 €</span></div>
+        <div style="display:flex;gap:24px;font-size:13px;color:var(--soft)"><span>TVA 10 %</span><span id="nd-tva" class="oxa" style="min-width:90px;text-align:right">0 €</span></div>
+        <div style="display:flex;gap:24px;font-size:15px;font-weight:700"><span>Total TTC</span><span id="nd-ttc" class="oxa" style="color:var(--blue);min-width:90px;text-align:right">0 €</span></div>
+      </div>
+      <div style="margin-top:12px">
+        <label class="flbl">Date chantier prévue (optionnel — crée un événement calendrier)</label>
+        <input class="finp" id="nd-datechan" type="date" style="width:180px">
+      </div>
+    </div>
   </div>
-  <div class="mf">
-    <button class="btn" onclick="stopVoice();closeM()">Annuler</button>
-    <button class="btn prim" onclick="saveVoiceDevis()">Créer le devis</button>
-  </div>`);
+  <div class="mf"><button class="btn" onclick="stopVoice();closeM()">Annuler</button><button class="btn prim" onclick="saveNewDevis()">Créer le devis</button></div>`);
 }
 
-let _voiceActive=false;
 function toggleVoice(){
   if(_voiceActive){stopVoice();return;}
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return;
   voiceRecog=new SR();voiceRecog.lang='fr-FR';voiceRecog.interimResults=true;voiceRecog.maxAlternatives=1;
   const btn=document.getElementById('voice-btn');
   const txt=document.getElementById('voice-txt');
-  btn.textContent='⏹ Stop';btn.classList.add('dang');btn.classList.remove('prim');
-  txt.textContent='En écoute...';txt.style.color='var(--red)';
+  btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg> En écoute...';
+  btn.style.background='var(--red)';btn.style.color='#fff';
+  if(txt){txt.textContent='Parlez maintenant...';txt.style.color='var(--red)';}
   _voiceActive=true;
   voiceRecog.onresult=e=>{
     const t=Array.from(e.results).map(r=>r[0].transcript).join(' ');
-    txt.textContent='Transcription : '+t;
-    if(e.results[0].isFinal){parseVoiceInput(t);stopVoice();}
+    if(txt)txt.textContent='Transcription : '+t;
+    if(e.results[e.results.length-1].isFinal){parseVoiceInput(t);stopVoice();}
   };
-  voiceRecog.onerror=()=>{txt.textContent='Erreur micro. Vérifiez les permissions.';txt.style.color='var(--red)';stopVoice();};
+  voiceRecog.onerror=()=>{if(txt){txt.textContent='Erreur micro. Vérifiez les permissions.';txt.style.color='var(--red)';}stopVoice();};
   voiceRecog.onend=()=>{if(_voiceActive)stopVoice();};
   voiceRecog.start();
 }
+
 function stopVoice(){
   _voiceActive=false;
   if(voiceRecog){try{voiceRecog.stop();}catch(e){}}
   const btn=document.getElementById('voice-btn');
   if(btn){
-    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Parler';
-    btn.classList.remove('dang');btn.classList.add('prim');
+    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Parler';
+    btn.style.background='var(--blue)';btn.style.color='#0a1a26';
   }
 }
+
 function parseVoiceInput(t){
   t=t.toLowerCase();
-  // extract client: after "client" keyword
-  const cl=t.match(/client\s+([\w\s\-]+?)(?:\s*,|\s+climatisation|\s+plomberie|\s+sdb|\s+rénovation|\s+chauffe|$)/);
-  if(cl){const inp=document.getElementById('vd-client');if(inp)inp.value=cl[1].trim().replace(/\b\w/g,c=>c.toUpperCase());}
-  // extract montant: number followed by euro
-  const amt=t.match(/(\d[\d\s]*)(?:euros?|€)/);
-  if(amt){const inp=document.getElementById('vd-montant');if(inp)inp.value=amt[1].replace(/\s/g,'');}
-  // extract prestation
-  const pmap={climatisation:'Climatisation split',clim:'Climatisation split',sdb:'Rénovation SDB','salle de bain':'Rénovation SDB','chauffe-eau':'Chauffe-eau thermodynamique',chauffe:'Chauffe-eau thermodynamique',plomberie:'Dépannage plomberie'};
-  for(const [k,v] of Object.entries(pmap)){if(t.includes(k)){const inp=document.getElementById('vd-presta');if(inp)inp.value=v;break;}}
-  // extract ville
-  const villes=['perpignan','canet','pia','rivesaltes','saint-estève','le soler'];
-  for(const v of villes){if(t.includes(v)){const inp=document.getElementById('vd-ville');if(inp)inp.value=v.replace(/\b\w/g,c=>c.toUpperCase());break;}}
+  // Client
+  const cl=t.match(/(?:client|pour|monsieur|madame|m\.?|mme\.?)\s+([\w\s\-]+?)(?:\s*,|\s+clim|\s+plomb|\s+sdb|\s+rénov|\s+chauffe|\s+dépann|\s+entretien|$)/i);
+  if(cl){
+    const nom=cl[1].trim().replace(/\b\w/g,c=>c.toUpperCase());
+    const inp=document.getElementById('nd-client');if(inp)inp.value=nom;
+    // auto-fill ville from CLIENTS
+    const found=CLIENTS.find(c=>c.nom.toLowerCase().includes(nom.toLowerCase().split(' ')[0]));
+    if(found){const vl=document.getElementById('nd-ville');if(vl&&!vl.value)vl.value=found.ville;}
+  }
+  // Ville
+  const villes=['perpignan','canet','pia','rivesaltes','saint-estève','le soler','thuir','argelès','collioure'];
+  for(const v of villes){if(t.includes(v)){const inp=document.getElementById('nd-ville');if(inp)inp.value=v.replace(/\b\w/g,c=>c.toUpperCase());break;}}
+  // Prestation — match catalogue keys
+  const pmap={
+    'multi.?split':'Climatisation multi-split','multi split':'Climatisation multi-split',
+    'climatisation split':'Climatisation split','clim split':'Climatisation split',
+    'climatisation':'Climatisation split','clim':'Climatisation split',
+    'pompe à chaleur':'Pompe à chaleur air/air','pac ':'Pompe à chaleur air/air',
+    'salle de bain':'Rénovation SDB','rénovation sdb':'Rénovation SDB','rénov':'Rénovation SDB','sdb':'Rénovation SDB',
+    '270':'Chauffe-eau thermodynamique 270L',
+    'chauffe.eau':'Chauffe-eau thermodynamique','chauffe eau':'Chauffe-eau thermodynamique','ballon':'Chauffe-eau thermodynamique',
+    'entretien':'Entretien climatisation',
+    'dépannage':'Dépannage plomberie','plomberie':'Dépannage plomberie',
+  };
+  for(const [k,v] of Object.entries(pmap)){
+    if(new RegExp(k,'i').test(t)){
+      const sel=document.getElementById('nd-presta');
+      if(sel){sel.value=v;ndLoadCatalogue();}
+      break;
+    }
+  }
   const txt=document.getElementById('voice-txt');
-  if(txt){txt.textContent='Formulaire rempli — vérifiez et cliquez Créer.';txt.style.color='var(--green)';}
+  if(txt){txt.textContent='Formulaire rempli — vérifiez les lignes et ajustez si besoin.';txt.style.color='var(--green)';}
 }
-function saveVoiceDevis(){
-  const client=document.getElementById('vd-client')?.value.trim();
-  const presta=document.getElementById('vd-presta')?.value.trim();
-  const montant=parseFloat(document.getElementById('vd-montant')?.value)||0;
-  const ville=document.getElementById('vd-ville')?.value.trim()||'Perpignan';
-  if(!client||!presta){alert('Client et prestation requis.');return;}
-  const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
-  const ref='DV-'+String(num).padStart(3,'0');
-  const today=new Date();const dd=String(today.getDate()).padStart(2,'0'),mm=String(today.getMonth()+1).padStart(2,'0'),yy=today.getFullYear();
-  DEVIS.unshift({ref,client,ville,prestation:presta,montant,dateEnvoi:`${dd}/${mm}/${yy}`,statut:'dormant',lignes:[{desc:presta,qte:1,unit:'ff',pu:montant,total:montant}]});
-  stopVoice();closeM();go('devis');
+
+// ── Simulation vocale animée (pour la démo) ──
+function demoSimulation(){
+  go('devis');
+  setTimeout(()=>{
+    openVoiceDevis();
+    // Simulate voice typing with animation
+    setTimeout(()=>{
+      const phrase='Client Laurent Mas, climatisation split, Perpignan';
+      const txt=document.getElementById('voice-txt');
+      const btn=document.getElementById('voice-btn');
+      if(btn){btn.innerHTML='<span style="color:var(--red)">● En écoute...</span>';btn.style.background='var(--redBg)';btn.style.color='var(--red)';}
+      let i=0;
+      const timer=setInterval(()=>{
+        i++;
+        if(txt)txt.textContent='Transcription : '+phrase.slice(0,i);
+        if(i>=phrase.length){
+          clearInterval(timer);
+          setTimeout(()=>{
+            parseVoiceInput(phrase);
+            stopVoice();
+          },400);
+        }
+      },45);
+    },600);
+  },200);
 }
 // ── lignes temporaires pour le formulaire devis ──
 let _ndLignes=[];
