@@ -231,6 +231,9 @@ select.finp{cursor:pointer}
   <div class="top">
     <div class="top-title" id="topTitle">Tableau de bord</div>
     <div class="top-right">
+      <button class="btn" onclick="demoSimulation()" style="background:linear-gradient(135deg,#1e3a5f,#0a2a4a);border-color:var(--blue);color:var(--blue);font-size:12px;padding:6px 14px;font-weight:700;letter-spacing:.03em">
+        ▶ Démo devis
+      </button>
       <div class="rge-badge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
         RGE certifié
@@ -319,6 +322,47 @@ mitigeur:{title:'Mitigeur thermostatique Hansgrohe Ecostat',economie:47,rows:[
   {nom:'SDB Direct',ref:'Grohe Grohtherm 800',prix:185,delai:'5 j',dispo:'Limité',best:false},
 ]},
 };
+
+const CATALOGUE={
+  'Climatisation split':{type:'clim',duree:1,lignes:[
+    {desc:"Main d'œuvre pose",qte:2,unit:'j',pu:700},
+    {desc:'Split 3.5kW Daikin FTXC35C',qte:1,unit:'u',pu:1200},
+    {desc:'Raccordements + fluide',qte:1,unit:'ff',pu:300},
+  ]},
+  'Climatisation multi-split':{type:'clim',duree:2,lignes:[
+    {desc:"Main d'œuvre pose",qte:3,unit:'j',pu:700},
+    {desc:'Unités int. x2 + groupe ext.',qte:1,unit:'ff',pu:1700},
+    {desc:'Raccordements + fluide',qte:1,unit:'ff',pu:300},
+  ]},
+  'Rénovation SDB':{type:'sdb',duree:3,lignes:[
+    {desc:"Main d'œuvre plomberie",qte:4,unit:'j',pu:700},
+    {desc:'Équipements sanitaires',qte:1,unit:'ff',pu:1600},
+    {desc:'Carrelage + étanchéité',qte:1,unit:'ff',pu:800},
+  ]},
+  'Chauffe-eau thermodynamique':{type:'chauf',duree:1,lignes:[
+    {desc:"Main d'œuvre + dépose",qte:1,unit:'j',pu:900},
+    {desc:'Ballon 200L Atlantic Calypso',qte:1,unit:'u',pu:1600},
+    {desc:'Raccordements électro-plomberie',qte:1,unit:'ff',pu:400},
+  ]},
+  'Chauffe-eau thermodynamique 270L':{type:'chauf',duree:1,lignes:[
+    {desc:"Main d'œuvre + dépose",qte:1,unit:'j',pu:1000},
+    {desc:'Ballon 270L Atlantic Calypso',qte:1,unit:'u',pu:2200},
+    {desc:'Raccordements électro-plomberie',qte:1,unit:'ff',pu:500},
+  ]},
+  'Entretien climatisation':{type:'clim',duree:0.5,lignes:[
+    {desc:'Forfait entretien + nettoyage filtres',qte:1,unit:'ff',pu:95},
+  ]},
+  'Dépannage plomberie':{type:'plomb',duree:0.5,lignes:[
+    {desc:"Main d'œuvre dépannage",qte:1,unit:'ff',pu:87.5},
+    {desc:'Fournitures diverses',qte:1,unit:'ff',pu:17.5},
+  ]},
+  'Pompe à chaleur air/air':{type:'clim',duree:2,lignes:[
+    {desc:"Main d'œuvre installation",qte:2,unit:'j',pu:800},
+    {desc:'PAC Atlantic Fujitsu 5kW',qte:1,unit:'u',pu:2200},
+    {desc:'Raccordements + mise en service',qte:1,unit:'ff',pu:600},
+  ]},
+};
+
 
 const CAL={
 lun:[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
@@ -1365,29 +1409,190 @@ function saveVoiceDevis(){
   DEVIS.unshift({ref,client,ville,prestation:presta,montant,dateEnvoi:`${dd}/${mm}/${yy}`,statut:'dormant',lignes:[{desc:presta,qte:1,unit:'ff',pu:montant,total:montant}]});
   stopVoice();closeM();go('devis');
 }
-function openNewDevis(){
+// ── lignes temporaires pour le formulaire devis ──
+let _ndLignes=[];
+
+function openNewDevis(prefill){
+  _ndLignes=[];
+  const clientNames=CLIENTS.map(c=>`<option value="${c.nom}">`).join('');
+  const prestaOptions=Object.keys(CATALOGUE).map(k=>`<option value="${k}">${k}</option>`).join('');
   openM(`<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">Nouveau devis</div><button class="mx" onclick="closeM()">×</button></div>
-  <div class="mb">
-    <div class="frow"><label class="flbl">Client</label><input class="finp" id="nd-client" placeholder="Nom du client"></div>
-    <div class="frow"><label class="flbl">Prestation</label><select class="finp" id="nd-presta"><option>Climatisation split</option><option>Climatisation multi-split</option><option>Rénovation SDB</option><option>Chauffe-eau thermodynamique</option><option>Entretien clim</option><option>Dépannage plomberie</option></select></div>
-    <div class="frow"><div class="grid2"><div><label class="flbl">Montant TTC</label><input class="finp" type="number" id="nd-montant" placeholder="0"></div><div><label class="flbl">Ville</label><input class="finp" id="nd-ville" placeholder="Perpignan"></div></div></div>
+  <div class="mb" style="min-width:560px">
+    <datalist id="nd-cl-list">${clientNames}</datalist>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="frow" style="margin:0"><label class="flbl">Client</label><input class="finp" id="nd-client" list="nd-cl-list" placeholder="Nom ou société" oninput="ndAutoVille()"></div>
+      <div class="frow" style="margin:0"><label class="flbl">Ville</label><input class="finp" id="nd-ville" placeholder="Perpignan"></div>
+    </div>
+    <div class="frow"><label class="flbl">Prestation</label>
+      <select class="finp" id="nd-presta" onchange="ndLoadCatalogue()">
+        <option value="">— Choisir —</option>${prestaOptions}
+      </select>
+    </div>
+    <div id="nd-lignes-wrap" style="margin-top:14px;display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Détail des prestations</div>
+      <div style="display:grid;grid-template-columns:1fr 60px 50px 80px 80px 28px;gap:6px;align-items:center;margin-bottom:6px;padding:0 2px">
+        <div style="font-size:11px;color:var(--mute)">Description</div>
+        <div style="font-size:11px;color:var(--mute)">Qté</div>
+        <div style="font-size:11px;color:var(--mute)">Unité</div>
+        <div style="font-size:11px;color:var(--mute)">PU €</div>
+        <div style="font-size:11px;color:var(--mute)">Total</div>
+        <div></div>
+      </div>
+      <div id="nd-lignes"></div>
+      <button class="btn sm" style="margin-top:8px" onclick="ndAddLigne()">+ Ajouter une ligne</button>
+    </div>
+    <div id="nd-totaux" style="display:none;margin-top:16px;border-top:1px solid var(--bor);padding-top:14px">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div style="display:flex;gap:24px;font-size:13px;color:var(--soft)"><span>Total HT</span><span id="nd-ht" class="oxa" style="min-width:90px;text-align:right">0 €</span></div>
+        <div style="display:flex;gap:24px;font-size:13px;color:var(--soft)"><span>TVA 10 %</span><span id="nd-tva" class="oxa" style="min-width:90px;text-align:right">0 €</span></div>
+        <div style="display:flex;gap:24px;font-size:15px;font-weight:700"><span>Total TTC</span><span id="nd-ttc" class="oxa" style="color:var(--blue);min-width:90px;text-align:right">0 €</span></div>
+      </div>
+      <div style="margin-top:12px">
+        <label class="flbl">Date chantier prévue (optionnel — crée un événement calendrier)</label>
+        <input class="finp" id="nd-datechan" type="date" style="width:180px">
+      </div>
+    </div>
   </div>
-  <div class="mf"><button class="btn" onclick="closeM()">Annuler</button><button class="btn prim" onclick="saveNewDevis()">Créer</button></div>`);
+  <div class="mf"><button class="btn" onclick="closeM()">Annuler</button><button class="btn prim" onclick="saveNewDevis()">Créer le devis</button></div>`);
+  if(prefill){
+    setTimeout(()=>{
+      const el=document.getElementById('nd-client');if(el)el.value=prefill.client||'';
+      const vl=document.getElementById('nd-ville');if(vl)vl.value=prefill.ville||'';
+      const pr=document.getElementById('nd-presta');if(pr){pr.value=prefill.presta||'';ndLoadCatalogue();}
+    },50);
+  }
 }
+
+function ndAutoVille(){
+  const v=document.getElementById('nd-client')?.value||'';
+  const c=CLIENTS.find(x=>x.nom.toLowerCase()===v.toLowerCase());
+  if(c){const el=document.getElementById('nd-ville');if(el&&!el.value)el.value=c.ville;}
+}
+
+function ndLoadCatalogue(){
+  const presta=document.getElementById('nd-presta')?.value;
+  const cat=CATALOGUE[presta];
+  _ndLignes=cat?cat.lignes.map(l=>({...l,total:l.qte*l.pu})):[];
+  ndRenderLignes();
+}
+
+function ndRenderLignes(){
+  const wrap=document.getElementById('nd-lignes-wrap');
+  const totWrap=document.getElementById('nd-totaux');
+  if(wrap)wrap.style.display=_ndLignes.length?'block':'none';
+  if(totWrap)totWrap.style.display=_ndLignes.length?'block':'none';
+  const el=document.getElementById('nd-lignes');
+  if(!el)return;
+  el.innerHTML=_ndLignes.map((l,i)=>`<div style="display:grid;grid-template-columns:1fr 60px 50px 80px 80px 28px;gap:6px;align-items:center;margin-bottom:5px">
+    <input class="sinp" style="font-size:12px;padding:6px 8px" value="${l.desc}" oninput="_ndLignes[${i}].desc=this.value">
+    <input class="sinp" style="font-size:12px;padding:6px 8px;text-align:center" type="number" value="${l.qte}" oninput="_ndLignes[${i}].qte=+this.value;_ndLignes[${i}].total=_ndLignes[${i}].qte*_ndLignes[${i}].pu;ndCalcTotaux()">
+    <input class="sinp" style="font-size:12px;padding:6px 8px;text-align:center" value="${l.unit}" oninput="_ndLignes[${i}].unit=this.value">
+    <input class="sinp" style="font-size:12px;padding:6px 8px;text-align:right" type="number" value="${l.pu}" oninput="_ndLignes[${i}].pu=+this.value;_ndLignes[${i}].total=_ndLignes[${i}].qte*_ndLignes[${i}].pu;ndCalcTotaux()">
+    <div class="oxa" style="font-size:13px;font-weight:700;text-align:right;padding:0 4px">${l.total.toLocaleString('fr-FR')} €</div>
+    <button onclick="_ndLignes.splice(${i},1);ndRenderLignes()" style="background:none;border:none;color:var(--mute);cursor:pointer;font-size:16px;padding:0;line-height:1" title="Supprimer">×</button>
+  </div>`).join('');
+  ndCalcTotaux();
+}
+
+function ndCalcTotaux(){
+  const ht=_ndLignes.reduce((a,l)=>a+(l.qte*l.pu),0);
+  const tva=Math.round(ht*0.10);
+  const ttc=ht+tva;
+  const fmt=n=>n.toLocaleString('fr-FR')+' €';
+  const htEl=document.getElementById('nd-ht');if(htEl)htEl.textContent=fmt(ht);
+  const tvaEl=document.getElementById('nd-tva');if(tvaEl)tvaEl.textContent=fmt(tva);
+  const ttcEl=document.getElementById('nd-ttc');if(ttcEl)ttcEl.textContent=fmt(ttc);
+  // live update totals in lignes (for display)
+  _ndLignes.forEach(l=>l.total=l.qte*l.pu);
+  // re-render just the total cells without full re-render
+  document.querySelectorAll('#nd-lignes>div').forEach((row,i)=>{
+    const cells=row.querySelectorAll('div.oxa');
+    if(cells[0])cells[0].textContent=(_ndLignes[i]?.total||0).toLocaleString('fr-FR')+' €';
+  });
+}
+
+function ndAddLigne(){
+  _ndLignes.push({desc:'',qte:1,unit:'ff',pu:0,total:0});
+  ndRenderLignes();
+}
+
 function saveNewDevis(){
   const client=document.getElementById('nd-client')?.value.trim();
-  const presta=document.getElementById('nd-presta')?.value;
-  const montant=parseFloat(document.getElementById('nd-montant')?.value)||0;
+  const presta=document.getElementById('nd-presta')?.value||'Prestation';
   const ville=document.getElementById('nd-ville')?.value.trim()||'Perpignan';
   if(!client){alert('Client requis.');return;}
+  if(!_ndLignes.length){alert('Ajoutez au moins une prestation.');return;}
+  const ht=_ndLignes.reduce((a,l)=>a+(l.qte*l.pu),0);
+  const tva=Math.round(ht*0.10);
+  const ttc=ht+tva;
   const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
   const ref='DV-'+String(num).padStart(3,'0');
-  const today=new Date();const dd=String(today.getDate()).padStart(2,'0'),mm=String(today.getMonth()+1).padStart(2,'0'),yy=today.getFullYear();
-  DEVIS.unshift({ref,client,ville,prestation:presta,montant,dateEnvoi:`${dd}/${mm}/${yy}`,statut:'dormant',lignes:[{desc:presta,qte:1,unit:'ff',pu:montant,total:montant}]});
-  closeM();go('devis');
+  const today=new Date();
+  const fmt=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  DEVIS.unshift({ref,client,ville,prestation:presta,montant:ttc,montantHT:ht,tva,dateEnvoi:fmt(today),statut:'dormant',
+    lignes:_ndLignes.map(l=>({...l,total:l.qte*l.pu}))});
+  // Create calendar event if date set
+  const dateChan=document.getElementById('nd-datechan')?.value;
+  if(dateChan){
+    const cat=CATALOGUE[presta];
+    const duree=cat?.duree||1;
+    const startD=new Date(dateChan);
+    for(let i=0;i<Math.ceil(duree);i++){
+      const d=new Date(startD);d.setDate(d.getDate()+i);
+      const newId=Math.max(0,...EVENTS.map(e=>e.id||0))+1;
+      EVENTS.push({id:newId,date:d.toISOString().slice(0,10),debut:'08:00',fin:'17:00',
+        titre:client+' — '+presta,type:cat?.type||'autre',lieu:ville,devisRef:ref});
+    }
+  }
+  // Add/update client CA
+  const cl=CLIENTS.find(c=>c.nom.toLowerCase()===client.toLowerCase());
+  if(cl){cl.ca+=ttc;if(cl.statut==='prospect')cl.statut='actif';}
+  closeM();
+  // Flash confirmation
+  go('devis');
+  setTimeout(()=>{
+    const top=document.querySelector('.body');
+    if(top){const n=document.createElement('div');
+      n.style.cssText='position:fixed;top:70px;right:24px;background:var(--greenBg);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-weight:600;z-index:9999;font-size:14px';
+      n.textContent='✓ Devis '+ref+' créé — '+ttc.toLocaleString('fr-FR')+' € TTC';
+      document.body.appendChild(n);setTimeout(()=>n.remove(),3500);}
+  },100);
+}
+
+function demoSimulation(){
+  go('devis');
+  setTimeout(()=>openNewDevis({client:'Batipro 66',ville:'Perpignan',presta:'Climatisation multi-split'}),200);
 }
 
 /* ── INIT ── */
+function syncChantierEvents(){
+  // Remove old auto-generated events (those with chantierId set)
+  for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].chantierId)EVENTS.splice(i,1);}
+  CHANTIERS.forEach(ch=>{
+    // Parse debut/fin dd/mm → build date strings for 2026
+    function toISO(ddmm){
+      if(!ddmm)return null;
+      const [dd,mm]=ddmm.split('/');
+      return '2026-'+String(mm).padStart(2,'0')+'-'+String(dd).padStart(2,'0');
+    }
+    const dStart=toISO(ch.debut),dEnd=toISO(ch.fin);
+    if(!dStart)return;
+    // Generate one event per day between debut and fin
+    const start=new Date(dStart),end=new Date(dEnd||dStart);
+    for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+      const iso=d.toISOString().slice(0,10);
+      const alreadyExists=EVENTS.some(e=>!e.chantierId&&e.date===iso&&e.titre.includes(ch.client));
+      if(!alreadyExists){
+        const newId=Math.max(0,...EVENTS.map(e=>e.id||0))+1;
+        EVENTS.push({id:newId,date:iso,debut:'08:00',fin:'17:00',
+          titre:ch.client+' — '+ch.prestation,
+          type:ch.type||'autre',lieu:ch.adresse+', '+ch.ville,
+          chantierId:ch.id});
+      }
+    }
+  });
+}
+syncChantierEvents();
 buildNav();
 go('dashboard');
 setTimeout(()=>{const s=document.querySelector('.side-foot .ni');if(s)s.dataset.v='reglages';},0);
