@@ -453,17 +453,56 @@ function initDash(){
     {clim:12500,sdb:9300,chauf:4400,plomb:1600},{clim:13200,sdb:10100,chauf:4600,plomb:1500},
     {clim:7700,sdb:5700,chauf:2900,plomb:800},{clim:8640,sdb:5760,chauf:2880,plomb:1920}
   ];
+  // custom HTML tooltip
+  let tip=document.getElementById('ca-tip');
+  if(!tip){tip=document.createElement('div');tip.id='ca-tip';
+    Object.assign(tip.style,{position:'fixed',pointerEvents:'none',zIndex:'999',display:'none',
+      background:'#161C24',border:'1px solid #1E2A36',borderRadius:'12px',padding:'14px 18px',
+      boxShadow:'0 8px 32px rgba(0,0,0,.5)',minWidth:'200px',fontFamily:'Inter,sans-serif'});
+    document.body.appendChild(tip);
+  }
+  function showTip(ctx2,e){
+    const pts=ctx2.chart.getElementsAtEventForMode(e,'index',{intersect:false},false);
+    if(!pts.length){tip.style.display='none';return;}
+    const i=pts[0].index;
+    const lbl=ctx2.chart.data.labels[i];
+    const tot=ctx2.chart.data.datasets[0].data[i];
+    const d=CA_DETAIL[i];
+    tip.innerHTML=
+      '<div style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">'+lbl+' 2025–2026</div>'+
+      '<div style="font-size:16px;font-family:Oxanium,sans-serif;font-weight:700;color:#38BDF8;margin-bottom:12px">'+tot.toLocaleString('fr-FR')+' €</div>'+
+      '<div style="display:flex;flex-direction:column;gap:7px">'+
+        row('#38BDF8','Climatisation',d.clim)+
+        row('#4ADE80','Rénovation SDB',d.sdb)+
+        row('#FBBF24','Chauffe-eau',d.chauf)+
+        row('#94A3B8','Plomberie',d.plomb)+
+      '</div>';
+    function row(col,lbl2,val){
+      const pct=Math.round(val/tot*100);
+      return '<div style="display:flex;align-items:center;gap:8px">'+
+        '<span style="width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></span>'+
+        '<span style="flex:1;font-size:12px;color:#94A3B8">'+lbl2+'</span>'+
+        '<span style="font-family:Oxanium,sans-serif;font-weight:600;font-size:13px;color:#E2E8F0">'+val.toLocaleString('fr-FR')+' €</span>'+
+        '<span style="font-size:11px;color:'+col+';width:32px;text-align:right">'+pct+'%</span>'+
+      '</div>';
+    }
+    tip.style.display='block';
+    const rect=ctx.getBoundingClientRect();
+    let x=e.clientX+16,y=e.clientY-80;
+    if(x+220>window.innerWidth)x=e.clientX-230;
+    if(y<0)y=8;
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  }
+  ctx.addEventListener('mousemove',e=>showTip({chart:caChart},e));
+  ctx.addEventListener('mouseleave',()=>{tip.style.display='none';});
+
   caChart=new Chart(ctx,{type:'line',data:{
     labels:['Jul','Août','Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Juin'],
     datasets:[{data:[18200,11400,23800,25200,20600,15800,22400,20100,27800,29400,17100,19200],
       borderColor:'#38BDF8',borderWidth:2,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:'#38BDF8',
       pointBorderColor:'#0D1117',pointBorderWidth:1.5,fill:true,backgroundColor:g,tension:.4}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-    tooltip:{backgroundColor:'#161C24',titleColor:'#E2E8F0',bodyColor:'#94A3B8',padding:12,cornerRadius:10,borderColor:'#1E2A36',borderWidth:1,
-      callbacks:{
-        label:c=>' Total : '+c.parsed.y.toLocaleString('fr-FR')+' €',
-        afterBody:c=>{const d=CA_DETAIL[c[0].dataIndex];return['','  Clim : '+d.clim.toLocaleString('fr-FR')+' €','  SDB : '+d.sdb.toLocaleString('fr-FR')+' €','  Chauffe-eau : '+d.chauf.toLocaleString('fr-FR')+' €','  Plomberie : '+d.plomb.toLocaleString('fr-FR')+' €'];}
-      }}},
+    tooltip:{enabled:false}},
     scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5A6E',font:{size:11,family:'Inter'}}},
       y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5A6E',font:{size:11,family:'Inter'},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}
   }});
