@@ -1481,7 +1481,8 @@ function vdShowForm(){
   const bc=document.getElementById('vd-btn-create');if(bc)bc.style.display='inline-flex';
 }
 
-/* — Micro — */
+/* — Micro (MediaRecorder + Whisper via serveur PDF) — */
+const PDF_SERVER='http://localhost:3000';
 let _mediaRecorder=null,_audioChunks=[];
 
 async function toggleVoice(){
@@ -1531,7 +1532,6 @@ function stopVoice(){
       if(tr)tr.innerHTML='<span style="color:var(--ink)">'+txt+'</span>';
       if(lbl){lbl.textContent='Analyse terminée ✓';lbl.style.color='var(--green)';}
       if(result.data){
-        // Pré-remplir depuis le JSON structuré de Claude
         vdShowForm();
         setTimeout(()=>{
           const d=result.data;
@@ -1541,7 +1541,7 @@ function stopVoice(){
             ndRenderLignes();
           }
         },50);
-      } else {
+      }else{
         parseVoiceInput(txt);
       }
     }catch(e){
@@ -1591,64 +1591,22 @@ function parseVoiceInput(raw){
   },50);
 }
 
-/* — Sauvegarde — */
-// URL du serveur PDF (port 3000 par défaut, configurable)
-const PDF_SERVER = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000'
-  : 'http://localhost:3000';
-
+/* — Sauvegarde + génération PDF — */
 async function saveNewDevis(){
   const client=document.getElementById('nd-client')?.value.trim();
-  const adresse=document.getElementById('nd-adresse')?.value.trim()||'';
   const presta=document.getElementById('nd-presta')?.value||'Prestation';
   const ville=document.getElementById('nd-ville')?.value.trim()||'Perpignan';
   if(!client){alert('Client requis.');return;}
   if(!_ndLignes.length){alert('Ajoutez au moins une prestation.');return;}
   const ht=_ndLignes.reduce((a,l)=>a+(l.qte*l.pu),0);
   const tvaAmt=Math.round(ht*0.10);const ttc=ht+tvaAmt;
+  const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
+  const ref='DV-'+String(num).padStart(3,'0');
   const today=new Date();
   const fmtDate=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-
-  // Tenter la génération PDF via le serveur Node.js
-  const btnCreate=document.querySelector('[onclick="saveNewDevis()"]');
-  if(btnCreate){btnCreate.textContent='Génération PDF…';btnCreate.disabled=true;}
-
-  let pdfRef=null;
-  try {
-    const payload={
-      type:'devis',
-      client:{nom:client,adresse:adresse||ville},
-      lignes:_ndLignes.map(l=>({designation:l.desc,qte:l.qte,pu_ht:l.pu,tva:l.tva||10})),
-    };
-    const resp=await fetch(PDF_SERVER+'/api/generate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload),
-    });
-    if(resp.ok){
-      // Déclencher le téléchargement
-      const blob=await resp.blob();
-      const cd=resp.headers.get('Content-Disposition')||'';
-      const filename=cd.match(/filename="?([^"]+)"?/)?.[1]||'devis.pdf';
-      pdfRef=filename.replace('.pdf','');
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;a.download=filename;a.click();
-      URL.revokeObjectURL(url);
-    }
-  } catch(e){
-    // Serveur indisponible — on continue sans PDF, simple avertissement
-    console.warn('Serveur PDF indisponible :',e.message);
-  }
-
-  // Générer la ref dashboard (depuis le serveur si dispo, sinon locale)
-  const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
-  const ref=pdfRef||('DV-'+String(num).padStart(3,'0'));
-
   DEVIS.unshift({ref,client,ville,prestation:presta,montant:ttc,montantHT:ht,tva:tvaAmt,
     dateEnvoi:fmtDate(today),statut:'dormant',
     lignes:_ndLignes.map(l=>({...l,total:l.qte*l.pu}))});
-
   const dateChan=document.getElementById('nd-datechan')?.value;
   if(dateChan){
     const cat=CATALOGUE[presta];const duree=Math.ceil(cat?.duree||1);
@@ -1662,14 +1620,37 @@ async function saveNewDevis(){
   }
   const cl=CLIENTS.find(c=>c.nom.toLowerCase()===client.toLowerCase());
   if(cl){cl.ca+=ttc;if(cl.statut==='prospect')cl.statut='actif';}
-
   stopVoice();closeM();
   go('devis');
+  /* Génération PDF via serveur */
+  try{
+    const payload={
+      type:'devis',
+      client:{nom:client,adresse:ville},
+      lignes:_ndLignes.map(l=>({designation:l.desc,quantite:l.qte,prix_unitaire_ht:l.pu,taux_tva:l.tva})),
+      date_emission:today.toISOString().slice(0,10),
+    };
+    const resp=await fetch(PDF_SERVER+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(resp.ok){
+      const blob=await resp.blob();
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=ref+'.pdf';a.click();
+      URL.revokeObjectURL(url);
+      setTimeout(()=>{
+        const n=document.createElement('div');
+        n.style.cssText='position:fixed;top:70px;right:24px;background:var(--greenBg);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+        n.textContent='✓ '+ref+' créé + PDF téléchargé — '+ttc.toLocaleString('fr-FR')+' € TTC';
+        document.body.appendChild(n);setTimeout(()=>n.remove(),4000);
+      },100);
+      return;
+    }
+  }catch(_){}
+  /* Fallback si serveur hors ligne */
   setTimeout(()=>{
     const n=document.createElement('div');
     n.style.cssText='position:fixed;top:70px;right:24px;background:var(--greenBg);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
-    n.textContent=pdfRef?'✓ '+ref+' généré et téléchargé !':'✓ '+ref+' créé (serveur PDF hors ligne)';
-    document.body.appendChild(n);setTimeout(()=>n.remove(),5000);
+    n.textContent='✓ '+ref+' créé — '+ttc.toLocaleString('fr-FR')+' € TTC (serveur PDF hors ligne)';
+    document.body.appendChild(n);setTimeout(()=>n.remove(),4000);
   },100);
 }
 
