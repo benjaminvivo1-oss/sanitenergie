@@ -1482,38 +1482,74 @@ function vdShowForm(){
 }
 
 /* — Micro — */
-function toggleVoice(){
+let _mediaRecorder=null,_audioChunks=[];
+
+async function toggleVoice(){
   if(_voiceActive){stopVoice();return;}
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){alert('Micro non disponible. Essayez Chrome ou Edge.');return;}
-  voiceRecog=new SR();voiceRecog.lang='fr-FR';voiceRecog.interimResults=true;voiceRecog.maxAlternatives=3;
   const btn=document.getElementById('voice-btn');
   const lbl=document.getElementById('voice-status-lbl');
   const tr=document.getElementById('voice-transcript');
-  if(btn){btn.style.borderColor='var(--red)';btn.style.background='rgba(248,113,113,.12)';}
-  if(lbl){lbl.textContent='En écoute — parlez maintenant...';lbl.style.color='var(--red)';}
-  if(tr)tr.innerHTML='<span style="color:var(--mute);font-style:italic">Parlez...</span>';
-  _voiceActive=true;
-  voiceRecog.onresult=e=>{
-    const transcript=Array.from(e.results).map(r=>r[0].transcript).join(' ');
-    if(tr)tr.innerHTML='<span style="color:var(--ink)">'+transcript+'</span>';
-    if(e.results[e.results.length-1].isFinal){stopVoice();setTimeout(()=>parseVoiceInput(transcript),200);}
-  };
-  voiceRecog.onerror=e=>{
-    if(lbl){lbl.textContent='Erreur : '+e.error+'. Vérifiez les permissions micro.';lbl.style.color='var(--red)';}
-    stopVoice();
-  };
-  voiceRecog.onend=()=>{if(_voiceActive)stopVoice();};
-  voiceRecog.start();
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    _audioChunks=[];
+    const mime=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4';
+    _mediaRecorder=new MediaRecorder(stream,{mimeType:mime});
+    _mediaRecorder.ondataavailable=e=>{if(e.data.size>0)_audioChunks.push(e.data);};
+    _mediaRecorder.start(250);
+    _voiceActive=true;
+    if(btn){btn.style.borderColor='var(--red)';btn.style.background='rgba(248,113,113,.12)';}
+    if(lbl){lbl.textContent='Enregistrement… cliquez pour arrêter';lbl.style.color='var(--red)';}
+    if(tr)tr.innerHTML='<span style="color:var(--mute);font-style:italic">Parlez maintenant…</span>';
+  }catch(err){
+    if(lbl){lbl.textContent='Micro refusé : '+err.message;lbl.style.color='var(--red)';}
+  }
 }
 
 function stopVoice(){
+  if(!_voiceActive&&!_mediaRecorder)return;
   _voiceActive=false;
-  if(voiceRecog){try{voiceRecog.stop();}catch(e){}}
   const btn=document.getElementById('voice-btn');
-  if(btn){btn.style.borderColor='var(--blue)';btn.style.background='var(--blueBg)';}
   const lbl=document.getElementById('voice-status-lbl');
-  if(lbl&&lbl.style.color==='var(--red)'){lbl.textContent='Appuyez pour reparler';lbl.style.color='var(--soft)';}
+  const tr=document.getElementById('voice-transcript');
+  if(btn){btn.style.borderColor='var(--blue)';btn.style.background='var(--blueBg)';}
+  if(!_mediaRecorder){if(lbl){lbl.textContent='Appuyez pour parler';lbl.style.color='var(--soft)';}return;}
+  const mr=_mediaRecorder;_mediaRecorder=null;
+  mr.stream.getTracks().forEach(t=>t.stop());
+  mr.onstop=async()=>{
+    if(!_audioChunks.length){if(lbl){lbl.textContent='Rien enregistré';lbl.style.color='var(--soft)';}return;}
+    if(lbl){lbl.textContent='Transcription en cours…';lbl.style.color='var(--soft)';}
+    if(tr)tr.innerHTML='<span style="color:var(--mute);font-style:italic">Envoi au serveur Whisper…</span>';
+    const mime=_audioChunks[0]?.type||'audio/webm';
+    const blob=new Blob(_audioChunks,{type:mime});
+    const fd=new FormData();
+    fd.append('audio',blob,'record.'+(mime.includes('mp4')?'mp4':'webm'));
+    try{
+      const resp=await fetch(PDF_SERVER+'/api/transcribe',{method:'POST',body:fd});
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error||'Erreur serveur');}
+      const result=await resp.json();
+      const txt=result.transcription||'';
+      if(tr)tr.innerHTML='<span style="color:var(--ink)">'+txt+'</span>';
+      if(lbl){lbl.textContent='Analyse terminée ✓';lbl.style.color='var(--green)';}
+      if(result.data){
+        // Pré-remplir depuis le JSON structuré de Claude
+        vdShowForm();
+        setTimeout(()=>{
+          const d=result.data;
+          const cl=document.getElementById('nd-client');if(cl&&d.client)cl.value=d.client;
+          if(Array.isArray(d.lignes)&&d.lignes.length){
+            _ndLignes=d.lignes.map(l=>({desc:l.designation||'',qte:Number(l.qte)||1,pu:Number(l.pu_ht)||0,tva:Number(l.tva)||10,unit:'u'}));
+            ndRenderLignes();
+          }
+        },50);
+      } else {
+        parseVoiceInput(txt);
+      }
+    }catch(e){
+      if(lbl){lbl.textContent='Erreur : '+e.message;lbl.style.color='var(--red)';}
+      if(tr)tr.innerHTML='<span style="color:var(--red)">Échec transcription. Serveur actif ? (port 3000)</span>';
+    }
+  };
+  mr.stop();
 }
 
 /* — Parsing vocal — */
@@ -1556,21 +1592,63 @@ function parseVoiceInput(raw){
 }
 
 /* — Sauvegarde — */
-function saveNewDevis(){
+// URL du serveur PDF (port 3000 par défaut, configurable)
+const PDF_SERVER = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'http://localhost:3000';
+
+async function saveNewDevis(){
   const client=document.getElementById('nd-client')?.value.trim();
+  const adresse=document.getElementById('nd-adresse')?.value.trim()||'';
   const presta=document.getElementById('nd-presta')?.value||'Prestation';
   const ville=document.getElementById('nd-ville')?.value.trim()||'Perpignan';
   if(!client){alert('Client requis.');return;}
   if(!_ndLignes.length){alert('Ajoutez au moins une prestation.');return;}
   const ht=_ndLignes.reduce((a,l)=>a+(l.qte*l.pu),0);
-  const tva=Math.round(ht*0.10);const ttc=ht+tva;
-  const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
-  const ref='DV-'+String(num).padStart(3,'0');
+  const tvaAmt=Math.round(ht*0.10);const ttc=ht+tvaAmt;
   const today=new Date();
   const fmtDate=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-  DEVIS.unshift({ref,client,ville,prestation:presta,montant:ttc,montantHT:ht,tva,
+
+  // Tenter la génération PDF via le serveur Node.js
+  const btnCreate=document.querySelector('[onclick="saveNewDevis()"]');
+  if(btnCreate){btnCreate.textContent='Génération PDF…';btnCreate.disabled=true;}
+
+  let pdfRef=null;
+  try {
+    const payload={
+      type:'devis',
+      client:{nom:client,adresse:adresse||ville},
+      lignes:_ndLignes.map(l=>({designation:l.desc,qte:l.qte,pu_ht:l.pu,tva:l.tva||10})),
+    };
+    const resp=await fetch(PDF_SERVER+'/api/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+    });
+    if(resp.ok){
+      // Déclencher le téléchargement
+      const blob=await resp.blob();
+      const cd=resp.headers.get('Content-Disposition')||'';
+      const filename=cd.match(/filename="?([^"]+)"?/)?.[1]||'devis.pdf';
+      pdfRef=filename.replace('.pdf','');
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=filename;a.click();
+      URL.revokeObjectURL(url);
+    }
+  } catch(e){
+    // Serveur indisponible — on continue sans PDF, simple avertissement
+    console.warn('Serveur PDF indisponible :',e.message);
+  }
+
+  // Générer la ref dashboard (depuis le serveur si dispo, sinon locale)
+  const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
+  const ref=pdfRef||('DV-'+String(num).padStart(3,'0'));
+
+  DEVIS.unshift({ref,client,ville,prestation:presta,montant:ttc,montantHT:ht,tva:tvaAmt,
     dateEnvoi:fmtDate(today),statut:'dormant',
     lignes:_ndLignes.map(l=>({...l,total:l.qte*l.pu}))});
+
   const dateChan=document.getElementById('nd-datechan')?.value;
   if(dateChan){
     const cat=CATALOGUE[presta];const duree=Math.ceil(cat?.duree||1);
@@ -1584,13 +1662,14 @@ function saveNewDevis(){
   }
   const cl=CLIENTS.find(c=>c.nom.toLowerCase()===client.toLowerCase());
   if(cl){cl.ca+=ttc;if(cl.statut==='prospect')cl.statut='actif';}
+
   stopVoice();closeM();
   go('devis');
   setTimeout(()=>{
     const n=document.createElement('div');
     n.style.cssText='position:fixed;top:70px;right:24px;background:var(--greenBg);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
-    n.textContent='✓ '+ref+' créé — '+ttc.toLocaleString('fr-FR')+' € TTC';
-    document.body.appendChild(n);setTimeout(()=>n.remove(),4000);
+    n.textContent=pdfRef?'✓ '+ref+' généré et téléchargé !':'✓ '+ref+' créé (serveur PDF hors ligne)';
+    document.body.appendChild(n);setTimeout(()=>n.remove(),5000);
   },100);
 }
 
