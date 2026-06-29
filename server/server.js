@@ -6,7 +6,6 @@ const os = require('os');
 const { chromium } = require('playwright-core');
 const multer = require('multer');
 const OpenAI = require('openai');
-const Anthropic = require('@anthropic-ai/sdk');
 
 const app = express();
 app.use(express.json());
@@ -27,9 +26,59 @@ function getOpenAI() {
   if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY manquante dans .env');
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
-function getAnthropic() {
-  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY manquante dans .env');
-  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+/* ── Parser local (sans Claude) ── */
+function parseTranscription(texte) {
+  const t = texte.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+  // Extraction client
+  let client = '';
+  const clientMatch = t.match(/(?:client|pour|chez|monsieur|madame|mr?|mme?)\s+([a-z][a-z\- ]{1,30})(?:\s*[,.]|$)/);
+  if (clientMatch) client = clientMatch[1].trim().replace(/\b\w/g, c => c.toUpperCase());
+
+  // Extraction adresse/ville
+  const villes = ['perpignan','canet','pia','rivesaltes','saint-esteve','le soler','thuir','argeles','collioure','elne','narbonne','montpellier'];
+  let adresse = '';
+  for (const v of villes) {
+    if (t.includes(v)) { adresse = v.replace(/\b\w/g, c => c.toUpperCase()); break; }
+  }
+
+  // Catalogue de prestations avec prix indicatifs
+  const catalogue = [
+    { rx: /multi.?split|multi split/,         label: 'Climatisation multi-split',              pu: 2800, tva: 10 },
+    { rx: /pompe.?a.?chaleur|pac/,            label: 'Pompe à chaleur air/air',                pu: 4500, tva: 10 },
+    { rx: /salle.?de.?bain|renov.*sdb|sdb/,  label: 'Rénovation salle de bain',               pu: 3200, tva: 10 },
+    { rx: /chauffe.?eau.*270|ballon.*270/,    label: 'Chauffe-eau thermodynamique 270L',       pu: 1800, tva: 10 },
+    { rx: /chauffe.?eau|ballon/,              label: 'Chauffe-eau thermodynamique',             pu: 1400, tva: 10 },
+    { rx: /clim.*split|split/,                label: 'Climatisation split',                     pu: 1800, tva: 10 },
+    { rx: /climatisation|clim/,               label: 'Climatisation split',                     pu: 1800, tva: 10 },
+    { rx: /entretien/,                        label: 'Entretien climatisation',                 pu: 120,  tva: 20 },
+    { rx: /depannage|plomberie/,              label: 'Dépannage plomberie',                     pu: 150,  tva: 20 },
+    { rx: /robinet|mitigeur/,                 label: 'Remplacement robinet/mitigeur',           pu: 180,  tva: 10 },
+    { rx: /wc|toilette/,                      label: 'Remplacement WC',                         pu: 350,  tva: 10 },
+    { rx: /radiateur/,                        label: 'Remplacement radiateur',                  pu: 400,  tva: 10 },
+  ];
+
+  const lignes = [];
+  for (const item of catalogue) {
+    if (item.rx.test(t)) {
+      // Cherche une quantité avant ou après le mot-clé
+      const qteMatch = t.match(/(\d+)\s*(?:unite|unites|fois|x\s*)?\s*(?:clim|pompe|ballon|radiateur|robinet)/);
+      const qte = qteMatch ? parseInt(qteMatch[1]) : 1;
+      // Cherche un prix mentionné
+      const prixMatch = t.match(/(\d[\d\s]*)\s*(?:euro|eur|€)/);
+      const pu = prixMatch ? parseInt(prixMatch[1].replace(/\s/g, '')) : item.pu;
+      lignes.push({ designation: item.label, quantite: qte, prix_unitaire_ht: pu, taux_tva: item.tva });
+      break;
+    }
+  }
+
+  // Si aucune prestation reconnue, crée une ligne générique
+  if (!lignes.length) {
+    lignes.push({ designation: texte, quantite: 1, prix_unitaire_ht: 0, taux_tva: 20 });
+  }
+
+  return { client, adresse, lignes };
 }
 
 /* ── Upload audio en mémoire ── */
@@ -173,7 +222,6 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier audio reçu.' });
 
     const openai = getOpenAI();
-    const claude = getAnthropic();
 
     /* ── 1. Déterminer l'extension depuis le MIME réel du blob ── */
     const mimeToExt = {
@@ -203,41 +251,24 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     const texte = transcription.text?.trim();
     if (!texte) return res.status(422).json({ error: 'Transcription vide — réessayez en parlant plus fort.' });
 
-    /* ── 4. Extraction structurée via Claude ── */
-    const message = await claude.messages.create({
-      model      : 'claude-sonnet-4-6',
-      max_tokens : 1024,
-      messages   : [{
-        role   : 'user',
-        content: `Tu es un assistant pour artisan BTP. Extrais les informations de ce texte dicté et retourne UNIQUEMENT un JSON valide, sans texte autour, sans backticks, sans markdown.
-
-Format attendu :
-{"client":"...","lignes":[{"designation":"...","quantite":1,"prix_unitaire_ht":0,"taux_tva":20}]}
-
-Règles :
-- taux_tva : 20 par défaut si non précisé, sinon utilise le taux mentionné
-- quantite : 1 si non précisé
-- prix_unitaire_ht : prix HT par unité (si TTC mentionné, divise par 1+taux)
-- Interprète le langage naturel ("trois fenêtres à deux cents euros pièce" → quantite:3, prix_unitaire_ht:200)
-- Si plusieurs types de TVA, adapte chaque ligne
-- client : nom du client/destinataire s'il est mentionné, sinon ""
-
-Texte dicté : "${texte}"`,
-      }],
-    });
-
-    /* ── 5. Parsing sécurisé du JSON ── */
-    let raw = message.content[0]?.text || '';
-    raw = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const data = JSON.parse(raw);
+    /* ── 4. Extraction structurée en local (sans Claude) ── */
+    const parsed = parseTranscription(texte);
+    const data = {
+      client : parsed.client,
+      adresse: parsed.adresse,
+      lignes : parsed.lignes.map(l => ({
+        designation  : l.designation,
+        qte          : Number(l.quantite) || 1,
+        pu_ht        : Number(l.prix_unitaire_ht) || 0,
+        tva          : Number(l.taux_tva) || 20,
+      })),
+    };
 
     res.json({ transcription: texte, data });
 
   } catch (err) {
     console.error('/api/transcribe error:', err.message);
-    if (err.message.includes('OPENAI_API_KEY'))    return res.status(503).json({ error: err.message });
-    if (err.message.includes('ANTHROPIC_API_KEY')) return res.status(503).json({ error: err.message });
-    if (err instanceof SyntaxError)                return res.status(422).json({ error: 'Impossible de parser la réponse IA. Réessayez.' });
+    if (err.message.includes('OPENAI_API_KEY')) return res.status(503).json({ error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
@@ -339,6 +370,5 @@ app.get('/api/entreprise', (_req, res) => res.json(readJSON(CFG_FILE)));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`SANITENERGIE Devis — http://localhost:${PORT}`);
-  if (!process.env.OPENAI_API_KEY)    console.warn('⚠  OPENAI_API_KEY absente — dictée désactivée');
-  if (!process.env.ANTHROPIC_API_KEY) console.warn('⚠  ANTHROPIC_API_KEY absente — dictée désactivée');
+  if (!process.env.OPENAI_API_KEY) console.warn('⚠  OPENAI_API_KEY absente — dictée désactivée');
 });
