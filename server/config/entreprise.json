@@ -1,0 +1,19 @@
+{
+  "denomination": "SANITENERGIE",
+  "dirigeant": "Mickael Basty",
+  "forme_juridique": "Entreprise individuelle",
+  "siret": "892 451 678 00019",
+  "adresse_ligne1": "14 rue de l'Industrie",
+  "adresse_ligne2": "66380 Pia",
+  "tel": "04 68 00 00 00",
+  "email": "contact@sanitenergie.fr",
+  "site": "",
+  "tva_regime": "assujetti",
+  "tva_numero": "FR 12 892451678",
+  "certifications": "RGE QualiPAC · Assurance décennale MAAF n°123456",
+  "conditions_reglement": "30 jours fin de mois",
+  "delai_validite_devis": 30,
+  "mention_pied": "RCS Perpignan · RGE QualiPAC · Assurance décennale MAAF n°123456",
+  "couleur_principale": "#1a3a5c",
+  "couleur_accent": "#38BDF8"
+}

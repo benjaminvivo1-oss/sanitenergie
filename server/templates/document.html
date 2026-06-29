@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    color: #1a1a2e;
+    background: #fff;
+    padding: 0;
+  }
+  /* ── EN-TÊTE ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 28px 36px 20px;
+    border-bottom: 3px solid {{COULEUR_PRINCIPALE}};
+  }
+  .header-left { flex: 1; }
+  .logo { max-height: 54px; max-width: 160px; margin-bottom: 8px; display: block; }
+  .ent-nom {
+    font-size: 18pt;
+    font-weight: 800;
+    color: {{COULEUR_PRINCIPALE}};
+    letter-spacing: .04em;
+    margin-bottom: 4px;
+  }
+  .ent-info { font-size: 8.5pt; color: #555; line-height: 1.6; }
+  .header-right {
+    text-align: right;
+    min-width: 200px;
+  }
+  .doc-type {
+    font-size: 22pt;
+    font-weight: 900;
+    color: {{COULEUR_PRINCIPALE}};
+    letter-spacing: .08em;
+    margin-bottom: 8px;
+  }
+  .doc-meta { font-size: 9pt; color: #555; line-height: 1.8; }
+  .doc-meta strong { color: #1a1a2e; }
+
+  /* ── BLOC CLIENT ── */
+  .client-block {
+    margin: 20px 36px 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .client-card {
+    border: 1.5px solid {{COULEUR_PRINCIPALE}};
+    border-radius: 4px;
+    padding: 12px 18px;
+    min-width: 230px;
+    background: #f8fafc;
+  }
+  .client-label {
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: {{COULEUR_PRINCIPALE}};
+    margin-bottom: 6px;
+  }
+  .client-nom { font-weight: 700; font-size: 10.5pt; margin-bottom: 2px; }
+  .client-info { font-size: 8.5pt; color: #555; line-height: 1.6; }
+
+  /* ── TABLEAU DES LIGNES ── */
+  .section { padding: 24px 36px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  thead tr {
+    background: {{COULEUR_PRINCIPALE}};
+    color: #fff;
+  }
+  thead th {
+    padding: 8px 10px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    text-align: left;
+  }
+  thead th.center { text-align: center; }
+  thead th.right { text-align: right; }
+  tbody td {
+    padding: 7px 10px;
+    font-size: 9pt;
+    border-bottom: 1px solid #e8eef4;
+    vertical-align: top;
+  }
+  tbody tr.alt td { background: #f4f8fc; }
+  .center { text-align: center; }
+  .right { text-align: right; }
+
+  /* ── TOTAUX ── */
+  .totaux-wrap {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 36px 0;
+  }
+  .totaux {
+    width: 280px;
+    border-collapse: collapse;
+  }
+  .totaux td {
+    padding: 5px 10px;
+    font-size: 9.5pt;
+    border-bottom: 1px solid #e8eef4;
+  }
+  .totaux td:last-child { text-align: right; }
+  .totaux tr.ttc td {
+    background: {{COULEUR_PRINCIPALE}};
+    color: #fff;
+    font-weight: 800;
+    font-size: 11pt;
+    border: none;
+  }
+  .mention-franchise { font-size: 8pt; color: #666; }
+
+  /* ── CONDITIONS & PIED ── */
+  .conditions {
+    margin: 20px 36px 0;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-left: 3px solid {{COULEUR_ACCENT}};
+    font-size: 8.5pt;
+    color: #555;
+  }
+  .validite { margin: 6px 36px 0; font-size: 8pt; color: #888; font-style: italic; }
+  .penalites {
+    margin: 12px 36px 0;
+    font-size: 7.5pt;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* ── SIGNATURE DEVIS ── */
+  .signature-block {
+    margin: 24px 36px 0;
+    border: 1.5px dashed #bbb;
+    border-radius: 4px;
+    padding: 14px 18px;
+  }
+  .mention-devis { font-size: 8.5pt; color: #444; margin-bottom: 4px; }
+  .sig-zone {
+    height: 56px;
+    border-bottom: 1px solid #aaa;
+    margin-top: 10px;
+  }
+
+  /* ── PIED DE PAGE ── */
+  .footer {
+    margin-top: 28px;
+    padding: 10px 36px;
+    border-top: 2px solid {{COULEUR_PRINCIPALE}};
+    font-size: 7.5pt;
+    color: #999;
+    text-align: center;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- EN-TÊTE -->
+<div class="header">
+  <div class="header-left">
+    {{#LOGO}}<img class="logo" src="{{LOGO_SRC}}" alt="Logo">{{/LOGO}}
+    <div class="ent-nom">{{ENT_DENOMINATION}}</div>
+    <div class="ent-info">
+      {{ENT_DIRIGEANT}} · {{ENT_FORME}}<br>
+      {{ENT_ADRESSE1}}<br>
+      {{ENT_ADRESSE2}}<br>
+      Tél. {{ENT_TEL}} · {{ENT_EMAIL}}<br>
+      SIRET : {{ENT_SIRET}}<br>
+      {{ENT_TVA_NUM}}
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="doc-type">{{TITRE}}</div>
+    <div class="doc-meta">
+      <strong>N°</strong> {{NUMERO}}<br>
+      <strong>Date</strong> {{DATE_EMISSION}}<br>
+      {{DATE_PRESTA_ROW}}
+      {{DATE_ECHEANCE_ROW}}
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT -->
+<div class="client-block">
+  <div class="client-card">
+    <div class="client-label">Destinataire</div>
+    <div class="client-nom">{{CLI_NOM}}</div>
+    <div class="client-info">{{CLI_ADRESSE}}<br>{{CLI_SIRET}}</div>
+  </div>
+</div>
+
+<!-- LIGNES -->
+<div class="section">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:46%">Désignation</th>
+        <th class="center" style="width:10%">Qté</th>
+        <th class="right" style="width:14%">PU HT</th>
+        <th class="center" style="width:10%">TVA</th>
+        <th class="right" style="width:20%">Total HT</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{LIGNES}}
+    </tbody>
+  </table>
+</div>
+
+<!-- TOTAUX -->
+<div class="totaux-wrap">
+  <table class="totaux">
+    <tbody>
+      <tr><td><strong>Total HT</strong></td><td>{{TOTAL_HT}}</td></tr>
+      {{TVA_LIGNES}}
+      <tr class="ttc"><td>Total TTC</td><td>{{TOTAL_TTC}}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- CONDITIONS -->
+<div class="conditions">
+  <strong>Conditions de règlement :</strong> {{CONDITIONS_REGLEMENT}}
+</div>
+
+{{VALIDITE}}
+{{PENALITES}}
+{{SIGNATURE_BLOCK}}
+
+<!-- PIED -->
+<div class="footer">
+  {{ENT_DENOMINATION}} — {{ENT_ADRESSE1}}, {{ENT_ADRESSE2}} — SIRET : {{ENT_SIRET}}<br>
+  {{MENTION_PIED}}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SANITENERGIE — Historique</title>
+<style>
+  :root {
+    --bg:#0D1117;--sur:#161C24;--bor:#1E2A36;--bor2:#243040;
+    --ink:#E2E8F0;--soft:#94A3B8;--mute:#4B5A6E;
+    --blue:#38BDF8;--blueBg:#0A2030;--green:#4ADE80;--greenBg:#142414;
+    --red:#F87171;--redBg:#2A1414;--amber:#FBBF24;
+    --r:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:14px;}
+  nav{background:var(--sur);border-bottom:1px solid var(--bor);padding:0 32px;display:flex;align-items:center;height:56px;gap:0;}
+  .nav-brand{font-size:17px;font-weight:800;color:var(--blue);letter-spacing:.04em;margin-right:32px;}
+  .nav-link{padding:0 16px;height:56px;display:flex;align-items:center;color:var(--soft);text-decoration:none;font-size:13px;font-weight:500;border-bottom:2px solid transparent;transition:.12s;}
+  .nav-link:hover,.nav-link.on{color:var(--ink);border-bottom-color:var(--blue);}
+  .page{max-width:860px;margin:0 auto;padding:32px 20px;}
+  h1{font-size:22px;font-weight:700;margin-bottom:6px;}
+  .sub{color:var(--soft);font-size:13px;margin-bottom:28px;}
+  .card{background:var(--sur);border:1px solid var(--bor);border-radius:var(--r);overflow:hidden;margin-bottom:16px;}
+  .doc-row{display:grid;grid-template-columns:120px 1fr 160px 110px 120px;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--bor);transition:.12s;}
+  .doc-row:last-child{border-bottom:none;}
+  .doc-row:hover{background:rgba(255,255,255,.02);}
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em;}
+  .b-devis{background:var(--blueBg);color:var(--blue);border:1px solid rgba(56,189,248,.3);}
+  .b-facture{background:var(--greenBg);color:var(--green);border:1px solid rgba(74,222,128,.3);}
+  .ref{font-family:'Courier New',monospace;font-size:13px;font-weight:700;color:var(--blue);}
+  .amount{font-size:15px;font-weight:700;text-align:right;}
+  .date-cell{font-size:12px;color:var(--soft);}
+  .actions{display:flex;gap:8px;justify-content:flex-end;}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;border:1px solid var(--bor2);background:var(--sur);color:var(--ink);font-size:12px;font-weight:500;cursor:pointer;text-decoration:none;transition:.12s;}
+  .btn:hover{border-color:var(--blue);color:var(--blue);}
+  .btn-green{border-color:rgba(74,222,128,.3);color:var(--green);}
+  .btn-green:hover{background:var(--greenBg);}
+  .empty{padding:48px;text-align:center;color:var(--mute);}
+  .header-row{display:grid;grid-template-columns:120px 1fr 160px 110px 120px;gap:12px;padding:8px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);border-bottom:1px solid var(--bor);}
+  .toast{position:fixed;top:70px;right:24px;background:var(--greenBg);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-weight:600;z-index:9999;font-size:13px;display:none;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">SANITENERGIE</div>
+  <a class="nav-link" href="/">Nouveau document</a>
+  <a class="nav-link on" href="/historique.html">Historique</a>
+</nav>
+<div class="page">
+  <h1>Historique des documents</h1>
+  <p class="sub" id="sub-txt">Chargement…</p>
+  <div class="card" id="list-card">
+    <div class="header-row"><div>Référence</div><div>Client</div><div>Montant TTC</div><div>Date</div><div></div></div>
+    <div id="doc-list"><div class="empty">Chargement…</div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function fmtEur(n){return(+n).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
+function fmtDate(iso){if(!iso)return'';const[y,m,d]=iso.split('-');return d+'/'+m+'/'+y;}
+
+async function load(){
+  const resp=await fetch('/api/documents');
+  const docs=await resp.json();
+  const el=document.getElementById('doc-list');
+  const sub=document.getElementById('sub-txt');
+  if(!docs.length){el.innerHTML='<div class="empty">Aucun document généré pour l\'instant.</div>';sub.textContent='';return;}
+  sub.textContent=docs.length+' document'+(docs.length>1?'s':'');
+  el.innerHTML=docs.map(d=>`
+    <div class="doc-row">
+      <div><span class="badge ${d.type==='devis'?'b-devis':'b-facture'}">${d.type.toUpperCase()}</span></div>
+      <div>
+        <div class="ref">${d.numero}</div>
+        <div style="font-size:12px;color:var(--soft);margin-top:2px">${d.client.nom}${d.client.adresse?'<br><span style=color:var(--mute)>'+d.client.adresse.split('\n')[0]+'</span>':''}</div>
+        ${d.devis_ref?'<div style="font-size:11px;color:var(--mute);margin-top:2px">Depuis '+d.devis_ref+'</div>':''}
+      </div>
+      <div class="amount">${fmtEur(d.totalTTC)}</div>
+      <div class="date-cell">${fmtDate(d.date_emission)}</div>
+      <div class="actions">
+        <a class="btn" href="/api/document/${d.id}/pdf" title="Télécharger le PDF">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PDF
+        </a>
+        ${d.type==='devis'?`<button class="btn btn-green" onclick="toFacture('${d.id}')" title="Convertir en facture">→ Facture</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+async function toFacture(id){
+  const today=new Date().toISOString().slice(0,10);
+  const resp=await fetch('/api/facture-from-devis/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date_prestation:today})});
+  if(!resp.ok){const e=await resp.json();alert('Erreur : '+e.error);return;}
+  const blob=await resp.blob();
+  const cd=resp.headers.get('Content-Disposition')||'';
+  const filename=cd.match(/filename="?([^"]+)"?/)?.[1]||'facture.pdf';
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+  const t=document.getElementById('toast');
+  t.textContent='✓ '+filename+' généré !';t.style.display='block';
+  setTimeout(()=>{t.style.display='none';load();},3500);
+}
+
+load();
+</script>
+</body>
+</html>

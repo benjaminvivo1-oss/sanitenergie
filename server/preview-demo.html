@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SANITENERGIE — Générateur de devis & factures (démo)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root {
+    --bg: #0D1117; --sur: #161C24; --bor: #1E2A36; --bor2: #243040;
+    --ink: #E2E8F0; --soft: #94A3B8; --mute: #4B5A6E;
+    --blue: #38BDF8; --blueBg: #0A2030;
+    --green: #4ADE80; --greenBg: #142414;
+    --red: #F87171; --amber: #FBBF24;
+    --r: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: Inter, system-ui, sans-serif; font-size: 14px; min-height: 100vh; }
+  .shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* Nav */
+  nav { background: var(--sur); border-bottom: 1px solid var(--bor); padding: 0 32px; display: flex; align-items: center; gap: 0; height: 56px; }
+  .nav-brand { font-size: 17px; font-weight: 800; color: var(--blue); letter-spacing: .04em; margin-right: 32px; }
+  .nav-link { padding: 0 16px; height: 56px; display: flex; align-items: center; color: var(--soft); text-decoration: none; font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; transition: .12s; cursor: pointer; }
+  .nav-link:hover, .nav-link.on { color: var(--ink); border-bottom-color: var(--blue); }
+
+  /* Demo banner */
+  .demo-banner { background: linear-gradient(135deg, #1a2a1a, #0f1f0f); border-bottom: 1px solid rgba(74,222,128,.3); padding: 10px 32px; display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--green); }
+  .demo-badge { background: rgba(74,222,128,.15); border: 1px solid rgba(74,222,128,.4); border-radius: 20px; padding: 2px 10px; font-weight: 700; font-size: 11px; letter-spacing: .06em; }
+
+  /* Layout */
+  .page { max-width: 860px; margin: 0 auto; padding: 32px 20px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .sub { color: var(--soft); font-size: 13px; margin-bottom: 28px; }
+
+  /* Cards */
+  .card { background: var(--sur); border: 1px solid var(--bor); border-radius: var(--r); padding: 22px 24px; margin-bottom: 16px; }
+  .card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--soft); margin-bottom: 16px; }
+
+  /* Form */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .frow { margin-bottom: 14px; }
+  .frow:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 11px; font-weight: 600; color: var(--soft); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  input, select, textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--bor2); border-radius: 7px;
+    padding: 9px 12px; color: var(--ink); font-size: 13px; outline: none; transition: .15s;
+    font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(56,189,248,.12); }
+  select option { background: var(--sur); }
+
+  /* Type toggle */
+  .type-toggle { display: flex; gap: 0; border: 1px solid var(--bor); border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+  .type-btn { flex: 1; padding: 11px; text-align: center; cursor: pointer; font-weight: 600; font-size: 13px; color: var(--soft); border: none; background: none; transition: .15s; }
+  .type-btn.on { background: var(--blue); color: #0a1a26; }
+
+  /* Lignes */
+  .lignes-header { display: grid; grid-template-columns: 1fr 80px 110px 80px 110px 36px; gap: 8px; padding: 6px 8px; font-size: 10px; font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: .06em; }
+  .ligne-row { display: grid; grid-template-columns: 1fr 80px 110px 80px 110px 36px; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .ligne-row input { margin: 0; }
+  .ligne-total { font-size: 13px; font-weight: 700; color: var(--blue); padding: 9px 8px; text-align: right; }
+  .btn-del { background: none; border: 1px solid var(--bor); border-radius: 6px; color: var(--mute); cursor: pointer; width: 34px; height: 34px; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: .12s; }
+  .btn-del:hover { border-color: var(--red); color: var(--red); }
+
+  /* Totaux */
+  .totaux { border-top: 1px solid var(--bor); margin-top: 16px; padding-top: 16px; }
+  .tot-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--soft); padding: 4px 0; }
+  .tot-row.ttc { font-size: 16px; font-weight: 800; color: var(--ink); border-top: 1px solid var(--bor); margin-top: 8px; padding-top: 10px; }
+  .tot-row span:last-child { font-family: 'Courier New', monospace; }
+  .tot-row.ttc span:last-child { color: var(--blue); }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; border: 1px solid var(--bor2); background: var(--sur); color: var(--ink); font-size: 13px; font-weight: 500; cursor: pointer; transition: .12s; text-decoration: none; }
+  .btn:hover { border-color: var(--blue); color: var(--blue); }
+  .btn-prim { background: var(--blue); color: #0a1a26; border-color: var(--blue); font-weight: 700; padding: 11px 24px; font-size: 14px; }
+  .btn-prim:hover { background: #60cdff; border-color: #60cdff; color: #0a1a26; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .action-row { display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
+
+  /* Voice panel */
+  .voice-panel { background: var(--sur); border: 1px solid var(--bor); border-radius: var(--r); padding: 22px 24px; margin-bottom: 16px; display: none; }
+  .voice-panel.open { display: block; }
+  .voice-panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--soft); margin-bottom: 16px; }
+  .mic-area { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 8px 0; }
+  .mic-btn { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--bor2); background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 30px; transition: .15s; flex-shrink: 0; }
+  .mic-btn:hover { border-color: var(--blue); }
+  .mic-btn.recording { border-color: var(--red); background: rgba(248,113,113,.08); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(248,113,113,.4); } 50% { box-shadow: 0 0 0 12px rgba(248,113,113,0); } }
+  .mic-label { font-size: 13px; color: var(--soft); text-align: center; }
+  .mic-label.rec { color: var(--red); font-weight: 600; }
+  .voice-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .transcript-box { background: var(--bg); border: 1px solid var(--bor2); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--soft); min-height: 54px; font-style: italic; line-height: 1.6; margin-top: 12px; }
+  .transcript-box.filled { color: var(--ink); font-style: normal; }
+  .voice-tip { font-size: 12px; color: var(--mute); line-height: 1.6; margin-top: 10px; }
+
+  /* Historique view */
+  .doc-row { display: grid; grid-template-columns: 120px 1fr 160px 110px 120px; gap: 12px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--bor); transition: .12s; }
+  .doc-row:last-child { border-bottom: none; }
+  .doc-row:hover { background: rgba(255,255,255,.02); }
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+  .b-devis { background: var(--blueBg); color: var(--blue); border: 1px solid rgba(56,189,248,.3); }
+  .b-facture { background: var(--greenBg); color: var(--green); border: 1px solid rgba(74,222,128,.3); }
+  .ref { font-family: 'Courier New', monospace; font-size: 13px; font-weight: 700; color: var(--blue); }
+  .amount { font-size: 15px; font-weight: 700; text-align: right; }
+  .date-cell { font-size: 12px; color: var(--soft); }
+  .actions-cell { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-green { border-color: rgba(74,222,128,.3); color: var(--green); }
+  .header-row { display: grid; grid-template-columns: 120px 1fr 160px 110px 120px; gap: 12px; padding: 8px 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); border-bottom: 1px solid var(--bor); }
+
+  /* Status */
+  .toast { position: fixed; top: 70px; right: 24px; background: var(--greenBg); border: 1px solid var(--green); color: var(--green); padding: 12px 20px; border-radius: 10px; font-weight: 600; z-index: 9999; font-size: 13px; display: none; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+  .toast.err { background: #2a1414; border-color: var(--red); color: var(--red); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 1000; display: flex; align-items: center; justify-content: center; display: none; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--sur); border: 1px solid var(--bor); border-radius: 14px; padding: 28px 32px; max-width: 420px; width: 90%; text-align: center; }
+  .modal h3 { font-size: 18px; margin-bottom: 10px; }
+  .modal p { color: var(--soft); font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
+
+  /* View switcher */
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="nav-brand">SANITENERGIE</div>
+  <a class="nav-link on" id="nav-form" onclick="showView('form')">Nouveau document</a>
+  <a class="nav-link" id="nav-hist" onclick="showView('historique')">Historique</a>
+</nav>
+
+<!-- Bandeau démo -->
+<div class="demo-banner">
+  <span class="demo-badge">DÉMO</span>
+  Version visuelle — les calculs fonctionnent, la génération PDF nécessite le serveur Node.js local.
+  &nbsp;·&nbsp; <strong>Formulaire interactif complet</strong> : saisie, calculs HT/TVA/TTC, panneau vocal.
+</div>
+
+<!-- ═══ VUE FORMULAIRE ═══ -->
+<div class="view active" id="view-form">
+<div class="page">
+  <h1>Nouveau document</h1>
+  <p class="sub">Remplissez le formulaire — le PDF est généré et téléchargé immédiatement.</p>
+
+  <div class="type-toggle">
+    <button class="type-btn on" onclick="setType('devis',this)">Devis</button>
+    <button class="type-btn" onclick="setType('facture',this)">Facture</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Informations client</div>
+    <div class="grid2">
+      <div class="frow"><label>Nom / Société *</label><input id="cli-nom" placeholder="Laurent Mas" value="M. Laurent Mas"></div>
+      <div class="frow"><label>SIRET (optionnel)</label><input id="cli-siret" placeholder="000 000 000 00000"></div>
+    </div>
+    <div class="frow"><label>Adresse</label><textarea id="cli-adresse" rows="2" placeholder="9 av. de la Mer&#10;66000 Perpignan">9 av. de la Mer
+66000 Perpignan</textarea></div>
+    <div class="grid2" id="facture-fields" style="display:none">
+      <div class="frow"><label>Date de prestation</label><input id="date-presta" type="date"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Prestations</div>
+    <div class="lignes-header">
+      <div>Désignation</div><div>Qté</div><div>PU HT (€)</div><div>TVA (%)</div><div>Total HT</div><div></div>
+    </div>
+    <div id="lignes-container"></div>
+    <button class="btn btn-sm" onclick="addLigne()" style="margin-top:4px">+ Ajouter une ligne</button>
+    <div class="totaux">
+      <div class="tot-row" id="tot-ht"><span>Total HT</span><span>— €</span></div>
+      <div id="tva-rows"></div>
+      <div class="tot-row ttc" id="tot-ttc"><span>Total TTC</span><span>— €</span></div>
+    </div>
+  </div>
+
+  <!-- Panneau vocal -->
+  <div class="voice-panel" id="voice-panel">
+    <div class="voice-panel-title">Dicter le devis</div>
+    <div class="mic-area">
+      <button class="mic-btn" id="mic-btn" onclick="demoMic()">🎙️</button>
+      <div class="mic-label" id="mic-label">Cliquez pour commencer l'enregistrement</div>
+      <div class="voice-actions">
+        <button class="btn btn-sm" id="btn-stop" style="display:none;border-color:var(--red);color:var(--red)" onclick="demoStop()">■ Arrêter et transcrire</button>
+        <button class="btn btn-sm" onclick="closeVoice()">Annuler</button>
+      </div>
+    </div>
+    <div class="transcript-box" id="transcript-box">La transcription apparaîtra ici…</div>
+    <div class="voice-tip">
+      💡 Exemple : <em>"Devis pour Monsieur Martin, peinture de deux chambres à quatre cents euros chacune, et fourniture de peinture pour cent cinquante euros, TVA dix pourcent."</em><br>
+      Le micro pré-remplit le formulaire — vérifiez et corrigez avant de générer.
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn" onclick="toggleVoice()" id="btn-voice">🎙️ Dicter</button>
+    <button class="btn btn-prim" onclick="demoGenerate()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Générer le PDF
+    </button>
+    <span style="font-size:12px;color:var(--mute)">Les calculs sont en temps réel ✓</span>
+  </div>
+</div>
+</div>
+
+<!-- ═══ VUE HISTORIQUE ═══ -->
+<div class="view" id="view-historique">
+<div class="page">
+  <h1>Historique des documents</h1>
+  <p class="sub">4 documents générés</p>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="header-row"><div>Référence</div><div>Client</div><div>Montant TTC</div><div>Date</div><div></div></div>
+
+    <div class="doc-row">
+      <div><span class="badge b-devis">DEVIS</span></div>
+      <div>
+        <div class="ref">DEV-2026-0004</div>
+        <div style="font-size:12px;color:var(--soft);margin-top:2px">M. Laurent Mas<br><span style="color:var(--mute)">9 av. de la Mer, Perpignan</span></div>
+      </div>
+      <div class="amount">3 300,00 €</div>
+      <div class="date-cell">29/06/2026</div>
+      <div class="actions-cell">
+        <a class="btn btn-sm" href="#" onclick="demoDownload();return false">⬇ PDF</a>
+        <button class="btn btn-sm btn-green" onclick="demoConvert()">→ Facture</button>
+      </div>
+    </div>
+
+    <div class="doc-row">
+      <div><span class="badge b-facture">FACTURE</span></div>
+      <div>
+        <div class="ref">FAC-2026-0003</div>
+        <div style="font-size:12px;color:var(--soft);margin-top:2px">SCI Les Palmiers<br><span style="color:var(--mute)">Résidence Cap Sud, Canet</span></div>
+        <div style="font-size:11px;color:var(--mute);margin-top:2px">Depuis DEV-2026-0002</div>
+      </div>
+      <div class="amount">4 752,00 €</div>
+      <div class="date-cell">27/06/2026</div>
+      <div class="actions-cell"><a class="btn btn-sm" href="#" onclick="demoDownload();return false">⬇ PDF</a></div>
+    </div>
+
+    <div class="doc-row">
+      <div><span class="badge b-devis">DEVIS</span></div>
+      <div>
+        <div class="ref">DEV-2026-0002</div>
+        <div style="font-size:12px;color:var(--soft);margin-top:2px">SCI Les Palmiers</div>
+      </div>
+      <div class="amount">4 320,00 €</div>
+      <div class="date-cell">25/06/2026</div>
+      <div class="actions-cell">
+        <a class="btn btn-sm" href="#" onclick="demoDownload();return false">⬇ PDF</a>
+        <button class="btn btn-sm btn-green" onclick="demoConvert()">→ Facture</button>
+      </div>
+    </div>
+
+    <div class="doc-row">
+      <div><span class="badge b-facture">FACTURE</span></div>
+      <div>
+        <div class="ref">FAC-2026-0001</div>
+        <div style="font-size:12px;color:var(--soft);margin-top:2px">M. Dupont Bernard</div>
+      </div>
+      <div class="amount">1 188,00 €</div>
+      <div class="date-cell">20/06/2026</div>
+      <div class="actions-cell"><a class="btn btn-sm" href="#" onclick="demoDownload();return false">⬇ PDF</a></div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /shell -->
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal PDF demo -->
+<div class="modal-overlay" id="modal-pdf">
+  <div class="modal">
+    <div style="font-size:40px;margin-bottom:16px">📄</div>
+    <h3>Génération PDF</h3>
+    <p>Dans la version complète, le PDF <strong>DEV-2026-0005</strong> serait généré et téléchargé automatiquement.<br><br>Le serveur Node.js utilise <strong>Playwright + Chromium</strong> pour produire un PDF A4 professionnel avec toutes les mentions légales.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-prim" onclick="closeModal()">Compris !</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let docType = 'devis';
+const TAUX_DEFAUT = 10;
+
+// Navigation
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('on'));
+  document.getElementById('nav-' + (v === 'form' ? 'form' : 'hist')).classList.add('on');
+}
+
+function setType(t, el) {
+  docType = t;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('facture-fields').style.display = t === 'facture' ? 'grid' : 'none';
+}
+
+// Lignes
+let lignes = [];
+function addLigne(data = {}) {
+  const id = Date.now() + Math.random();
+  lignes.push({ id, designation: data.designation || '', qte: data.qte || 1, pu_ht: data.pu_ht || 0, tva: data.tva ?? TAUX_DEFAUT });
+  renderLignes();
+}
+function removeLigne(id) {
+  lignes = lignes.filter(l => l.id !== id);
+  renderLignes();
+}
+function renderLignes() {
+  const c = document.getElementById('lignes-container');
+  c.innerHTML = lignes.map(l => `
+    <div class="ligne-row">
+      <input type="text" value="${esc(l.designation)}" placeholder="Main d'œuvre, fournitures..." oninput="updateLigne('${l.id}','designation',this.value)">
+      <input type="number" value="${l.qte}" min="0" step="0.5" oninput="updateLigne('${l.id}','qte',+this.value)" style="text-align:center">
+      <input type="number" value="${l.pu_ht}" min="0" step="10" oninput="updateLigne('${l.id}','pu_ht',+this.value)" style="text-align:right">
+      <input type="number" value="${l.tva}" min="0" max="20" step="0.5" oninput="updateLigne('${l.id}','tva',+this.value)" style="text-align:center">
+      <div class="ligne-total" id="lt-${l.id}">${fmtEur(l.qte * l.pu_ht)}</div>
+      <button class="btn-del" onclick="removeLigne('${l.id}')">×</button>
+    </div>`).join('');
+  calcTotaux();
+}
+function updateLigne(id, key, val) {
+  const l = lignes.find(x => x.id == id);
+  if (l) { l[key] = val; calcTotaux(); }
+  const tot = document.getElementById('lt-' + id);
+  if (tot && l) tot.textContent = fmtEur(l.qte * l.pu_ht);
+}
+function calcTotaux() {
+  const ht = lignes.reduce((s, l) => s + l.qte * l.pu_ht, 0);
+  const tvaMap = {};
+  for (const l of lignes) { const base = l.qte * l.pu_ht; tvaMap[l.tva] = (tvaMap[l.tva] || 0) + base; }
+  const tvaRows = Object.entries(tvaMap).map(([t, base]) =>
+    `<div class="tot-row"><span>TVA ${t} %</span><span>${fmtEur(base * parseFloat(t) / 100)}</span></div>`).join('');
+  const tva = Object.entries(tvaMap).reduce((s, [t, base]) => s + base * parseFloat(t) / 100, 0);
+  document.getElementById('tot-ht').innerHTML = `<span>Total HT</span><span>${fmtEur(ht)}</span>`;
+  document.getElementById('tva-rows').innerHTML = tvaRows;
+  document.getElementById('tot-ttc').innerHTML = `<span>Total TTC</span><span>${fmtEur(ht + tva)}</span>`;
+}
+function fmtEur(n) { return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
+function esc(s) { return String(s).replace(/"/g, '&quot;').replace(/</g,'&lt;'); }
+
+// Voice panel
+let micDemo = 0;
+function toggleVoice() {
+  const p = document.getElementById('voice-panel');
+  const open = p.classList.toggle('open');
+  document.getElementById('btn-voice').textContent = open ? '✕ Fermer' : '🎙️ Dicter';
+  if (!open) resetVoice();
+}
+function closeVoice() {
+  document.getElementById('voice-panel').classList.remove('open');
+  document.getElementById('btn-voice').textContent = '🎙️ Dicter';
+  resetVoice();
+}
+function resetVoice() {
+  clearTimeout(micDemo);
+  document.getElementById('mic-btn').classList.remove('recording');
+  document.getElementById('mic-btn').textContent = '🎙️';
+  document.getElementById('mic-label').textContent = "Cliquez pour commencer l'enregistrement";
+  document.getElementById('mic-label').classList.remove('rec');
+  document.getElementById('btn-stop').style.display = 'none';
+  setTranscript('La transcription apparaîtra ici…', false);
+}
+function demoMic() {
+  document.getElementById('mic-btn').classList.add('recording');
+  document.getElementById('mic-btn').textContent = '⏹️';
+  document.getElementById('mic-label').textContent = 'Enregistrement en cours… cliquez pour arrêter';
+  document.getElementById('mic-label').classList.add('rec');
+  document.getElementById('btn-stop').style.display = 'inline-flex';
+  setTranscript('Enregistrement…', false);
+}
+function demoStop() {
+  document.getElementById('mic-btn').classList.remove('recording');
+  document.getElementById('mic-btn').textContent = '🎙️';
+  document.getElementById('mic-label').textContent = 'Transcription en cours…';
+  document.getElementById('mic-label').classList.remove('rec');
+  document.getElementById('btn-stop').style.display = 'none';
+  setTranscript('Envoi au serveur Whisper…', false);
+  setTimeout(() => {
+    const txt = 'Devis pour Monsieur Martin, peinture de deux chambres à quatre cents euros chacune, et fourniture de peinture pour cent cinquante euros, TVA dix pourcent.';
+    setTranscript(txt, true);
+    document.getElementById('mic-label').textContent = 'Terminé ✓ — formulaire pré-rempli';
+    // Pré-remplir
+    document.getElementById('cli-nom').value = 'M. Martin';
+    lignes = [];
+    addLigne({ designation: 'Peinture chambre 1', qte: 1, pu_ht: 400, tva: 10 });
+    addLigne({ designation: 'Peinture chambre 2', qte: 1, pu_ht: 400, tva: 10 });
+    addLigne({ designation: 'Fourniture de peinture', qte: 1, pu_ht: 150, tva: 10 });
+    toast('✓ Formulaire pré-rempli — vérifiez et corrigez avant de générer');
+    setTimeout(() => {
+      document.getElementById('voice-panel').classList.remove('open');
+      document.getElementById('btn-voice').textContent = '🎙️ Dicter';
+    }, 1800);
+  }, 1800);
+}
+function setTranscript(text, filled) {
+  const box = document.getElementById('transcript-box');
+  box.textContent = text;
+  box.className = 'transcript-box' + (filled ? ' filled' : '');
+}
+
+// Demo actions
+function demoGenerate() {
+  const nom = document.getElementById('cli-nom').value.trim();
+  if (!nom) { toast('Client requis.', true); return; }
+  if (!lignes.length) { toast('Ajoutez au moins une ligne.', true); return; }
+  document.getElementById('modal-pdf').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-pdf').classList.remove('open'); }
+function demoDownload() { toast('Dans la version complète, le PDF serait téléchargé ici.'); }
+function demoConvert() { toast('Dans la version complète, la facture serait générée automatiquement.'); }
+
+function toast(msg, err = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (err ? ' err' : '');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 4000);
+}
+
+// Init avec données exemple
+addLigne({ designation: "Main d'œuvre pose", qte: 2, pu_ht: 700, tva: 10 });
+addLigne({ designation: 'Split 3.5kW Daikin FTXC35C', qte: 1, pu_ht: 1200, tva: 10 });
+addLigne({ designation: 'Raccordements + fluide', qte: 1, pu_ht: 300, tva: 10 });
+</script>
+</body>
+</html>
