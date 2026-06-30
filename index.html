@@ -424,11 +424,23 @@ function rowAccent(s){return `style="box-shadow:inset 3px 0 0 ${STATUS_COLOR[s]|
 /* ── CORE ── */
 const VIEWS={};
 let caChart=null;
+let curView='dashboard';
+
+function refreshUI(){
+  /* met à jour le badge relances dans la nav */
+  const relCnt=DEVIS.filter(d=>d.statut==='dormant').length+FACTURES.filter(f=>f.statut==='en retard').length;
+  document.querySelectorAll('.ni[data-v="relances"] .dot').forEach(el=>el.textContent=relCnt||'');
+  /* si on est sur le dashboard, le re-rend pour mettre à jour les KPI */
+  if(curView==='dashboard'){
+    document.getElementById('content').innerHTML=VIEWS.dashboard();
+    initDash();
+  }
+}
 
 const NAV_ITEMS=[
 {v:'dashboard',l:'Tableau de bord',i:'<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>'},
 {v:'devis',l:'Devis & Factures',i:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'},
-{v:'relances',l:'Relances',i:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',dot:DEVIS.filter(d=>d.statut==='dormant').length+FACTURES.filter(f=>f.statut==='en retard').length},
+{v:'relances',l:'Relances',i:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'},
 {v:'chantiers',l:'Chantiers',i:'<path d="M2 22h20"/><path d="M6 18V9l6-4 6 4v9"/><rect x="9" y="13" width="6" height="5"/>'},
 {v:'calendrier',l:'Calendrier',i:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
 {v:'fournisseurs',l:'Fournisseurs',i:'<path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'},
@@ -438,11 +450,12 @@ const NAV_ITEMS=[
 const TITLES={dashboard:'Tableau de bord',devis:'Devis & Factures',relances:'Relances',chantiers:'Chantiers',calendrier:'Calendrier',fournisseurs:'Fournisseurs',clients:'Clients',reglages:'Réglages'};
 
 function buildNav(){
+  const relCnt=DEVIS.filter(d=>d.statut==='dormant').length+FACTURES.filter(f=>f.statut==='en retard').length;
   document.getElementById('nav').innerHTML=NAV_ITEMS.map(n=>
     `<div class="ni" data-v="${n.v}">
       <svg viewBox="0 0 24 24">${n.i}</svg>
       <span>${n.l}</span>
-      ${n.dot?`<span class="dot">${n.dot}</span>`:''}
+      ${n.v==='relances'&&relCnt?`<span class="dot">${relCnt}</span>`:''}
     </div>`
   ).join('');
   document.querySelectorAll('.ni').forEach(el=>el.addEventListener('click',()=>go(el.dataset.v)));
@@ -450,6 +463,7 @@ function buildNav(){
 }
 
 function go(v){
+  curView=v;
   document.querySelectorAll('.ni').forEach(el=>el.classList.toggle('on',el.dataset.v===v));
   document.getElementById('topTitle').textContent=TITLES[v]||v;
   document.getElementById('content').innerHTML=VIEWS[v]?VIEWS[v]():'';
@@ -734,16 +748,16 @@ function markSigne(ref){
   const d=DEVIS.find(x=>x.ref===ref);d.statut='signe';
   const b=document.getElementById('dbadge-'+ref);if(b)b.innerHTML=badge('signe');
   const card=document.getElementById('dc-'+ref);
-  if(card){const s=CARD_STYLE.signe;card.style.background=s.bg;card.style.borderColor=s.bor;}
-  closeM();
+  if(card){card.style.borderLeftColor='var(--green)';}
+  closeM();refreshUI();
 }
 function markPaid(ref,btn){
   const f=FACTURES.find(x=>x.ref===ref);f.statut='payee';f.jours=null;
   const b=document.getElementById('fbadge-'+ref);if(b)b.innerHTML=badge('payee');
   const card=document.getElementById('fc-'+ref);
-  if(card){const s=CARD_STYLE.payee;card.style.background=s.bg;card.style.borderColor=s.bor;}
+  if(card){card.style.borderLeftColor='var(--green)';}
   if(btn)btn.closest('[onclick*="event.stopPropagation"]')?.remove();
-  closeM();
+  closeM();refreshUI();
 }
 function relancerD(client,btn){feedbackBtn(btn,'Envoyé ✓','ok');}
 function relancerF(client,btn){feedbackBtn(btn,'Envoyé ✓','ok');}
@@ -759,7 +773,7 @@ function creerFact(ref){
   const ht=Math.round(d.montant/1.1);
   const newF={ref:padded,client:d.client,ville:d.ville,prestation:d.prestation,montant:d.montant,montantHT:ht,tva:d.montant-ht,dateEmission:'22/06/2026',echeance:'22/07/2026',statut:'en attente',devisRef:d.ref,jours:null};
   FACTURES.unshift(newF);
-  closeM();go('devis');
+  closeM();refreshUI();go('devis');
   setTimeout(()=>{swTab(document.querySelectorAll('.tab')[1],'t-fact');},50);
 }
 
