@@ -8,13 +8,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#0D1117;--sur:#161C24;--bor:#1E2A36;--bor2:#243040;
-  --ink:#E2E8F0;--soft:#94A3B8;--mute:#4B5A6E;
-  --blue:#38BDF8;--blueBg:#0A2030;
-  --red:#F87171;--redBg:#2A1414;
-  --green:#4ADE80;--greenBg:#142414;
-  --amber:#FBBF24;--amberBg:#241E08;
-  --r:10px;--rL:14px;
+  --bg:#0F1117;--sur:#161B22;--bor:#21262D;--bor2:#30363D;
+  --ink:#E6EDF3;--soft:#7D8590;--mute:#484F58;
+  --blue:#58A6FF;--blueBg:rgba(88,166,255,.07);
+  --red:#F85149;--redBg:rgba(248,81,73,.07);
+  --green:#3FB950;--greenBg:rgba(63,185,80,.07);
+  --amber:#D29922;--amberBg:rgba(210,153,34,.07);
+  --r:8px;--rL:10px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%}
@@ -34,7 +34,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;font-size:14px}
 
 /* ─── SIDEBAR ─── */
 .logo{padding:20px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px}
-.logo-icon{width:32px;height:32px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:800;font-size:15px;color:#0a1a26;flex-shrink:0}
+.logo-icon{width:30px;height:30px;border-radius:6px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:800;font-size:13px;color:#0a1a26;flex-shrink:0}
 .logo-name{font-family:'Oxanium';font-weight:700;font-size:14px;color:var(--ink)}
 .logo-sub{font-size:11px;color:var(--soft);margin-top:1px}
 .nav{padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:2px}
@@ -50,7 +50,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;font-size:14px}
 .top{height:56px;border-bottom:1px solid var(--bor);display:flex;align-items:center;padding:0 32px;gap:16px;flex-shrink:0;background:var(--sur)}
 .top-title{font-family:'Oxanium';font-weight:700;font-size:17px}
 .top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
-.rge-badge{display:flex;align-items:center;gap:6px;background:var(--greenBg);color:var(--green);border:1px solid rgba(74,222,128,.2);border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600}
+.rge-badge{display:flex;align-items:center;gap:5px;color:var(--soft);font-size:12px;font-weight:500}
 .avatar{width:32px;height:32px;border-radius:8px;background:var(--blueBg);color:var(--blue);font-family:'Oxanium';font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bor2)}
 
 /* ─── PAGE HEADER ─── */
@@ -67,13 +67,13 @@ button,input,select,textarea{font-family:'Inter',sans-serif;font-size:14px}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
 .kpi{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rL);padding:18px 20px}
 .kpi-label{font-size:12px;color:var(--soft);font-weight:500;margin-bottom:8px}
-.kpi-val{font-family:'Oxanium';font-size:26px;font-weight:700;line-height:1}
+.kpi-val{font-family:'Oxanium';font-size:24px;font-weight:700;line-height:1;color:var(--ink)}
 .kpi-sub{font-size:12px;color:var(--soft);margin-top:6px}
 .kpi-sub.up{color:var(--green)}.kpi-sub.down{color:var(--red)}.kpi-sub.warn{color:var(--amber)}
 
 /* ─── ALERT BAND ─── */
-.alert{background:var(--redBg);border:1px solid rgba(248,113,113,.25);border-radius:var(--rL);padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:16px}
-.alert-val{font-family:'Oxanium';font-size:22px;font-weight:700;color:var(--red);white-space:nowrap}
+.alert{background:var(--sur);border:1px solid var(--bor);border-left:3px solid var(--red);border-radius:var(--rL);padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.alert-val{font-family:'Oxanium';font-size:20px;font-weight:700;color:var(--ink);white-space:nowrap}
 .alert-txt{flex:1;font-size:13px;color:var(--soft);line-height:1.5}
 
 /* ─── BUTTONS ─── */
@@ -88,18 +88,19 @@ button,input,select,textarea{font-family:'Inter',sans-serif;font-size:14px}
 .btn.sm{padding:5px 11px;font-size:12px}
 
 /* ─── BADGE ─── */
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Oxanium';white-space:nowrap}
-.b-signe{background:var(--greenBg);color:var(--green)}
-.b-dormant{background:var(--amberBg);color:var(--amber)}
-.b-refuse{background:var(--redBg);color:var(--red)}
-.b-attente{background:var(--blueBg);color:var(--blue)}
-.b-retard{background:var(--redBg);color:var(--red)}
-.b-payee{background:var(--greenBg);color:var(--green)}
-.b-encours{background:var(--blueBg);color:var(--blue)}
-.b-planifie{background:var(--amberBg);color:var(--amber)}
-.b-termine{background:var(--greenBg);color:var(--green)}
-.b-actif{background:var(--greenBg);color:var(--green)}
-.b-prospect{background:var(--amberBg);color:var(--amber)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;white-space:nowrap;border:1px solid}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.b-signe{color:var(--green);border-color:rgba(63,185,80,.25);background:var(--greenBg)}
+.b-dormant{color:var(--amber);border-color:rgba(210,153,34,.25);background:var(--amberBg)}
+.b-refuse{color:var(--soft);border-color:var(--bor2);background:transparent}
+.b-attente{color:var(--blue);border-color:rgba(88,166,255,.25);background:var(--blueBg)}
+.b-retard{color:var(--red);border-color:rgba(248,81,73,.25);background:var(--redBg)}
+.b-payee{color:var(--green);border-color:rgba(63,185,80,.25);background:var(--greenBg)}
+.b-encours{color:var(--blue);border-color:rgba(88,166,255,.25);background:var(--blueBg)}
+.b-planifie{color:var(--amber);border-color:rgba(210,153,34,.25);background:var(--amberBg)}
+.b-termine{color:var(--soft);border-color:var(--bor2);background:transparent}
+.b-actif{color:var(--green);border-color:rgba(63,185,80,.25);background:var(--greenBg)}
+.b-prospect{color:var(--amber);border-color:rgba(210,153,34,.25);background:var(--amberBg)}
 
 /* ─── TABLE ─── */
 .tbl{width:100%;border-collapse:collapse}
@@ -258,8 +259,8 @@ select.finp{cursor:pointer}
   <div class="top">
     <div class="top-title" id="topTitle">Tableau de bord</div>
     <div class="top-right">
-      <button class="btn" onclick="demoSimulation()" style="background:linear-gradient(135deg,#1e3a5f,#0a2a4a);border-color:var(--blue);color:var(--blue);font-size:12px;padding:6px 14px;font-weight:700;letter-spacing:.03em">
-        ▶ Démo devis
+      <button class="btn" onclick="demoSimulation()" style="font-size:12px;padding:6px 14px">
+        ▶ Démo
       </button>
       <div class="rge-badge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -475,8 +476,8 @@ VIEWS.dashboard=function(){
 <div class="ph"><h2>Bonjour Mickael</h2><p>Lundi 22 juin 2026 · Pia (66)</p></div>
 
 <div class="kpis">
-  <div class="kpi"><div class="kpi-label">CA Juin 2026</div><div class="kpi-val oxa" style="color:var(--blue)">19 200 €</div><div class="kpi-sub up">+12,3 % vs mai</div></div>
-  <div class="kpi"><div class="kpi-label">Devis sans réponse</div><div class="kpi-val oxa" style="color:var(--red)">${dormCnt}</div><div class="kpi-sub warn">${fmt(dormAmt)} en jeu</div></div>
+  <div class="kpi"><div class="kpi-label">CA Juin 2026</div><div class="kpi-val oxa">19 200 €</div><div class="kpi-sub up">+12,3 % vs mai</div></div>
+  <div class="kpi"><div class="kpi-label">Devis sans réponse</div><div class="kpi-val oxa">${dormCnt}</div><div class="kpi-sub warn">${fmt(dormAmt)} en jeu</div></div>
   <div class="kpi"><div class="kpi-label">Taux de conversion</div><div class="kpi-val oxa">68 %</div><div class="kpi-sub up">+3 pts vs mai</div></div>
   <div class="kpi"><div class="kpi-label">CA signé juin</div><div class="kpi-val oxa">12 840 €</div><div class="kpi-sub">7 devis convertis</div></div>
 </div>
@@ -489,10 +490,10 @@ VIEWS.dashboard=function(){
 
 <div class="card">
   <div class="card-title">CA par prestation · Juin 2026</div>
-  <div class="pbar-row"><div class="pbar-lbl">Climatisation</div><div class="pbar-track"><div class="pbar-fill" style="width:45%;background:var(--blue)"></div></div><div class="pbar-val" style="color:var(--blue)">8 640 €</div></div>
-  <div class="pbar-row"><div class="pbar-lbl">Rénovation SDB</div><div class="pbar-track"><div class="pbar-fill" style="width:30%;background:var(--green)"></div></div><div class="pbar-val" style="color:var(--green)">5 760 €</div></div>
-  <div class="pbar-row"><div class="pbar-lbl">Chauffe-eau</div><div class="pbar-track"><div class="pbar-fill" style="width:15%;background:var(--amber)"></div></div><div class="pbar-val" style="color:var(--amber)">2 880 €</div></div>
-  <div class="pbar-row" style="margin:0"><div class="pbar-lbl">Plomberie</div><div class="pbar-track"><div class="pbar-fill" style="width:10%;background:var(--soft)"></div></div><div class="pbar-val" style="color:var(--soft)">1 920 €</div></div>
+  <div class="pbar-row"><div class="pbar-lbl">Climatisation</div><div class="pbar-track"><div class="pbar-fill" style="width:45%;background:var(--blue)"></div></div><div class="pbar-val">8 640 €</div></div>
+  <div class="pbar-row"><div class="pbar-lbl">Rénovation SDB</div><div class="pbar-track"><div class="pbar-fill" style="width:30%;background:var(--blue);opacity:.7"></div></div><div class="pbar-val">5 760 €</div></div>
+  <div class="pbar-row"><div class="pbar-lbl">Chauffe-eau</div><div class="pbar-track"><div class="pbar-fill" style="width:15%;background:var(--blue);opacity:.45"></div></div><div class="pbar-val">2 880 €</div></div>
+  <div class="pbar-row" style="margin:0"><div class="pbar-lbl">Plomberie</div><div class="pbar-track"><div class="pbar-fill" style="width:10%;background:var(--blue);opacity:.25"></div></div><div class="pbar-val">1 920 €</div></div>
 </div>
 
 <div class="card mt">
@@ -619,12 +620,12 @@ VIEWS.devis=function(){
 };
 
 const CARD_STYLE={
-  signe:  {bg:'var(--greenBg)', bor:'rgba(74,222,128,.4)',  hover:'var(--green)'},
-  dormant:{bg:'var(--sur)',     bor:'var(--bor)',            hover:'var(--amber)'},
-  refuse: {bg:'var(--redBg)',   bor:'rgba(248,113,113,.3)', hover:'var(--red)'},
-  'en attente':{bg:'var(--sur)',bor:'var(--blue)',           hover:'var(--blue)'},
-  'en retard': {bg:'var(--redBg)',bor:'var(--red)',          hover:'var(--red)'},
-  payee:  {bg:'var(--greenBg)', bor:'rgba(74,222,128,.4)',  hover:'var(--green)'},
+  signe:       {bg:'var(--sur)',bor:'var(--bor)',acc:'var(--green)',  hover:'rgba(63,185,80,.4)'},
+  dormant:     {bg:'var(--sur)',bor:'var(--bor)',acc:'var(--amber)',  hover:'rgba(210,153,34,.4)'},
+  refuse:      {bg:'var(--sur)',bor:'var(--bor)',acc:'var(--mute)',   hover:'var(--bor2)'},
+  'en attente':{bg:'var(--sur)',bor:'var(--bor)',acc:'var(--blue)',   hover:'rgba(88,166,255,.4)'},
+  'en retard': {bg:'var(--sur)',bor:'var(--bor)',acc:'var(--red)',    hover:'rgba(248,81,73,.4)'},
+  payee:       {bg:'var(--sur)',bor:'var(--bor)',acc:'var(--green)',  hover:'rgba(63,185,80,.4)'},
 };
 
 function devisCard(d){
@@ -637,23 +638,25 @@ function devisCard(d){
     `<button onclick="event.stopPropagation();creerFact('${d.ref}')" class="btn sm prim">Créer la facture →</button>`:
     '';
   return `<div id="dc-${d.ref}" onclick="openDevis('${d.ref}')"
-    style="background:${s.bg};border:1px solid ${s.bor};border-radius:12px;padding:18px 22px;margin-bottom:10px;cursor:pointer;transition:border-color .15s"
-    onmouseover="this.style.borderColor='${s.hover}'" onmouseout="this.style.borderColor='${s.bor}'">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    style="background:var(--sur);border:1px solid var(--bor);border-left:3px solid ${s.acc};border-radius:10px;padding:16px 20px;margin-bottom:8px;cursor:pointer;transition:background .12s"
+    onmouseover="this.style.background='rgba(255,255,255,.025)'" onmouseout="this.style.background='var(--sur)'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:10px;flex:1">
-        <span class="oxa" style="font-weight:700;font-size:15px">${d.ref}</span>
+        <span class="oxa" style="font-weight:700;font-size:14px;color:var(--soft)">${d.ref}</span>
+        <span style="font-weight:600;font-size:14px">${d.client}</span>
         <span id="dbadge-${d.ref}">${badge(d.statut)}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">
         ${acts}
-        <span style="color:var(--soft);font-size:18px;margin-left:4px">›</span>
+        <span style="color:var(--mute);font-size:16px;margin-left:4px">›</span>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
-      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Client</div><div style="font-size:13px;font-weight:600">${d.client}</div><div style="font-size:11px;color:var(--mute)">${d.ville}</div></div>
-      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Prestation</div><div style="font-size:13px;color:var(--soft)">${d.prestation}</div></div>
-      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Montant</div><div class="oxa" style="font-size:16px;font-weight:700;color:var(--blue)">${d.montant.toLocaleString('fr-FR')} €</div></div>
-      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">${d.statut==='signe'?'Signé le':'Envoyé le'}</div><div style="font-size:13px;color:var(--soft)">${d.dateEnvoi}</div></div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><span style="font-size:12px;color:var(--soft)">${d.prestation}</span></div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:20px">
+        <span class="oxa" style="font-size:15px;font-weight:700">${d.montant.toLocaleString('fr-FR')} €</span>
+        <span style="font-size:12px;color:var(--mute)">${d.dateEnvoi}</span>
+      </div>
     </div>
   </div>`;
 }
@@ -668,22 +671,20 @@ function factCard(f){
       <button onclick="markPaid('${f.ref}',this)" class="btn sm ok">Marquer payée</button>
     </div>`:'';
   return `<div id="fc-${f.ref}" onclick="openFact('${f.ref}')"
-    style="background:${s.bg};border:1px solid ${s.bor};border-radius:12px;padding:18px 22px;margin-bottom:10px;cursor:pointer;transition:border-color .15s"
-    onmouseover="this.style.borderColor='${s.hover}'" onmouseout="this.style.borderColor='${s.bor}'">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    style="background:var(--sur);border:1px solid var(--bor);border-left:3px solid ${s.acc};border-radius:10px;padding:16px 20px;margin-bottom:8px;cursor:pointer;transition:background .12s"
+    onmouseover="this.style.background='rgba(255,255,255,.025)'" onmouseout="this.style.background='var(--sur)'">
+    <div style="display:flex;justify-content:space-between;align-items:center">
       <div style="display:flex;align-items:center;gap:10px;flex:1">
-        <span class="oxa" style="font-weight:700;font-size:15px">${f.ref}</span>
+        <span class="oxa" style="font-weight:700;font-size:14px;color:var(--soft)">${f.ref}</span>
+        <span style="font-weight:600;font-size:14px">${f.client}</span>
         <span id="fbadge-${f.ref}">${badge(f.statut)}</span>
-        <span style="font-size:13px;color:var(--soft);margin-left:4px">${f.client}</span>
       </div>
-      ${acts}
-      <span style="color:var(--soft);font-size:18px;margin-left:8px">›</span>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
-      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Montant TTC</div><div class="oxa" style="font-size:16px;font-weight:700">${f.montant.toLocaleString('fr-FR')} €</div></div>
-      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Montant HT</div><div style="font-size:13px;color:var(--soft)">${f.montantHT.toLocaleString('fr-FR')} €</div></div>
-      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">TVA 10%</div><div style="font-size:13px;color:var(--soft)">${f.tva.toLocaleString('fr-FR')} €</div></div>
-      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">${paid?'Payée le':'Échéance'}</div><div style="font-size:13px;color:${late?'var(--red)':'var(--soft)'};font-weight:${late?600:400}">${f.echeance}${f.jours&&late?' · +'+f.jours+' j':''}</div></div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <span class="oxa" style="font-size:15px;font-weight:700">${f.montant.toLocaleString('fr-FR')} €</span>
+        <span style="font-size:12px;color:${late?'var(--red)':'var(--mute)'}">éch. ${f.echeance}${f.jours&&late?' +'+f.jours+'j':''}</span>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:6px;align-items:center">${acts}</div>
+        <span style="color:var(--mute);font-size:16px">›</span>
+      </div>
     </div>
   </div>`;
 }
