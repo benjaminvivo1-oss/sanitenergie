@@ -19,6 +19,12 @@ const CTR_FILE   = path.join(DATA_DIR, 'compteurs.json');
 const PDF_DIR    = path.join(DATA_DIR, 'pdf');
 const CFG_FILE   = path.join(__dirname, 'config', 'entreprise.json');
 const TMPL_FILE  = path.join(__dirname, 'templates', 'document.html');
+
+/* ── Initialisation dossiers ── */
+fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.mkdirSync(PDF_DIR,  { recursive: true });
+if (!fs.existsSync(CTR_FILE))  fs.writeFileSync(CTR_FILE,  '{}', 'utf8');
+if (!fs.existsSync(DOCS_FILE)) fs.writeFileSync(DOCS_FILE, '[]', 'utf8');
 const CHROME_PATH = process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 /* ── Clients API (initialisés à la demande pour ne pas crasher sans clés) ── */
@@ -88,12 +94,18 @@ const upload = multer({
 });
 
 /* ── Utilitaires JSON ── */
-function readJSON(file)       { return JSON.parse(fs.readFileSync(file, 'utf8')); }
-function writeJSON(file, data){ fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8'); }
+function readJSON(file, fallback = null) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
+  catch { return fallback; }
+}
+function writeJSON(file, data){
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+}
 
 /* ── Numérotation séquentielle ── */
 function nextNumero(type) {
-  const ctr  = readJSON(CTR_FILE);
+  const ctr  = readJSON(CTR_FILE, {});
   const year = new Date().getFullYear();
   ctr[type]  = (ctr[type] || 0) + 1;
   writeJSON(CTR_FILE, ctr);
