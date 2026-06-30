@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SaniPilot · Sanitenergie</title>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0D1117;--sur:#161C24;--bor:#1E2A36;--bor2:#243040;
+  --ink:#E2E8F0;--soft:#94A3B8;--mute:#4B5A6E;
+  --blue:#38BDF8;--blueBg:#0A2030;
+  --red:#F87171;--redBg:#2A1414;
+  --green:#4ADE80;--greenBg:#142414;
+  --amber:#FBBF24;--amberBg:#241E08;
+  --r:10px;--rL:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6}
+button,input,select,textarea{font-family:'Inter',sans-serif;font-size:14px}
+.oxa{font-family:'Oxanium',sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bor2);border-radius:3px}
+
+/* ─── LAYOUT ─── */
+.shell{display:flex;height:100vh;overflow:hidden}
+.side{width:220px;flex-shrink:0;background:var(--sur);border-right:1px solid var(--bor);display:flex;flex-direction:column;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.body{flex:1;overflow-y:auto;padding:32px}
+.inner{max-width:860px;margin:0 auto}
+
+/* ─── SIDEBAR ─── */
+.logo{padding:20px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:800;font-size:15px;color:#0a1a26;flex-shrink:0}
+.logo-name{font-family:'Oxanium';font-weight:700;font-size:14px;color:var(--ink)}
+.logo-sub{font-size:11px;color:var(--soft);margin-top:1px}
+.nav{padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:2px}
+.nav-sep{height:1px;background:var(--bor);margin:8px 0}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--soft);cursor:pointer;font-size:13.5px;font-weight:500;transition:background .12s,color .12s;user-select:none}
+.ni:hover{background:rgba(255,255,255,.04);color:var(--ink)}
+.ni.on{background:var(--blueBg);color:var(--blue)}
+.ni svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
+.ni .dot{margin-left:auto;min-width:20px;height:20px;background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Oxanium';padding:0 5px}
+.side-foot{padding:14px 10px;border-top:1px solid var(--bor)}
+
+/* ─── TOPBAR ─── */
+.top{height:56px;border-bottom:1px solid var(--bor);display:flex;align-items:center;padding:0 32px;gap:16px;flex-shrink:0;background:var(--sur)}
+.top-title{font-family:'Oxanium';font-weight:700;font-size:17px}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.rge-badge{display:flex;align-items:center;gap:6px;background:var(--greenBg);color:var(--green);border:1px solid rgba(74,222,128,.2);border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600}
+.avatar{width:32px;height:32px;border-radius:8px;background:var(--blueBg);color:var(--blue);font-family:'Oxanium';font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bor2)}
+
+/* ─── PAGE HEADER ─── */
+.ph{margin-bottom:28px}
+.ph h2{font-family:'Oxanium';font-weight:700;font-size:20px;margin-bottom:4px}
+.ph p{font-size:13.5px;color:var(--soft)}
+
+/* ─── CARDS ─── */
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rL);padding:22px 24px}
+.card+.card{margin-top:16px}
+.card-title{font-size:11px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px}
+
+/* ─── KPI ROW ─── */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rL);padding:18px 20px}
+.kpi-label{font-size:12px;color:var(--soft);font-weight:500;margin-bottom:8px}
+.kpi-val{font-family:'Oxanium';font-size:26px;font-weight:700;line-height:1}
+.kpi-sub{font-size:12px;color:var(--soft);margin-top:6px}
+.kpi-sub.up{color:var(--green)}.kpi-sub.down{color:var(--red)}.kpi-sub.warn{color:var(--amber)}
+
+/* ─── ALERT BAND ─── */
+.alert{background:var(--redBg);border:1px solid rgba(248,113,113,.25);border-radius:var(--rL);padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.alert-val{font-family:'Oxanium';font-size:22px;font-weight:700;color:var(--red);white-space:nowrap}
+.alert-txt{flex:1;font-size:13px;color:var(--soft);line-height:1.5}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--bor2);color:var(--ink);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:.12s;white-space:nowrap}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.prim{background:var(--blue);border-color:var(--blue);color:#0a1a26;font-weight:600}
+.btn.prim:hover{opacity:.88}
+.btn.dang{background:var(--redBg);border-color:rgba(248,113,113,.4);color:var(--red)}
+.btn.dang:hover{border-color:var(--red)}
+.btn.ok{background:var(--greenBg);border-color:rgba(74,222,128,.4);color:var(--green)}
+.btn.ok:hover{border-color:var(--green)}
+.btn.sm{padding:5px 11px;font-size:12px}
+
+/* ─── BADGE ─── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Oxanium';white-space:nowrap}
+.b-signe{background:var(--greenBg);color:var(--green)}
+.b-dormant{background:var(--amberBg);color:var(--amber)}
+.b-refuse{background:var(--redBg);color:var(--red)}
+.b-attente{background:var(--blueBg);color:var(--blue)}
+.b-retard{background:var(--redBg);color:var(--red)}
+.b-payee{background:var(--greenBg);color:var(--green)}
+.b-encours{background:var(--blueBg);color:var(--blue)}
+.b-planifie{background:var(--amberBg);color:var(--amber)}
+.b-termine{background:var(--greenBg);color:var(--green)}
+.b-actif{background:var(--greenBg);color:var(--green)}
+.b-prospect{background:var(--amberBg);color:var(--amber)}
+
+/* ─── TABLE ─── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;color:var(--soft);font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:9px 12px;border-bottom:1px solid var(--bor);text-align:left}
+.tbl td{padding:13px 12px;border-bottom:1px solid var(--bor);font-size:13.5px;color:var(--ink);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.click{cursor:pointer}
+.tbl tr.click:hover td{background:rgba(255,255,255,.025)}
+.tbl .num{font-family:'Oxanium';font-weight:600;font-size:15px}
+.tbl .sub{font-size:12px;color:var(--soft);margin-top:2px}
+.best-row td{background:rgba(74,222,128,.04)}
+
+/* ─── PROGRESS ─── */
+.prog{height:6px;background:var(--bor2);border-radius:4px;overflow:hidden}
+.prog span{display:block;height:100%;border-radius:4px;background:var(--blue)}
+
+/* ─── CHECKLIST ─── */
+.chk{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bor);cursor:pointer}
+.chk:last-child{border:none}
+.chk-box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--bor2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.12s}
+.chk.done .chk-box{background:var(--green);border-color:var(--green)}
+.chk-box svg{width:12px;height:12px;stroke:#111;stroke-width:3;fill:none;display:none}
+.chk.done .chk-box svg{display:block}
+.chk.done .chk-lbl{color:var(--soft);text-decoration:line-through}
+.chk-lbl{font-size:13.5px}
+
+/* ─── JOURNAL ─── */
+.jentry{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bor)}
+.jentry:last-child{border:none}
+.jentry .jd{font-family:'Oxanium';font-size:12px;font-weight:600;color:var(--blue);width:48px;flex-shrink:0;margin-top:1px}
+.jentry .jt{font-size:13.5px;color:var(--soft)}
+
+/* ─── CALENDAR ─── */
+.cal-grid{display:grid;grid-template-columns:52px repeat(5,1fr);border:1px solid var(--bor);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.cal-grid>div{border-right:1px solid var(--bor);border-bottom:1px solid var(--bor);padding:8px 10px}
+.cal-grid>div:last-child,.cal-grid>div:nth-child(6n){border-right:none}
+.cal-hdr{background:rgba(255,255,255,.02);font-size:12px;font-weight:600;text-align:center;padding:10px 8px!important;min-height:auto!important}
+.cal-time{font-size:11px;color:var(--mute);font-family:'Oxanium';text-align:right;padding-top:6px!important}
+.cal-ev{border-radius:5px;padding:4px 8px;font-size:11.5px;font-weight:500;margin-bottom:3px}
+.ev-clim{background:var(--blueBg);color:var(--blue);border-left:2px solid var(--blue)}
+.ev-sdb{background:var(--greenBg);color:var(--green);border-left:2px solid var(--green)}
+.ev-chauf{background:var(--amberBg);color:var(--amber);border-left:2px solid var(--amber)}
+.ev-plomb{border:1px solid var(--bor2);color:var(--soft);border-left:2px solid var(--soft)}
+
+/* ─── PBAR ─── */
+.pbar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.pbar-lbl{width:140px;font-size:13px;color:var(--soft);flex-shrink:0}
+.pbar-track{flex:1;height:5px;background:var(--bor2);border-radius:3px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:3px}
+.pbar-val{font-family:'Oxanium';font-size:13px;font-weight:600;width:64px;text-align:right;flex-shrink:0}
+
+/* ─── FICHE (back + detail) ─── */
+.back-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;color:var(--soft);background:none;border:none;cursor:pointer;margin-bottom:20px;padding:0}
+.back-btn:hover{color:var(--ink)}
+.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bor);font-size:13.5px}
+.info-row:last-child{border:none}
+.info-lbl{color:var(--soft)}
+.info-val{font-weight:500;text-align:right}
+
+/* ─── MODAL ─── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
+.overlay.on{display:flex}
+.modal{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rL);width:min(580px,100%);max-height:88vh;overflow-y:auto;animation:mpop .2s}
+@keyframes mpop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.mh{padding:20px 24px;border-bottom:1px solid var(--bor);display:flex;align-items:flex-start;gap:12px}
+.mb{padding:20px 24px}
+.mf{padding:16px 24px;border-top:1px solid var(--bor);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.mx{background:none;border:none;color:var(--soft);cursor:pointer;font-size:20px;line-height:1;margin-left:auto}
+.li-r{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bor);font-size:13.5px}
+.li-r:last-child{border:none}
+.li-lbl{color:var(--soft)}
+
+/* ─── FORM ─── */
+.frow{margin-bottom:14px}
+.flbl{display:block;font-size:12px;font-weight:500;color:var(--soft);margin-bottom:5px}
+.finp{width:100%;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:9px 12px;color:var(--ink);outline:none;transition:.12s}
+.finp:focus{border-color:var(--blue)}
+textarea.finp{resize:vertical;min-height:72px}
+select.finp{cursor:pointer}
+.radio-row{display:flex;gap:8px}
+.radio-opt{flex:1;text-align:center;padding:9px;border:1px solid var(--bor);border-radius:8px;cursor:pointer;font-size:13px;color:var(--soft);transition:.12s}
+.radio-opt.on{border-color:var(--blue);color:var(--blue);background:var(--blueBg)}
+
+/* ─── SEARCH INPUT ─── */
+.sinp{width:100%;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:9px 14px;color:var(--ink);outline:none;transition:.12s}
+.sinp:focus{border-color:var(--blue)}
+
+/* ─── TABS ─── */
+.tabs{display:flex;border-bottom:1px solid var(--bor);margin-bottom:20px}
+.tab{padding:10px 16px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--soft);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.12s}
+.tab.on{color:var(--blue);border-color:var(--blue);font-weight:600}
+.tabp{display:none}.tabp.on{display:block}
+
+/* ─── MISC ─── */
+.chip{display:inline-block;background:var(--bor2);color:var(--soft);padding:2px 8px;border-radius:12px;font-size:11px;margin:2px 2px 0 0}
+.sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mt{margin-top:16px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block}
+.av-c{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:700;color:#fff;font-size:13px;flex-shrink:0}
+
+@media(max-width:700px){
+  .side{display:none}
+  .kpis{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="side">
+  <div class="logo">
+    <div class="logo-icon">SE</div>
+    <div><div class="logo-name">Sanitenergie</div><div class="logo-sub">Pia · 66380</div></div>
+  </div>
+  <nav class="nav" id="nav"></nav>
+  <div class="side-foot">
+    <div class="ni" data-v="reglages">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Réglages</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="top">
+    <div class="top-title" id="topTitle">Tableau de bord</div>
+    <div class="top-right">
+      <button class="btn" onclick="demoSimulation()" style="background:linear-gradient(135deg,#1e3a5f,#0a2a4a);border-color:var(--blue);color:var(--blue);font-size:12px;padding:6px 14px;font-weight:700;letter-spacing:.03em">
+        ▶ Démo devis
+      </button>
+      <div class="rge-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        RGE certifié
+      </div>
+      <div class="avatar">MB</div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="inner" id="content"></div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/* ══ DATA ══ */
+const DEVIS=[
+{ref:'DV-047',client:'Jean-Pierre Roca',ville:'Perpignan',prestation:'Dépannage plomberie',montant:105,dateEnvoi:'12/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:1,unit:'ff',pu:87.5,total:87.5},{desc:'Fournitures',qte:1,unit:'ff',pu:17.5,total:17.5}]},
+{ref:'DV-046',client:'Marie Estève',ville:'Canet',prestation:'Climatisation split',montant:3200,dateEnvoi:'10/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre pose",qte:2,unit:'j',pu:700,total:1400},{desc:'Unité int. + ext.',qte:1,unit:'ff',pu:1500,total:1500},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-045',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation SDB',montant:6500,dateEnvoi:'08/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre SDB",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements sanitaires',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Carrelage + étanchéité',qte:1,unit:'ff',pu:1200,total:1200}]},
+{ref:'DV-044',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermo.',montant:2800,dateEnvoi:'07/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L Atlantic',qte:1,unit:'u',pu:1600,total:1600},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
+{ref:'DV-043',client:'Nathalie Puig',ville:'Pia',prestation:'Entretien clim.',montant:95,dateEnvoi:'05/06/2026',statut:'refuse',lignes:[{desc:'Forfait entretien annuel',qte:1,unit:'ff',pu:95,total:95}]},
+{ref:'DV-042',client:'Laurent Mas',ville:'Rivesaltes',prestation:'Climatisation multi-split',montant:4100,dateEnvoi:'03/06/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:3,unit:'j',pu:700,total:2100},{desc:'Unités x2 + ext.',qte:1,unit:'ff',pu:1700,total:1700},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-041',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation SDB',montant:5200,dateEnvoi:'01/06/2026',statut:'signe',lignes:[{desc:"Main d'œuvre",qte:4,unit:'j',pu:700,total:2800},{desc:'Équipements',qte:1,unit:'ff',pu:1600,total:1600},{desc:'Revêtements',qte:1,unit:'ff',pu:800,total:800}]},
+{ref:'DV-040',client:'Michel Fabre',ville:'Pia',prestation:'Chauffe-eau thermo.',montant:4800,dateEnvoi:'28/05/2026',statut:'dormant',lignes:[{desc:"M.O. + dépose",qte:1,unit:'j',pu:1000,total:1000},{desc:'Ballon 270L',qte:1,unit:'u',pu:2800,total:2800},{desc:'Raccordements',qte:1,unit:'ff',pu:1000,total:1000}]},
+{ref:'DV-039',client:'Isabelle Olive',ville:'Perpignan',prestation:'Chauffe-eau thermo.',montant:3500,dateEnvoi:'25/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:1,unit:'j',pu:800,total:800},{desc:'Ballon 200L',qte:1,unit:'u',pu:2300,total:2300},{desc:'Raccordements',qte:1,unit:'ff',pu:400,total:400}]},
+{ref:'DV-038',client:'Patrick Serra',ville:'Saint-Estève',prestation:'Rénovation SDB',montant:5800,dateEnvoi:'20/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:5,unit:'j',pu:700,total:3500},{desc:'Équipements',qte:1,unit:'ff',pu:1800,total:1800},{desc:'Revêtements',qte:1,unit:'ff',pu:500,total:500}]},
+{ref:'DV-037',client:'François Coll',ville:'Canet',prestation:'Climatisation split',montant:2900,dateEnvoi:'18/05/2026',statut:'dormant',lignes:[{desc:"Main d'œuvre",qte:2,unit:'j',pu:700,total:1400},{desc:'Split 3.5kW Daikin',qte:1,unit:'u',pu:1200,total:1200},{desc:'Raccordements',qte:1,unit:'ff',pu:300,total:300}]},
+{ref:'DV-036',client:'Sophie Guitart',ville:'Perpignan',prestation:'Entretien clim.',montant:95,dateEnvoi:'17/05/2026',statut:'dormant',lignes:[{desc:'Forfait entretien annuel',qte:1,unit:'ff',pu:95,total:95}]},
+];
+
+const FACTURES=[
+{ref:'FA-042',client:'SCI Les Albères',ville:'Canet',prestation:'Rénovation SDB — acompte',montant:2400,montantHT:2182,tva:218,dateEmission:'10/06/2026',echeance:'10/07/2026',statut:'en retard',devisRef:'DV-045',jours:32},
+{ref:'FA-041',client:'Batipro 66',ville:'Perpignan',prestation:'Clim — solde',montant:2100,montantHT:1909,tva:191,dateEmission:'25/05/2026',echeance:'25/06/2026',statut:'en retard',devisRef:null,jours:18},
+{ref:'FA-040',client:'Thomas Verdaguer',ville:'Perpignan',prestation:'Chauffe-eau thermo.',montant:1340,montantHT:1218,tva:122,dateEmission:'14/06/2026',echeance:'14/07/2026',statut:'en attente',devisRef:'DV-044',jours:null},
+{ref:'FA-039',client:'Camille Font',ville:'Perpignan',prestation:'Rénovation SDB',montant:5200,montantHT:4727,tva:473,dateEmission:'02/06/2026',echeance:'02/07/2026',statut:'en attente',devisRef:'DV-041',jours:null},
+{ref:'FA-038',client:'Batipro 66',ville:'Perpignan',prestation:'Clim lot A',montant:8400,montantHT:7636,tva:764,dateEmission:'20/05/2026',echeance:'20/06/2026',statut:'payee',devisRef:null,jours:null},
+{ref:'FA-037',client:'Bruno Castel',ville:'Le Soler',prestation:'Dépannage plomberie',montant:105,montantHT:95,tva:10,dateEmission:'12/05/2026',echeance:'12/06/2026',statut:'payee',devisRef:null,jours:null},
+];
+
+const CLIENTS=[
+{id:1,nom:'SCI Les Albères',ville:'Canet-en-Roussillon',categorie:'Professionnel',type:'SCI',ca:14200,statut:'actif',pipeline:'fidele',score:4,tags:['SCI','gros volume'],note:'Gestionnaire: M. Roca. Chantiers réguliers, paiements parfois tardifs.',tel:'04 68 12 34 56',email:'contact@alberes.fr',prochaine:'Bilan chantier SDB semaine prochaine',interactions:[{date:'15/06',type:'appel',note:'Confirmation avancement chantier SDB.'},{date:'08/06',type:'chantier',note:'Début rénovation SDB — DV-045.'},{date:'02/05',type:'devis',note:'Devis DV-045 envoyé — 6 500 €.'}],historique:['DV-045 signé — 6 500 €','FA-042 en retard — 2 400 €']},
+{id:2,nom:'Batipro 66',ville:'Perpignan',categorie:'Professionnel',type:'Constructeur',ca:32600,statut:'actif',pipeline:'fidele',score:5,tags:['sous-traitance','prioritaire'],note:'Référent: P. Durand. Contrat cadre annuel. Client le plus important.',tel:'04 68 98 76 54',email:'durand@batipro66.fr',prochaine:'Relance FA-041 — 2 100 €',interactions:[{date:'22/06',type:'chantier',note:'Lot B clim en cours.'},{date:'15/06',type:'appel',note:'Planification lot B.'},{date:'01/05',type:'facture',note:'FA-038 payée — 8 400 €.'}],historique:['FA-041 en retard — 2 100 €','FA-038 payée — 8 400 €']},
+{id:3,nom:'Thomas Verdaguer',ville:'Perpignan',categorie:'Particulier',type:'Propriétaire',ca:5600,statut:'actif',pipeline:'fidele',score:5,tags:['fidèle','recommande'],note:'Très satisfait, recommande Sanitenergie à ses voisins.',tel:'06 34 56 78 90',email:'t.verdaguer@gmail.com',prochaine:'Suivi installation chauffe-eau',interactions:[{date:'17/06',type:'reception',note:'Réception chauffe-eau sans réserve.'},{date:'14/06',type:'facture',note:'FA-040 émise — 1 340 €.'},{date:'07/06',type:'devis',note:'DV-044 signé — 2 800 €.'}],historique:['DV-044 signé — 2 800 €','FA-040 en attente — 1 340 €']},
+{id:4,nom:'Camille Font',ville:'Perpignan',categorie:'Particulier',type:'Propriétaire',ca:5200,statut:'actif',pipeline:'fidele',score:4,tags:[],note:'RDV préféré le matin avant 9h.',tel:'06 67 89 01 23',email:'camille.font@outlook.fr',prochaine:'Clôture chantier SDB',interactions:[{date:'04/06',type:'reception',note:'Chantier SDB terminé, client satisfait.'},{date:'01/06',type:'chantier',note:'Début rénovation SDB.'}],historique:['DV-041 signé — 5 200 €','FA-039 en attente — 5 200 €']},
+{id:5,nom:'Patrick Serra',ville:'Saint-Estève',categorie:'Particulier',type:'Propriétaire',ca:9400,statut:'actif',pipeline:'devis_envoye',score:3,tags:['gros budget'],note:'A comparé plusieurs devis. Budget confirmé, attend la bonne offre.',tel:'06 90 12 34 56',email:'',prochaine:'Relance DV-038',interactions:[{date:'20/05',type:'devis',note:'DV-038 envoyé — 5 800 €.'},{date:'18/05',type:'visite',note:'Visite technique SDB.'}],historique:['DV-038 dormant — 5 800 €']},
+{id:6,nom:'Laurent Mas',ville:'Rivesaltes',categorie:'Particulier',type:'Propriétaire',ca:7800,statut:'actif',pipeline:'devis_envoye',score:3,tags:[],note:'Projet multi-split pour maison de 150m². Délai flexible.',tel:'06 56 78 90 12',email:'',prochaine:'Relance DV-042',interactions:[{date:'03/06',type:'devis',note:'DV-042 envoyé — 4 100 €.'},{date:'01/06',type:'visite',note:'Visite technique clim.'}],historique:['DV-042 dormant — 4 100 €']},
+{id:7,nom:'Marie Estève',ville:'Canet',categorie:'Particulier',type:'Locataire',ca:3200,statut:'prospect',pipeline:'devis_envoye',score:2,tags:['devis dormant'],note:'Hésite, préfère être contactée par SMS. Accord propriétaire obtenu.',tel:'06 23 45 67 89',email:'',prochaine:'Relance DV-046 par SMS',interactions:[{date:'10/06',type:'devis',note:'DV-046 envoyé — 3 200 €.'},{date:'08/06',type:'visite',note:'Visite et mesures effectuées.'}],historique:['DV-046 dormant — 3 200 €']},
+{id:8,nom:'Michel Fabre',ville:'Pia',categorie:'Particulier',type:'Propriétaire',ca:4800,statut:'prospect',pipeline:'devis_envoye',score:3,tags:['devis dormant'],note:'Budget confirmé. Attend retour congés fin juillet.',tel:'06 78 90 12 34',email:'m.fabre@gmail.com',prochaine:'Relance DV-040 début juillet',interactions:[{date:'28/05',type:'devis',note:'DV-040 envoyé — 4 800 €.'},{date:'25/05',type:'visite',note:'Visite technique chauffe-eau 270L.'}],historique:['DV-040 dormant — 4 800 €']},
+{id:9,nom:'Isabelle Olive',ville:'Perpignan',categorie:'Particulier',type:'Propriétaire',ca:3500,statut:'prospect',pipeline:'devis_envoye',score:2,tags:['devis dormant'],note:'Projet retardé, a déménagé récemment. Recontacter en août.',tel:'06 89 01 23 45',email:'',prochaine:'Relance DV-039 en août',interactions:[{date:'25/05',type:'devis',note:'DV-039 envoyé — 3 500 €.'}],historique:['DV-039 dormant — 3 500 €']},
+{id:10,nom:'Jean-Pierre Roca',ville:'Perpignan',categorie:'Particulier',type:'Locataire',ca:1840,statut:'actif',pipeline:'devis_envoye',score:2,tags:[],note:'Dépannage urgent. Budget limité.',tel:'06 12 34 56 78',email:'',prochaine:'Relance DV-047',interactions:[{date:'12/06',type:'devis',note:'DV-047 envoyé — 105 €.'}],historique:['DV-047 dormant — 105 €']},
+{id:11,nom:'Bruno Castel',ville:'Le Soler',categorie:'Particulier',type:'Propriétaire',ca:420,statut:'actif',pipeline:'fidele',score:3,tags:[],note:'',tel:'06 01 23 45 67',email:'',prochaine:'—',interactions:[{date:'12/05',type:'facture',note:'FA-037 payée — 105 €.'}],historique:['FA-037 payée — 105 €']},
+{id:12,nom:'Nathalie Puig',ville:'Pia',categorie:'Particulier',type:'Propriétaire',ca:190,statut:'actif',pipeline:'prospect',score:1,tags:[],note:'A refusé DV-043. Motif: budget.',tel:'06 45 67 89 01',email:'',prochaine:'—',interactions:[{date:'05/06',type:'devis',note:'DV-043 refusé — 95 €.'}],historique:['DV-043 refusé — 95 €']},
+];
+
+const CHANTIERS=[
+{id:1,client:'SCI Les Albères',ville:'Canet',adresse:'28 bd de la Mer',prestation:'Rénovation SDB',avancement:60,statut:'en cours',debut:'08/06',fin:'26/06',type:'sdb',note:'Carrelage posé, sanitaires en cours.',contactSurPlace:'M. Roca — 04 68 12 34 56',codeAcces:'Digicode : 1842B',checklist:{devis:true,acompte:true,materiau:true,execution:false,reception:false},journal:[{date:'08/06',texte:'Dépose ancien carrelage.'},{date:'15/06',texte:'Nouveau carrelage posé. Sanitaires en cours.'}]},
+{id:2,client:'Batipro 66',ville:'Perpignan',adresse:'ZAC Nord',prestation:'Climatisation (lots)',avancement:30,statut:'en cours',debut:'22/06',fin:'24/06',type:'clim',note:'Lot B à poser semaine prochaine.',contactSurPlace:'P. Durand — 04 68 98 76 54',codeAcces:'',checklist:{devis:true,acompte:true,materiau:false,execution:false,reception:false},journal:[{date:'22/06',texte:'Lot A posé et testé.'}]},
+{id:3,client:'André Dupont',ville:'Perpignan',adresse:'15 rue Victor Hugo',prestation:'Rénovation SDB',avancement:0,statut:'planifié',debut:'24/06',fin:'26/06',type:'sdb',note:'',contactSurPlace:'M. Dupont — 06 55 44 33 22',codeAcces:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false},journal:[]},
+{id:4,client:'François Coll',ville:'Canet',adresse:'9 av. de la Plage',prestation:'Climatisation split',avancement:0,statut:'planifié',debut:'28/06',fin:'28/06',type:'clim',note:'',contactSurPlace:'M. Coll — 06 77 88 99 00',codeAcces:'',checklist:{devis:true,acompte:false,materiau:false,execution:false,reception:false},journal:[]},
+{id:5,client:'Thomas Verdaguer',ville:'Perpignan',adresse:'3 imp. des Roses',prestation:'Chauffe-eau thermo.',avancement:100,statut:'terminé',debut:'15/06',fin:'17/06',type:'chauf',note:'Client satisfait. Facture émise.',contactSurPlace:'M. Verdaguer — 06 34 56 78 90',codeAcces:'',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true},journal:[{date:'17/06',texte:'Installation terminée. Réception sans réserve.'}]},
+{id:6,client:'Camille Font',ville:'Perpignan',adresse:'12 rue des Mimosas',prestation:'Rénovation SDB',avancement:100,statut:'terminé',debut:'02/06',fin:'04/06',type:'sdb',note:'Réceptionné sans réserve.',contactSurPlace:'Mme Font — 06 67 89 01 23',codeAcces:'',checklist:{devis:true,acompte:true,materiau:true,execution:true,reception:true},journal:[{date:'04/06',texte:'Chantier terminé. Client a signé.'}]},
+];
+
+const FOURN={
+ballon:{title:'Ballon thermodynamique 200L Atlantic Calypso',economie:124,rows:[
+  {nom:'ProMat 66',ref:'Atlantic Calypso 200L',prix:248,delai:'7 j',dispo:'Limité',best:true},
+  {nom:'Thermor Pro',ref:'Atlantic Calypso 200L',prix:262,delai:'3 j',dispo:'Disponible',best:false},
+  {nom:'Clim+Pro',ref:'Atlantic Calypso 200L',prix:289,delai:'5 j',dispo:'Disponible',best:false},
+  {nom:'BricoDepot Pro',ref:'Atlantic Calypso 200L',prix:310,delai:'1 j',dispo:'Disponible',best:false},
+]},
+clim:{title:'Split Mitsubishi MSZ-AP 3.5kW',economie:185,rows:[
+  {nom:'ProMat 66',ref:'Mitsubishi MSZ-AP35VG',prix:875,delai:'5 j',dispo:'Disponible',best:true},
+  {nom:'Frigor Sud',ref:'Mitsubishi MSZ-AP35VG',prix:910,delai:'1 j',dispo:'Disponible',best:false},
+  {nom:'Clim+Pro',ref:'Mitsubishi MSZ-AP35VG',prix:960,delai:'2 j',dispo:'Disponible',best:false},
+  {nom:'Atlantic Pro',ref:'Daikin FTXC35C',prix:1060,delai:'4 j',dispo:'Disponible',best:false},
+]},
+mitigeur:{title:'Mitigeur thermostatique Hansgrohe Ecostat',economie:47,rows:[
+  {nom:'Sanitaire 66',ref:'Hansgrohe Ecostat 1001CL',prix:138,delai:'2 j',dispo:'Disponible',best:true},
+  {nom:'ProMat 66',ref:'Hansgrohe Ecostat 1001CL',prix:145,delai:'3 j',dispo:'Disponible',best:false},
+  {nom:'BricoDepot Pro',ref:'Hansgrohe Ecostat 1001CL',prix:152,delai:'1 j',dispo:'Disponible',best:false},
+  {nom:'SDB Direct',ref:'Grohe Grohtherm 800',prix:185,delai:'5 j',dispo:'Limité',best:false},
+]},
+};
+
+const CATALOGUE={
+  'Climatisation split':{type:'clim',duree:1,lignes:[
+    {desc:"Main d'œuvre pose",qte:2,unit:'j',pu:700},
+    {desc:'Split 3.5kW Daikin FTXC35C',qte:1,unit:'u',pu:1200},
+    {desc:'Raccordements + fluide',qte:1,unit:'ff',pu:300},
+  ]},
+  'Climatisation multi-split':{type:'clim',duree:2,lignes:[
+    {desc:"Main d'œuvre pose",qte:3,unit:'j',pu:700},
+    {desc:'Unités int. x2 + groupe ext.',qte:1,unit:'ff',pu:1700},
+    {desc:'Raccordements + fluide',qte:1,unit:'ff',pu:300},
+  ]},
+  'Rénovation SDB':{type:'sdb',duree:3,lignes:[
+    {desc:"Main d'œuvre plomberie",qte:4,unit:'j',pu:700},
+    {desc:'Équipements sanitaires',qte:1,unit:'ff',pu:1600},
+    {desc:'Carrelage + étanchéité',qte:1,unit:'ff',pu:800},
+  ]},
+  'Chauffe-eau thermodynamique':{type:'chauf',duree:1,lignes:[
+    {desc:"Main d'œuvre + dépose",qte:1,unit:'j',pu:900},
+    {desc:'Ballon 200L Atlantic Calypso',qte:1,unit:'u',pu:1600},
+    {desc:'Raccordements électro-plomberie',qte:1,unit:'ff',pu:400},
+  ]},
+  'Chauffe-eau thermodynamique 270L':{type:'chauf',duree:1,lignes:[
+    {desc:"Main d'œuvre + dépose",qte:1,unit:'j',pu:1000},
+    {desc:'Ballon 270L Atlantic Calypso',qte:1,unit:'u',pu:2200},
+    {desc:'Raccordements électro-plomberie',qte:1,unit:'ff',pu:500},
+  ]},
+  'Entretien climatisation':{type:'clim',duree:0.5,lignes:[
+    {desc:'Forfait entretien + nettoyage filtres',qte:1,unit:'ff',pu:95},
+  ]},
+  'Dépannage plomberie':{type:'plomb',duree:0.5,lignes:[
+    {desc:"Main d'œuvre dépannage",qte:1,unit:'ff',pu:87.5},
+    {desc:'Fournitures diverses',qte:1,unit:'ff',pu:17.5},
+  ]},
+  'Pompe à chaleur air/air':{type:'clim',duree:2,lignes:[
+    {desc:"Main d'œuvre installation",qte:2,unit:'j',pu:800},
+    {desc:'PAC Atlantic Fujitsu 5kW',qte:1,unit:'u',pu:2200},
+    {desc:'Raccordements + mise en service',qte:1,unit:'ff',pu:600},
+  ]},
+};
+
+
+const CAL={
+lun:[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
+mar:[{slot:1,t:'Batipro 66 — Clim',type:'clim'}],
+mer:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+jeu:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+ven:[{slot:1,t:'Dupont — SDB',type:'sdb'}],
+};
+const EVENTS=[
+  {id:1,date:'2026-06-22',debut:'08:00',fin:'17:00',titre:'Batipro 66 — Clim lot B',type:'clim',lieu:'ZAC Nord, Perpignan'},
+  {id:2,date:'2026-06-23',debut:'08:00',fin:'17:00',titre:'Batipro 66 — Clim lot B',type:'clim',lieu:'ZAC Nord, Perpignan'},
+  {id:3,date:'2026-06-24',debut:'08:00',fin:'17:00',titre:'Dupont — Rénovation SDB',type:'sdb',lieu:'15 rue Victor Hugo, Perpignan'},
+  {id:4,date:'2026-06-25',debut:'08:00',fin:'17:00',titre:'Dupont — Rénovation SDB',type:'sdb',lieu:'15 rue Victor Hugo, Perpignan'},
+  {id:5,date:'2026-06-26',debut:'08:00',fin:'17:00',titre:'Dupont — Rénovation SDB',type:'sdb',lieu:'15 rue Victor Hugo, Perpignan'},
+  {id:6,date:'2026-06-16',debut:'09:00',fin:'16:00',titre:'Verdaguer — Chauffe-eau',type:'chauf',lieu:'3 imp. des Roses, Perpignan'},
+  {id:7,date:'2026-06-17',debut:'09:00',fin:'12:00',titre:'Verdaguer — Finition',type:'chauf',lieu:'3 imp. des Roses, Perpignan'},
+  {id:8,date:'2026-06-28',debut:'08:00',fin:'17:00',titre:'Coll — Split clim',type:'clim',lieu:'9 av. de la Plage, Canet'},
+  {id:9,date:'2026-06-10',debut:'09:00',fin:'12:00',titre:'Font — Réception SDB',type:'sdb',lieu:'12 rue des Mimosas, Perpignan'},
+  {id:10,date:'2026-06-04',debut:'08:00',fin:'17:00',titre:'Font — SDB Jour 3',type:'sdb',lieu:'12 rue des Mimosas, Perpignan'},
+];
+
+const CHK_LABELS={devis:'Devis signé',acompte:'Acompte reçu',materiau:'Matériel commandé',execution:'Travaux exécutés',reception:'Réception client'};
+const BADGE_CLS={signe:'b-signe',dormant:'b-dormant',refuse:'b-refuse','en attente':'b-attente','en retard':'b-retard',payee:'b-payee','en cours':'b-encours',planifié:'b-planifie',terminé:'b-termine',actif:'b-actif',prospect:'b-prospect'};
+const BADGE_LBL={signe:'Signé',dormant:'Dormant',refuse:'Refusé','en attente':'En attente','en retard':'En retard',payee:'Payée','en cours':'En cours',planifié:'Planifié',terminé:'Terminé',actif:'Actif',prospect:'Prospect'};
+const fmt=n=>n.toLocaleString('fr-FR')+' €';
+function badge(s){return `<span class="badge ${BADGE_CLS[s]||'b-dormant'}">${BADGE_LBL[s]||s}</span>`;}
+const STATUS_COLOR={signe:'var(--green)',dormant:'var(--amber)',refuse:'var(--red)','en attente':'var(--blue)','en retard':'var(--red)',payee:'var(--green)'};
+function rowAccent(s){return `style="box-shadow:inset 3px 0 0 ${STATUS_COLOR[s]||'transparent'}"`;}
+
+
+/* ── CORE ── */
+const VIEWS={};
+let caChart=null;
+
+const NAV_ITEMS=[
+{v:'dashboard',l:'Tableau de bord',i:'<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>'},
+{v:'devis',l:'Devis & Factures',i:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'},
+{v:'relances',l:'Relances',i:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',dot:DEVIS.filter(d=>d.statut==='dormant').length+FACTURES.filter(f=>f.statut==='en retard').length},
+{v:'chantiers',l:'Chantiers',i:'<path d="M2 22h20"/><path d="M6 18V9l6-4 6 4v9"/><rect x="9" y="13" width="6" height="5"/>'},
+{v:'calendrier',l:'Calendrier',i:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
+{v:'fournisseurs',l:'Fournisseurs',i:'<path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'},
+{v:'clients',l:'Clients',i:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/>'},
+];
+
+const TITLES={dashboard:'Tableau de bord',devis:'Devis & Factures',relances:'Relances',chantiers:'Chantiers',calendrier:'Calendrier',fournisseurs:'Fournisseurs',clients:'Clients',reglages:'Réglages'};
+
+function buildNav(){
+  document.getElementById('nav').innerHTML=NAV_ITEMS.map(n=>
+    `<div class="ni" data-v="${n.v}">
+      <svg viewBox="0 0 24 24">${n.i}</svg>
+      <span>${n.l}</span>
+      ${n.dot?`<span class="dot">${n.dot}</span>`:''}
+    </div>`
+  ).join('');
+  document.querySelectorAll('.ni').forEach(el=>el.addEventListener('click',()=>go(el.dataset.v)));
+  document.querySelector('.side-foot .ni').addEventListener('click',()=>go('reglages'));
+}
+
+function go(v){
+  document.querySelectorAll('.ni').forEach(el=>el.classList.toggle('on',el.dataset.v===v));
+  document.getElementById('topTitle').textContent=TITLES[v]||v;
+  document.getElementById('content').innerHTML=VIEWS[v]?VIEWS[v]():'';
+  if(v==='dashboard')initDash();
+  if(v==='fournisseurs'){curFourn='ballon';renderFourn('ballon');}
+  if(v==='clients'){crmFilter='all';renderCl();}
+  if(v==='calendrier'){calMode='week';calWeekOff=0;setTimeout(renderCal,0);}
+}
+
+/* ── MODAL ── */
+function openM(html){document.getElementById('modal').innerHTML=html;document.getElementById('overlay').classList.add('on');}
+function closeM(){document.getElementById('overlay').classList.remove('on');}
+document.addEventListener('click',e=>{if(e.target.id==='overlay')closeM();});
+const mc=()=>`closeM()`;
+
+/* ── DASHBOARD ── */
+VIEWS.dashboard=function(){
+  const dormCnt=DEVIS.filter(d=>d.statut==='dormant').length;
+  const dormAmt=DEVIS.filter(d=>d.statut==='dormant').reduce((a,d)=>a+d.montant,0);
+  const retardAmt=FACTURES.filter(f=>f.statut==='en retard').reduce((a,f)=>a+f.montant,0);
+  const total=dormAmt+retardAmt;
+  const recent=DEVIS.slice(0,5);
+  return `
+<div class="ph"><h2>Bonjour Mickael</h2><p>Lundi 22 juin 2026 · Pia (66)</p></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="kpi-label">CA Juin 2026</div><div class="kpi-val oxa" style="color:var(--blue)">19 200 €</div><div class="kpi-sub up">+12,3 % vs mai</div></div>
+  <div class="kpi"><div class="kpi-label">Devis sans réponse</div><div class="kpi-val oxa" style="color:var(--red)">${dormCnt}</div><div class="kpi-sub warn">${fmt(dormAmt)} en jeu</div></div>
+  <div class="kpi"><div class="kpi-label">Taux de conversion</div><div class="kpi-val oxa">68 %</div><div class="kpi-sub up">+3 pts vs mai</div></div>
+  <div class="kpi"><div class="kpi-label">CA signé juin</div><div class="kpi-val oxa">12 840 €</div><div class="kpi-sub">7 devis convertis</div></div>
+</div>
+
+<div class="alert">
+  <div><div style="font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">À récupérer</div><div class="alert-val">${fmt(total)}</div></div>
+  <div class="alert-txt">${dormCnt} devis sans réponse et ${FACTURES.filter(f=>f.statut==='en retard').length} factures impayées. Une relance ciblée peut changer la donne.</div>
+  <button class="btn dang" onclick="go('relances')">Lancer les relances →</button>
+</div>
+
+<div class="card">
+  <div class="card-title">CA par prestation · Juin 2026</div>
+  <div class="pbar-row"><div class="pbar-lbl">Climatisation</div><div class="pbar-track"><div class="pbar-fill" style="width:45%;background:var(--blue)"></div></div><div class="pbar-val" style="color:var(--blue)">8 640 €</div></div>
+  <div class="pbar-row"><div class="pbar-lbl">Rénovation SDB</div><div class="pbar-track"><div class="pbar-fill" style="width:30%;background:var(--green)"></div></div><div class="pbar-val" style="color:var(--green)">5 760 €</div></div>
+  <div class="pbar-row"><div class="pbar-lbl">Chauffe-eau</div><div class="pbar-track"><div class="pbar-fill" style="width:15%;background:var(--amber)"></div></div><div class="pbar-val" style="color:var(--amber)">2 880 €</div></div>
+  <div class="pbar-row" style="margin:0"><div class="pbar-lbl">Plomberie</div><div class="pbar-track"><div class="pbar-fill" style="width:10%;background:var(--soft)"></div></div><div class="pbar-val" style="color:var(--soft)">1 920 €</div></div>
+</div>
+
+<div class="card mt">
+  <div class="card-title">Évolution du CA · 12 mois</div>
+  <div style="position:relative;height:180px"><canvas id="caChart"></canvas></div>
+</div>
+
+<div class="card mt">
+  <div class="sec-row"><div class="card-title" style="margin:0">Derniers devis</div><button class="btn sm" onclick="go('devis')">Voir tout →</button></div>
+  <table class="tbl">
+    <thead><tr><th>Référence</th><th>Client</th><th>Prestation</th><th>Montant</th><th>Statut</th></tr></thead>
+    <tbody>${recent.map(d=>`<tr class="click" onclick="openDevis('${d.ref}')"><td><span class="oxa" style="color:var(--blue);font-weight:600">${d.ref}</span></td><td>${d.client}</td><td style="color:var(--soft)">${d.prestation}</td><td><span class="num oxa">${fmt(d.montant)}</span></td><td>${badge(d.statut)}</td></tr>`).join('')}
+    </tbody>
+  </table>
+</div>`;
+};
+
+function initDash(){
+  if(caChart){caChart.destroy();caChart=null;}
+  const ctx=document.getElementById('caChart');
+  if(!ctx)return;
+  const g=ctx.getContext('2d').createLinearGradient(0,0,0,170);
+  g.addColorStop(0,'rgba(56,189,248,.18)');g.addColorStop(1,'rgba(56,189,248,0)');
+  const CA_DETAIL=[
+    {clim:8200,sdb:5500,chauf:3200,plomb:1300},{clim:5100,sdb:3800,chauf:1900,plomb:600},
+    {clim:10700,sdb:7100,chauf:4500,plomb:1500},{clim:11300,sdb:8400,chauf:4000,plomb:1500},
+    {clim:9300,sdb:6800,chauf:3300,plomb:1200},{clim:7100,sdb:5200,chauf:2700,plomb:800},
+    {clim:10100,sdb:7400,chauf:3700,plomb:1200},{clim:9100,sdb:6600,chauf:3200,plomb:1200},
+    {clim:12500,sdb:9300,chauf:4400,plomb:1600},{clim:13200,sdb:10100,chauf:4600,plomb:1500},
+    {clim:7700,sdb:5700,chauf:2900,plomb:800},{clim:8640,sdb:5760,chauf:2880,plomb:1920}
+  ];
+  // custom HTML tooltip
+  let tip=document.getElementById('ca-tip');
+  if(!tip){tip=document.createElement('div');tip.id='ca-tip';
+    Object.assign(tip.style,{position:'fixed',pointerEvents:'none',zIndex:'999',display:'none',
+      background:'#161C24',border:'1px solid #1E2A36',borderRadius:'12px',padding:'14px 18px',
+      boxShadow:'0 8px 32px rgba(0,0,0,.5)',minWidth:'200px',fontFamily:'Inter,sans-serif'});
+    document.body.appendChild(tip);
+  }
+  function showTip(ctx2,e){
+    const pts=ctx2.chart.getElementsAtEventForMode(e,'index',{intersect:false},false);
+    if(!pts.length){tip.style.display='none';return;}
+    const i=pts[0].index;
+    const lbl=ctx2.chart.data.labels[i];
+    const tot=ctx2.chart.data.datasets[0].data[i];
+    const d=CA_DETAIL[i];
+    tip.innerHTML=
+      '<div style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">'+lbl+' 2025–2026</div>'+
+      '<div style="font-size:16px;font-family:Oxanium,sans-serif;font-weight:700;color:#38BDF8;margin-bottom:12px">'+tot.toLocaleString('fr-FR')+' €</div>'+
+      '<div style="display:flex;flex-direction:column;gap:7px">'+
+        row('#38BDF8','Climatisation',d.clim)+
+        row('#4ADE80','Rénovation SDB',d.sdb)+
+        row('#FBBF24','Chauffe-eau',d.chauf)+
+        row('#94A3B8','Plomberie',d.plomb)+
+      '</div>';
+    function row(col,lbl2,val){
+      const pct=Math.round(val/tot*100);
+      return '<div style="display:flex;align-items:center;gap:8px">'+
+        '<span style="width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></span>'+
+        '<span style="flex:1;font-size:12px;color:#94A3B8">'+lbl2+'</span>'+
+        '<span style="font-family:Oxanium,sans-serif;font-weight:600;font-size:13px;color:#E2E8F0">'+val.toLocaleString('fr-FR')+' €</span>'+
+        '<span style="font-size:11px;color:'+col+';width:32px;text-align:right">'+pct+'%</span>'+
+      '</div>';
+    }
+    tip.style.display='block';
+    const rect=ctx.getBoundingClientRect();
+    let x=e.clientX+16,y=e.clientY-80;
+    if(x+220>window.innerWidth)x=e.clientX-230;
+    if(y<0)y=8;
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  }
+  ctx.addEventListener('mousemove',e=>showTip({chart:caChart},e));
+  ctx.addEventListener('mouseleave',()=>{tip.style.display='none';});
+
+  caChart=new Chart(ctx,{type:'line',data:{
+    labels:['Jul','Août','Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Juin'],
+    datasets:[{data:[18200,11400,23800,25200,20600,15800,22400,20100,27800,29400,17100,19200],
+      borderColor:'#38BDF8',borderWidth:2,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:'#38BDF8',
+      pointBorderColor:'#0D1117',pointBorderWidth:1.5,fill:true,backgroundColor:g,tension:.4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{enabled:false}},
+    scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5A6E',font:{size:11,family:'Inter'}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5A6E',font:{size:11,family:'Inter'},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}
+  }});
+}
+
+/* ── DEVIS & FACTURES ── */
+VIEWS.devis=function(){
+  const dormCnt=DEVIS.filter(d=>d.statut==='dormant').length;
+  const dormAmt=DEVIS.filter(d=>d.statut==='dormant').reduce((a,d)=>a+d.montant,0);
+  const signeCnt=DEVIS.filter(d=>d.statut==='signe').length;
+  const signeAmt=DEVIS.filter(d=>d.statut==='signe').reduce((a,d)=>a+d.montant,0);
+  const openFact=FACTURES.filter(f=>f.statut!=='payee');
+  const paidFact=FACTURES.filter(f=>f.statut==='payee');
+  const openAmt=openFact.reduce((a,f)=>a+f.montant,0);
+  const paidAmt=paidFact.reduce((a,f)=>a+f.montant,0);
+  const volTotal=dormAmt+signeAmt+openAmt+paidAmt;
+  const pct=volTotal?Math.round(paidAmt/volTotal*100):0;
+  return `
+<div class="ph"><h2>Devis & Factures</h2><p>Pipeline commercial et suivi des paiements</p></div>
+
+<div class="tabs">
+  <div class="tab on" onclick="swTab(this,'t-devis')">Devis</div>
+  <div class="tab" onclick="swTab(this,'t-fact')">Factures</div>
+</div>
+
+<div class="tabp on" id="t-devis">
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px">
+    <button class="btn" onclick="openVoiceDevis()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      Nouveau devis par vocal
+    </button>
+    <button class="btn prim" onclick="openNewDevis()">+ Nouveau devis</button>
+  </div>
+  <div id="devis-cards">${DEVIS.map(devisCard).join('')}</div>
+</div>
+
+<div class="tabp" id="t-fact">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+    <button class="btn prim" onclick="openNewDevis()">+ Nouvelle facture</button>
+  </div>
+  <div id="fact-cards">${FACTURES.map(factCard).join('')}</div>
+</div>`;
+};
+
+const CARD_STYLE={
+  signe:  {bg:'var(--greenBg)', bor:'rgba(74,222,128,.4)',  hover:'var(--green)'},
+  dormant:{bg:'var(--sur)',     bor:'var(--bor)',            hover:'var(--amber)'},
+  refuse: {bg:'var(--redBg)',   bor:'rgba(248,113,113,.3)', hover:'var(--red)'},
+  'en attente':{bg:'var(--sur)',bor:'var(--blue)',           hover:'var(--blue)'},
+  'en retard': {bg:'var(--redBg)',bor:'var(--red)',          hover:'var(--red)'},
+  payee:  {bg:'var(--greenBg)', bor:'rgba(74,222,128,.4)',  hover:'var(--green)'},
+};
+
+function devisCard(d){
+  const s=CARD_STYLE[d.statut]||CARD_STYLE.dormant;
+  const hasFact=FACTURES.some(f=>f.devisRef===d.ref);
+  const acts=d.statut==='dormant'?
+    `<button onclick="event.stopPropagation();relancerD('${d.client}',this)" class="btn sm" style="background:transparent;border:1px solid var(--amber);color:var(--amber)">Relancer</button>
+     <button onclick="event.stopPropagation();markSigne('${d.ref}')" class="btn sm ok">Marquer signé</button>`:
+    d.statut==='signe'&&!hasFact?
+    `<button onclick="event.stopPropagation();creerFact('${d.ref}')" class="btn sm prim">Créer la facture →</button>`:
+    '';
+  return `<div id="dc-${d.ref}" onclick="openDevis('${d.ref}')"
+    style="background:${s.bg};border:1px solid ${s.bor};border-radius:12px;padding:18px 22px;margin-bottom:10px;cursor:pointer;transition:border-color .15s"
+    onmouseover="this.style.borderColor='${s.hover}'" onmouseout="this.style.borderColor='${s.bor}'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <span class="oxa" style="font-weight:700;font-size:15px">${d.ref}</span>
+        <span id="dbadge-${d.ref}">${badge(d.statut)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">
+        ${acts}
+        <span style="color:var(--soft);font-size:18px;margin-left:4px">›</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Client</div><div style="font-size:13px;font-weight:600">${d.client}</div><div style="font-size:11px;color:var(--mute)">${d.ville}</div></div>
+      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Prestation</div><div style="font-size:13px;color:var(--soft)">${d.prestation}</div></div>
+      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Montant</div><div class="oxa" style="font-size:16px;font-weight:700;color:var(--blue)">${d.montant.toLocaleString('fr-FR')} €</div></div>
+      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">${d.statut==='signe'?'Signé le':'Envoyé le'}</div><div style="font-size:13px;color:var(--soft)">${d.dateEnvoi}</div></div>
+    </div>
+  </div>`;
+}
+
+function factCard(f){
+  const s=CARD_STYLE[f.statut]||CARD_STYLE['en attente'];
+  const late=f.statut==='en retard';
+  const paid=f.statut==='payee';
+  const acts=!paid?`
+    <div onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center">
+      ${late?`<button onclick="relancerF('${f.client}',this)" class="btn sm dang">Relancer</button>`:''}
+      <button onclick="markPaid('${f.ref}',this)" class="btn sm ok">Marquer payée</button>
+    </div>`:'';
+  return `<div id="fc-${f.ref}" onclick="openFact('${f.ref}')"
+    style="background:${s.bg};border:1px solid ${s.bor};border-radius:12px;padding:18px 22px;margin-bottom:10px;cursor:pointer;transition:border-color .15s"
+    onmouseover="this.style.borderColor='${s.hover}'" onmouseout="this.style.borderColor='${s.bor}'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <span class="oxa" style="font-weight:700;font-size:15px">${f.ref}</span>
+        <span id="fbadge-${f.ref}">${badge(f.statut)}</span>
+        <span style="font-size:13px;color:var(--soft);margin-left:4px">${f.client}</span>
+      </div>
+      ${acts}
+      <span style="color:var(--soft);font-size:18px;margin-left:8px">›</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Montant TTC</div><div class="oxa" style="font-size:16px;font-weight:700">${f.montant.toLocaleString('fr-FR')} €</div></div>
+      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Montant HT</div><div style="font-size:13px;color:var(--soft)">${f.montantHT.toLocaleString('fr-FR')} €</div></div>
+      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">TVA 10%</div><div style="font-size:13px;color:var(--soft)">${f.tva.toLocaleString('fr-FR')} €</div></div>
+      <div><div style="font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">${paid?'Payée le':'Échéance'}</div><div style="font-size:13px;color:${late?'var(--red)':'var(--soft)'};font-weight:${late?600:400}">${f.echeance}${f.jours&&late?' · +'+f.jours+' j':''}</div></div>
+    </div>
+  </div>`;
+}
+
+function swTab(el,id){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('.tabp').forEach(p=>p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+function lignes(ls){
+  let tot=0;
+  const rows=ls.map(l=>{tot+=l.total;return `<div class="li-r"><div><div>${l.desc}</div><div class="li-lbl" style="font-size:12px">${l.qte} ${l.unit} × ${fmt(l.pu)}</div></div><div class="oxa" style="font-weight:600">${fmt(l.total)}</div></div>`;}).join('');
+  return rows+`<div class="li-r" style="border:none;margin-top:6px"><div style="font-weight:600">Total TTC</div><div class="oxa" style="font-weight:700;font-size:19px;color:var(--blue)">${fmt(tot)}</div></div>`;
+}
+
+function openDevis(ref){
+  const d=DEVIS.find(x=>x.ref===ref);if(!d)return;
+  const hasFact=FACTURES.some(f=>f.devisRef===d.ref);
+  let foot=`<button class="btn" onclick="${mc()}">Fermer</button>`;
+  if(d.statut==='dormant')foot+=`<button class="btn" onclick="relancerD('${d.client}',this)">Envoyer relance</button><button class="btn ok" onclick="markSigne('${d.ref}')">Marquer signé</button>`;
+  if(d.statut==='signe'&&!hasFact)foot+=`<button class="btn prim" onclick="creerFact('${d.ref}')">Créer la facture</button>`;
+  openM(`<div class="mh"><div><div class="oxa" style="font-weight:700;font-size:18px">${d.ref}</div><div style="color:var(--soft);font-size:13px;margin-top:3px">${d.client} · ${d.ville}</div></div>${badge(d.statut)}<button class="mx" onclick="${mc()}">×</button></div>
+  <div class="mb"><div style="font-size:13px;color:var(--soft);margin-bottom:14px">${d.prestation} · envoyé le ${d.dateEnvoi}</div>${lignes(d.lignes)}</div>
+  <div class="mf">${foot}</div>`);
+}
+
+function openFact(ref){
+  const f=FACTURES.find(x=>x.ref===ref);if(!f)return;
+  let foot=`<button class="btn" onclick="${mc()}">Fermer</button>`;
+  if(f.statut==='en retard')foot+=`<button class="btn dang" onclick="relancerF('${f.client}',this)">Envoyer relance</button>`;
+  if(f.statut!=='payee')foot+=`<button class="btn ok" onclick="markPaid('${f.ref}');${mc()}">Marquer payée</button>`;
+  const devisLink=f.devisRef?`<div class="li-r"><div class="li-lbl">Devis lié</div><div><a style="color:var(--blue);cursor:pointer;font-weight:600" onclick="${mc()};openDevis('${f.devisRef}')">${f.devisRef} →</a></div></div>`:'';
+  openM(`<div class="mh"><div><div class="oxa" style="font-weight:700;font-size:18px">${f.ref}</div><div style="color:var(--soft);font-size:13px;margin-top:3px">${f.client} · ${f.ville}</div></div>${badge(f.statut)}<button class="mx" onclick="${mc()}">×</button></div>
+  <div class="mb">
+    <div class="li-r"><div class="li-lbl">Émise le</div><div>${f.dateEmission}</div></div>
+    <div class="li-r"><div class="li-lbl">Échéance</div><div style="color:${f.statut==='en retard'?'var(--red)':'inherit'}">${f.echeance}${f.jours?' — dépassée de '+f.jours+' j':''}</div></div>
+    ${devisLink}
+    <div class="li-r"><div class="li-lbl">Montant HT</div><div class="oxa" style="font-weight:600">${fmt(f.montantHT)}</div></div>
+    <div class="li-r"><div class="li-lbl">TVA 10 %</div><div>${fmt(f.tva)}</div></div>
+    <div class="li-r" style="border:none;margin-top:6px"><div style="font-weight:600">Total TTC</div><div class="oxa" style="font-weight:700;font-size:19px;color:var(--blue)">${fmt(f.montant)}</div></div>
+  </div><div class="mf">${foot}</div>`);
+}
+
+function markSigne(ref){
+  const d=DEVIS.find(x=>x.ref===ref);d.statut='signe';
+  const b=document.getElementById('dbadge-'+ref);if(b)b.innerHTML=badge('signe');
+  const card=document.getElementById('dc-'+ref);
+  if(card){const s=CARD_STYLE.signe;card.style.background=s.bg;card.style.borderColor=s.bor;}
+  closeM();
+}
+function markPaid(ref,btn){
+  const f=FACTURES.find(x=>x.ref===ref);f.statut='payee';f.jours=null;
+  const b=document.getElementById('fbadge-'+ref);if(b)b.innerHTML=badge('payee');
+  const card=document.getElementById('fc-'+ref);
+  if(card){const s=CARD_STYLE.payee;card.style.background=s.bg;card.style.borderColor=s.bor;}
+  if(btn)btn.closest('[onclick*="event.stopPropagation"]')?.remove();
+  closeM();
+}
+function relancerD(client,btn){feedbackBtn(btn,'Envoyé ✓','ok');}
+function relancerF(client,btn){feedbackBtn(btn,'Envoyé ✓','ok');}
+function feedbackBtn(btn,txt,cls){
+  if(!btn)return;const orig=btn.textContent,oc=btn.className;
+  btn.textContent=txt;btn.className='btn sm '+cls;
+  setTimeout(()=>{btn.textContent=orig;btn.className=oc;},2500);
+}
+function creerFact(ref){
+  const d=DEVIS.find(x=>x.ref===ref);
+  const num=Math.max(...FACTURES.map(f=>+(f.ref.replace('FA-',''))||0))+1;
+  const padded='FA-0'+String(num).padStart(2,'0');
+  const ht=Math.round(d.montant/1.1);
+  const newF={ref:padded,client:d.client,ville:d.ville,prestation:d.prestation,montant:d.montant,montantHT:ht,tva:d.montant-ht,dateEmission:'22/06/2026',echeance:'22/07/2026',statut:'en attente',devisRef:d.ref,jours:null};
+  FACTURES.unshift(newF);
+  closeM();go('devis');
+  setTimeout(()=>{swTab(document.querySelectorAll('.tab')[1],'t-fact');},50);
+}
+
+/* ── RELANCES ── */
+VIEWS.relances=function(){
+  const dorms=DEVIS.filter(d=>d.statut==='dormant');
+  const ages=[10,8,15,12,20,6,5,18,22,26,32,14];
+  const retards=FACTURES.filter(f=>f.statut==='en retard');
+  const tot=dorms.reduce((a,d)=>a+d.montant,0)+retards.reduce((a,f)=>a+f.montant,0);
+  return `
+<div class="ph"><h2>Relances</h2><p>Dossiers en attente d'action</p></div>
+<div class="alert" style="margin-bottom:20px">
+  <div><div style="font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Total à récupérer</div><div class="alert-val">${fmt(tot)}</div></div>
+  <div class="alert-txt">${dorms.length} devis + ${retards.length} factures en attente</div>
+  <button class="btn dang" onclick="lancerTout()">Tout relancer (${dorms.length+retards.length})</button>
+</div>
+<div class="card" style="margin-bottom:14px">
+  <div class="card-title">Devis sans réponse · ${dorms.length} dossiers</div>
+  ${dorms.length?`<table class="tbl"><thead><tr><th>Réf.</th><th>Client</th><th>Montant</th><th>Depuis</th><th></th></tr></thead><tbody>
+  ${dorms.map((d,i)=>`<tr><td><span class="oxa" style="color:var(--blue);font-weight:600">${d.ref}</span></td><td>${d.client}<div class="sub">${d.prestation}</div></td><td><span class="oxa">${fmt(d.montant)}</span></td><td style="color:var(--amber)">${ages[i]||7} j</td><td><button class="btn sm" onclick="relancerD('${d.client}',this)">Relancer</button></td></tr>`).join('')}
+  </tbody></table>`:'<p style="color:var(--soft);font-size:13.5px">Aucun devis sans réponse.</p>'}
+</div>
+<div class="card" style="margin-bottom:14px">
+  <div class="card-title">Factures impayées · ${retards.length} dossiers</div>
+  ${retards.length?`<table class="tbl"><thead><tr><th>Réf.</th><th>Client</th><th>Montant</th><th>Retard</th><th></th></tr></thead><tbody>
+  ${retards.map(f=>`<tr><td><span class="oxa" style="color:var(--blue);font-weight:600">${f.ref}</span></td><td>${f.client}</td><td><span class="oxa">${fmt(f.montant)}</span></td><td style="color:var(--red)">+${f.jours} j</td><td style="display:flex;gap:8px"><button class="btn sm dang" onclick="relancerF('${f.client}',this)">Relancer</button><button class="btn sm ok" onclick="markPaid('${f.ref}',this)">Payée</button></td></tr>`).join('')}
+  </tbody></table>`:'<p style="color:var(--soft);font-size:13.5px">Aucune facture impayée.</p>'}
+</div>
+<div class="grid2">
+  <div class="card"><div class="card-title">Séquence devis</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      ${[['J+2','SMS de courtoisie','Confirmer réception','blue'],['J+5','Email de relance','Rappel + disponibilité','blue'],['J+10','Appel téléphonique','Proposition visite','mute']].map(([d,a,n,c])=>`<div class="seqstep"><div class="oxa" style="font-size:11px;color:var(--${c==='mute'?'soft':'blue'});font-weight:700;width:36px;flex-shrink:0">${d}</div><div><div style="font-weight:500;font-size:13.5px">${a}</div><div style="font-size:12px;color:var(--soft)">${n}</div></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="card"><div class="card-title">Séquence factures</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      ${[['J+3','SMS de rappel','Rappel échéance','amber'],['J+8','Email formel','Mise en demeure douce','red'],['J+15','Courrier recommandé','Procédure recouvrement','red']].map(([d,a,n,c])=>`<div class="seqstep"><div class="oxa" style="font-size:11px;color:var(--${c});font-weight:700;width:36px;flex-shrink:0">${d}</div><div><div style="font-weight:500;font-size:13.5px">${a}</div><div style="font-size:12px;color:var(--soft)">${n}</div></div></div>`).join('')}
+    </div>
+  </div>
+</div>`;
+};
+function lancerTout(){document.querySelectorAll('#content button.btn.sm:not(.ok):not(.dang)').forEach(b=>feedbackBtn(b,'Envoyé ✓','ok'));}
+
+/* ── CHANTIERS ── */
+const CTYPE_COLOR={sdb:'var(--green)',clim:'var(--blue)',chauf:'var(--amber)',plomb:'var(--soft)'};
+VIEWS.chantiers=function(){
+  return `
+<div class="ph"><h2>Chantiers</h2><p>Suivi en temps réel de vos interventions</p></div>
+<div id="ch-list">${renderChList()}</div>
+<div id="ch-fiche" style="display:none"></div>`;
+};
+function renderChList(){
+  return `<div class="card" style="padding:0;overflow:hidden"><table class="tbl">
+  <thead><tr><th>Client</th><th>Prestation</th><th>Avancement</th><th>Dates</th><th>Statut</th></tr></thead>
+  <tbody>${CHANTIERS.map(c=>{
+    const done=Object.values(c.checklist).filter(Boolean).length;
+    return `<tr class="click" onclick="openCh(${c.id})">
+      <td><div style="font-weight:600">${c.client}</div><div class="sub">${c.adresse} · ${c.ville}</div></td>
+      <td style="color:var(--soft)">${c.prestation}</td>
+      <td style="min-width:140px"><div style="display:flex;align-items:center;gap:10px"><div class="prog" style="flex:1"><span style="width:${c.avancement}%;background:${CTYPE_COLOR[c.type]}"></span></div><span class="oxa" style="font-size:13px;font-weight:600;color:${CTYPE_COLOR[c.type]};width:32px">${c.avancement}%</span></div><div style="font-size:11px;color:var(--mute);margin-top:3px">${done}/5 étapes</div></td>
+      <td style="color:var(--soft);font-size:13px">${c.debut} → ${c.fin}</td>
+      <td>${badge(c.statut)}</td>
+    </tr>`;}).join('')}
+  </tbody></table></div>`;
+}
+function openCh(id){
+  const c=CHANTIERS.find(x=>x.id===id);
+  document.getElementById('ch-list').style.display='none';
+  const f=document.getElementById('ch-fiche');f.style.display='block';
+  f.innerHTML=`
+<button class="back-btn" onclick="backCh()">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  Retour aux chantiers
+</button>
+<div class="card" style="margin-bottom:14px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+    <div><div style="font-size:20px;font-weight:700;font-family:'Oxanium';margin-bottom:4px">${c.client}</div><div style="font-size:13px;color:var(--soft)">${c.adresse} · ${c.ville} · ${c.prestation}</div></div>
+    ${badge(c.statut)}
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="prog" style="flex:1"><span id="ch-prog-${c.id}" style="width:${c.avancement}%;background:${CTYPE_COLOR[c.type]}"></span></div>
+    <span id="ch-pct-${c.id}" class="oxa" style="font-size:16px;font-weight:700;color:${CTYPE_COLOR[c.type]}">${c.avancement} %</span>
+  </div>
+</div>
+<div class="grid2" style="margin-bottom:14px">
+  <div class="card"><div class="card-title">Étapes</div><div id="chk-${id}">${renderChk(c)}</div></div>
+  <div class="card"><div class="card-title">Informations</div>
+    <div class="info-row"><span class="info-lbl">Contact</span><span class="info-val">${c.contactSurPlace||'—'}</span></div>
+    <div class="info-row"><span class="info-lbl">Code d'accès</span><span class="info-val">${c.codeAcces||'—'}</span></div>
+    <div class="info-row"><span class="info-lbl">Début</span><span class="info-val">${c.debut}</span></div>
+    <div class="info-row"><span class="info-lbl">Fin prévue</span><span class="info-val">${c.fin}</span></div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-title">Journal de chantier</div>
+  <div id="journal-${id}">${renderJournal(c)}</div>
+  <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+    <input class="sinp" id="jinp-${id}" placeholder="Nouvelle entrée..." style="flex:1;min-width:200px">
+    <label class="btn" style="cursor:pointer" title="Ajouter une photo">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Photo
+      <input type="file" id="jphoto-${id}" accept="image/*" style="display:none" onchange="previewJPhoto(${id})">
+    </label>
+    <button class="btn prim" onclick="addJournal(${id})">Ajouter</button>
+  </div>
+  <div id="jphoto-preview-${id}" style="margin-top:8px"></div>
+</div>
+${c.note?`<div class="card mt"><div class="card-title">Note</div><div style="font-size:13.5px;color:var(--soft)">${c.note}</div></div>`:''}`;
+}
+function renderChk(c){return Object.keys(c.checklist).map(k=>`<div class="chk ${c.checklist[k]?'done':''}" onclick="togChk(${c.id},'${k}')"><div class="chk-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="chk-lbl">${CHK_LABELS[k]}</span></div>`).join('');}
+function renderJournal(c){
+  if(!c.journal.length)return '<div style="color:var(--soft);font-size:13.5px">Aucune entrée.</div>';
+  return c.journal.map(j=>`<div class="jentry">
+    <div class="jd">${j.date}</div>
+    <div class="jt" style="flex:1">
+      <div>${j.texte}</div>
+      ${j.photo?`<img src="${j.photo}" style="margin-top:8px;max-width:100%;max-height:180px;border-radius:7px;border:1px solid var(--bor);object-fit:cover;cursor:pointer" onclick="openPhotoModal('${j.photo}')" alt="photo chantier">`:'' }
+    </div>
+  </div>`).join('');
+}
+function openPhotoModal(src){openM(`<div class="mh"><div class="oxa" style="font-weight:700">Photo chantier</div><button class="mx" onclick="closeM()">×</button></div><div class="mb" style="text-align:center"><img src="${src}" style="max-width:100%;max-height:70vh;border-radius:8px;object-fit:contain"></div>`);}
+function togChk(id,key){
+  const c=CHANTIERS.find(x=>x.id===id);
+  c.checklist[key]=!c.checklist[key];
+  const done=Object.values(c.checklist).filter(Boolean).length;
+  const total=Object.keys(c.checklist).length;
+  c.avancement=Math.round((done/total)*100);
+  document.getElementById('chk-'+id).innerHTML=renderChk(c);
+  const pb=document.getElementById('ch-prog-'+id);if(pb)pb.style.width=c.avancement+'%';
+  const pt=document.getElementById('ch-pct-'+id);if(pt)pt.textContent=c.avancement+' %';
+}
+let _jPhotoData={};
+function previewJPhoto(id){
+  const fi=document.getElementById('jphoto-'+id);
+  if(!fi.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    _jPhotoData[id]=e.target.result;
+    document.getElementById('jphoto-preview-'+id).innerHTML=`<img src="${e.target.result}" style="height:60px;border-radius:6px;border:1px solid var(--bor);object-fit:cover"> <span style="font-size:12px;color:var(--green)">Photo prête</span>`;
+  };
+  r.readAsDataURL(fi.files[0]);
+}
+function addJournal(id){
+  const c=CHANTIERS.find(x=>x.id===id);const inp=document.getElementById('jinp-'+id);
+  if(!inp.value.trim()&&!_jPhotoData[id])return;
+  const d=new Date();
+  c.journal.push({date:`${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`,texte:inp.value.trim()||'Photo ajoutée',photo:_jPhotoData[id]||null});
+  inp.value='';_jPhotoData[id]=null;
+  const fp=document.getElementById('jphoto-'+id);if(fp)fp.value='';
+  const pp=document.getElementById('jphoto-preview-'+id);if(pp)pp.innerHTML='';
+  document.getElementById('journal-'+id).innerHTML=renderJournal(c);
+}
+function backCh(){document.getElementById('ch-fiche').style.display='none';document.getElementById('ch-list').style.display='block';}
+
+/* ── CALENDRIER ── */
+let calMode='week',calWeekOff=0;
+const DAY_NAMES=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const EV_COLOR={clim:'var(--blue)',sdb:'var(--green)',chauf:'var(--amber)',plomb:'var(--soft)'};
+
+VIEWS.calendrier=function(){
+  const totalEv=EVENTS.length;
+  const thisWeek=EVENTS.filter(e=>e.date>='2026-06-22'&&e.date<='2026-06-28').length;
+  return `
+<div class="ph"><h2>Planning</h2><p>Agenda juin 2026</p></div>
+<div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+  <div class="kpi"><div class="kpi-label">Cette semaine</div><div class="kpi-val oxa" style="color:var(--blue)">${thisWeek}</div><div class="kpi-sub">interventions</div></div>
+  <div class="kpi"><div class="kpi-label">Jours occupés</div><div class="kpi-val oxa">5/5</div><div class="kpi-sub up">semaine pleine</div></div>
+  <div class="kpi"><div class="kpi-label">Total juin</div><div class="kpi-val oxa">${totalEv}</div><div class="kpi-sub">interventions</div></div>
+  <div class="kpi"><div class="kpi-label">Semaines libres</div><div class="kpi-val oxa" style="color:var(--amber)">2</div><div class="kpi-sub warn">S27 · S28</div></div>
+</div>
+<div class="card">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+    <div style="display:flex;gap:0;border:1px solid var(--bor);border-radius:8px;overflow:hidden">
+      <button class="btn sm" id="cal-btn-week" onclick="setCalMode('week')" style="border:none;border-radius:0;background:var(--blue);color:#0a1a26;font-weight:600">Semaine</button>
+      <button class="btn sm" id="cal-btn-month" onclick="setCalMode('month')" style="border:none;border-left:1px solid var(--bor);border-radius:0">Mois</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn sm" onclick="calNav(-1)">← Préc.</button>
+      <button class="btn sm" style="color:var(--blue);border-color:var(--blue)" onclick="calNav(0)">Aujourd'hui</button>
+      <button class="btn sm" onclick="calNav(1)">Suiv. →</button>
+      <button class="btn prim sm" onclick="openAddEvent()">+ Événement</button>
+      <button class="btn sm ok" onclick="exportICS()">↓ ICS</button>
+    </div>
+  </div>
+  <div id="cal-body"></div>
+  <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--soft);flex-wrap:wrap">
+    <span><span class="dot" style="background:var(--blue)"></span> Clim</span>
+    <span><span class="dot" style="background:var(--green)"></span> SDB</span>
+    <span><span class="dot" style="background:var(--amber)"></span> Chauffe-eau</span>
+    <span><span class="dot" style="background:var(--soft)"></span> Plomberie</span>
+  </div>
+</div>
+<div class="card mt" style="background:var(--amberBg);border-color:rgba(251,191,36,.2)">
+  <div style="font-size:13.5px;color:var(--amber)">⚠ Semaine 27 (30 juin) et S28 (7 juil.) sont libres — des relances peuvent les remplir.</div>
+</div>`;
+};
+
+function setCalMode(m){
+  calMode=m;
+  const bw=document.getElementById('cal-btn-week');
+  const bm=document.getElementById('cal-btn-month');
+  if(bw)bw.style.cssText=m==='week'?'border:none;border-radius:0;background:var(--blue);color:#0a1a26;font-weight:600':'border:none;border-radius:0';
+  if(bm)bm.style.cssText=m==='month'?'border:none;border-left:1px solid var(--bor);border-radius:0;background:var(--blue);color:#0a1a26;font-weight:600':'border:none;border-left:1px solid var(--bor);border-radius:0';
+  renderCal();
+}
+function calNav(dir){if(dir===0){calWeekOff=0;}else{calWeekOff+=dir;}renderCal();}
+function renderCal(){const el=document.getElementById('cal-body');if(el)el.innerHTML=calMode==='week'?renderCalWeek():renderCalMonth();}
+
+function renderCalWeek(){
+  const base=new Date('2026-06-22');base.setDate(base.getDate()+calWeekOff*7);
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(base);d.setDate(d.getDate()+i);return d;});
+  const HOURS=['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+  const todayIso='2026-06-22';
+  let html=`<div style="display:grid;grid-template-columns:52px repeat(7,1fr);border:1px solid var(--bor);border-radius:var(--r);overflow:hidden;overflow-x:auto">`;
+  html+=`<div style="border-bottom:1px solid var(--bor);background:rgba(255,255,255,.02)"></div>`;
+  html+=days.map(d=>{
+    const iso=d.toISOString().slice(0,10);
+    const isToday=iso===todayIso;
+    const evCnt=EVENTS.filter(e=>e.date===iso).length;
+    return `<div style="text-align:center;padding:8px 4px;border-bottom:1px solid var(--bor);border-left:1px solid var(--bor);background:${isToday?'var(--blueBg)':'rgba(255,255,255,.02)'}">
+      <div style="font-size:11px;color:var(--soft)">${DAY_NAMES[(d.getDay()+6)%7]}</div>
+      <div class="oxa" style="font-size:18px;font-weight:700;color:${isToday?'var(--blue)':'inherit'}">${d.getDate()}</div>
+      ${evCnt?`<div style="font-size:10px;color:var(--blue)">${evCnt} interv.</div>`:''}
+    </div>`;
+  }).join('');
+  HOURS.forEach(h=>{
+    html+=`<div style="font-size:10px;color:var(--mute);font-family:'Oxanium';text-align:right;padding:4px 6px 4px 2px;border-bottom:1px solid var(--bor);border-right:1px solid var(--bor);padding-top:8px">${h}</div>`;
+    days.forEach(d=>{
+      const iso=d.toISOString().slice(0,10);
+      const evs=EVENTS.filter(e=>e.date===iso&&e.debut===h);
+      const isToday=iso===todayIso;
+      html+=`<div style="border-left:1px solid var(--bor);border-bottom:1px solid var(--bor);min-height:48px;padding:3px;${isToday?'background:rgba(56,189,248,.03)':''}">
+        ${evs.map(e=>`<div class="cal-ev ev-${e.type}" style="cursor:pointer" onclick="openEventModal(${e.id})"><div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titre}</div><div style="font-size:10px;opacity:.75">${e.debut}–${e.fin}</div></div>`).join('')}
+      </div>`;
+    });
+  });
+  html+=`</div>`;
+  return html;
+}
+
+function renderCalMonth(){
+  const year=2026,month=5;
+  const firstDow=new Date(year,month,1).getDay();
+  const startOff=firstDow===0?6:firstDow-1;
+  const daysInMonth=30;const todayDay=22;
+  let html=`<div style="display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--bor);border-radius:var(--r);overflow:hidden">`;
+  html+=DAY_NAMES.map(d=>`<div style="text-align:center;padding:8px 4px;font-size:11px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--bor);background:rgba(255,255,255,.02)">${d}</div>`).join('');
+  for(let i=0;i<startOff;i++)html+=`<div style="border-bottom:1px solid var(--bor);border-right:1px solid var(--bor);min-height:80px;background:rgba(0,0,0,.15)"></div>`;
+  for(let day=1;day<=daysInMonth;day++){
+    const iso=`2026-06-${String(day).padStart(2,'0')}`;
+    const evs=EVENTS.filter(e=>e.date===iso);
+    const col=(startOff+day-1)%7;const isWE=col>=5;const isToday=day===todayDay;
+    html+=`<div style="min-height:80px;padding:6px;border-bottom:1px solid var(--bor);${col<6?'border-right:1px solid var(--bor);':''}${isWE?'background:rgba(0,0,0,.12);':''}cursor:pointer" onclick="openDayEvents('${iso}')">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;margin-bottom:4px;font-size:12px;font-family:'Oxanium';font-weight:600;${isToday?'background:var(--blue);color:#0a1a26':'color:var(--soft)'}">${day}</div>
+      ${evs.slice(0,2).map(e=>`<div class="cal-ev ev-${e.type}" style="font-size:10px;padding:2px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" onclick="event.stopPropagation();openEventModal(${e.id})">${e.titre}</div>`).join('')}
+      ${evs.length>2?`<div style="font-size:10px;color:var(--soft)">+${evs.length-2} autres</div>`:''}
+    </div>`;
+  }
+  html+=`</div>`;return html;
+}
+
+function openEventModal(id){
+  const e=EVENTS.find(x=>x.id===id);if(!e)return;
+  const col=EV_COLOR[e.type]||'var(--soft)';
+  openM(`<div class="mh"><div><div class="oxa" style="font-weight:700;font-size:17px">${e.titre}</div><div style="color:var(--soft);font-size:13px;margin-top:3px">${e.date.split('-').reverse().join('/')} · ${e.debut}–${e.fin}</div></div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">
+    <div class="li-r"><div class="li-lbl">Lieu</div><div>${e.lieu}</div></div>
+    <div class="li-r"><div class="li-lbl">Type</div><div><span class="badge b-encours" style="color:${col};border:1px solid ${col}40">${e.type.toUpperCase()}</span></div></div>
+  </div><div class="mf"><button class="btn" onclick="closeM()">Fermer</button></div>`);
+}
+function openDayEvents(iso){
+  const evs=EVENTS.filter(e=>e.date===iso);
+  if(!evs.length){openAddEvent(iso);return;}
+  openM(`<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">${iso.split('-').reverse().join('/')}</div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">${evs.map(e=>`<div class="li-r" style="cursor:pointer" onclick="closeM();openEventModal(${e.id})"><div><div style="font-weight:500">${e.titre}</div><div class="sub">${e.debut}–${e.fin} · ${e.lieu}</div></div><span class="badge" style="background:rgba(255,255,255,.05);color:${EV_COLOR[e.type]||'var(--soft)'}">${e.type}</span></div>`).join('')}</div>
+  <div class="mf"><button class="btn prim sm" onclick="closeM();openAddEvent('${iso}')">+ Ajouter</button><button class="btn" onclick="closeM()">Fermer</button></div>`);
+}
+function openAddEvent(iso){
+  iso=iso||'2026-06-22';
+  openM(`<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">Nouvel événement</div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">
+    <div class="frow"><label class="flbl">Titre / Client</label><input class="finp" id="ev-titre" placeholder="Ex: Dupont — Clim split"></div>
+    <div class="frow"><div class="grid2"><div><label class="flbl">Date</label><input class="finp" type="date" id="ev-date" value="${iso}"></div><div><label class="flbl">Type</label><select class="finp" id="ev-type"><option value="clim">Climatisation</option><option value="sdb">Rénovation SDB</option><option value="chauf">Chauffe-eau</option><option value="plomb">Plomberie</option></select></div></div></div>
+    <div class="frow"><div class="grid2"><div><label class="flbl">Début</label><input class="finp" type="time" id="ev-debut" value="08:00"></div><div><label class="flbl">Fin</label><input class="finp" type="time" id="ev-fin" value="17:00"></div></div></div>
+    <div class="frow" style="margin:0"><label class="flbl">Lieu</label><input class="finp" id="ev-lieu" placeholder="Adresse du chantier"></div>
+  </div>
+  <div class="mf"><button class="btn" onclick="closeM()">Annuler</button><button class="btn prim" onclick="saveEvent()">Créer</button></div>`);
+}
+function saveEvent(){
+  const t=document.getElementById('ev-titre').value.trim();const date=document.getElementById('ev-date').value;
+  if(!t||!date){alert('Titre et date requis.');return;}
+  EVENTS.push({id:Math.max(...EVENTS.map(e=>e.id))+1,date,debut:document.getElementById('ev-debut').value,fin:document.getElementById('ev-fin').value,titre:t,type:document.getElementById('ev-type').value,lieu:document.getElementById('ev-lieu').value||'—'});
+  closeM();renderCal();
+}
+function exportICS(){
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SaniPilot//FR\r\n';
+  EVENTS.forEach(e=>{const d=e.date.replace(/-/g,'');ics+=`BEGIN:VEVENT\r\nDTSTART:${d}T${e.debut.replace(':','')}00\r\nDTEND:${d}T${e.fin.replace(':','')}00\r\nSUMMARY:${e.titre}\r\nLOCATION:${e.lieu}\r\nEND:VEVENT\r\n`;});
+  ics+='END:VCALENDAR';
+  const a=document.createElement('a');a.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);a.download='sanitenergie.ics';a.click();
+}
+/* ── FOURNISSEURS ── */
+let curFourn='ballon';
+VIEWS.fournisseurs=function(){
+  return `
+<div class="ph"><h2>Fournisseurs</h2><p>Comparez les prix et choisissez le meilleur tarif</p></div>
+<div class="card" style="margin-bottom:14px">
+  <input class="sinp" id="fsrch" placeholder="Rechercher un fournisseur ou une référence produit..." oninput="searchFourn(this.value)">
+</div>
+<div id="f-normal">
+  <div class="tabs">
+    <div class="tab on" onclick="swFourn(this,'ballon')">Ballon thermo.</div>
+    <div class="tab" onclick="swFourn(this,'clim')">Split clim</div>
+    <div class="tab" onclick="swFourn(this,'mitigeur')">Mitigeur</div>
+  </div>
+  <div id="ftable"></div>
+</div>
+<div id="f-search" style="display:none"></div>`;
+};
+function fournTable(cat){
+  const c=FOURN[cat];
+  return `<div class="card" style="padding:0;overflow:hidden"><table class="tbl">
+  <thead><tr><th>Fournisseur</th><th>Référence</th><th>Prix HT</th><th>Délai</th><th>Disponibilité</th></tr></thead>
+  <tbody>${c.rows.map(r=>`<tr class="${r.best?'best-row':''}">
+    <td><div style="font-weight:600">${r.nom}</div>${r.best?'<div class="sub" style="color:var(--green)">Meilleur prix</div>':''}</td>
+    <td style="color:var(--soft)">${r.ref}</td>
+    <td><span class="oxa" style="font-weight:700;color:${r.best?'var(--green)':'inherit'}">${r.prix} €</span></td>
+    <td style="color:var(--soft)">${r.delai}</td>
+    <td><span class="badge ${r.dispo==='Disponible'?'b-signe':'b-dormant'}">${r.dispo}</span></td>
+  </tr>`).join('')}</tbody></table></div>
+  <div class="card mt" style="background:var(--greenBg);border-color:rgba(74,222,128,.2);color:var(--green)">Économie potentielle de <strong>${c.economie} € HT/unité</strong> en choisissant le meilleur fournisseur.</div>`;
+}
+function swFourn(el,cat){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  curFourn=cat;renderFourn(cat);
+}
+function renderFourn(cat){const el=document.getElementById('ftable');if(el)el.innerHTML=fournTable(cat);}
+function searchFourn(q){
+  q=q.trim().toLowerCase();
+  const n=document.getElementById('f-normal'),s=document.getElementById('f-search');
+  if(!q){n.style.display='block';s.style.display='none';renderFourn(curFourn);return;}
+  n.style.display='none';s.style.display='block';
+  let html='';
+  Object.keys(FOURN).forEach(cat=>{
+    const matches=FOURN[cat].rows.filter(r=>r.nom.toLowerCase().includes(q)||r.ref.toLowerCase().includes(q));
+    if(matches.length){
+      html+=`<div style="font-size:11px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.7px;margin:16px 0 8px">${FOURN[cat].title}</div>
+      <div class="card" style="padding:0;overflow:hidden"><table class="tbl">
+      <thead><tr><th>Fournisseur</th><th>Référence</th><th>Prix HT</th><th>Délai</th><th>Disponibilité</th></tr></thead>
+      <tbody>${matches.map(r=>`<tr class="${r.best?'best-row':''}"><td><div style="font-weight:600">${r.nom}</div>${r.best?'<div class="sub" style="color:var(--green)">Meilleur prix</div>':''}</td><td style="color:var(--soft)">${r.ref}</td><td><span class="oxa" style="font-weight:700;color:${r.best?'var(--green)':'inherit'}">${r.prix} €</span></td><td style="color:var(--soft)">${r.delai}</td><td><span class="badge ${r.dispo==='Disponible'?'b-signe':'b-dormant'}">${r.dispo}</span></td></tr>`).join('')}
+      </tbody></table></div>`;
+    }
+  });
+  s.innerHTML=html||'<div class="card" style="text-align:center;color:var(--soft)">Aucun résultat.</div>';
+}
+
+/* ── CLIENTS ── */
+const AV_COLORS=['#38BDF8','#4ADE80','#FBBF24','#F87171','#A78BFA'];
+function avColor(id){return AV_COLORS[id%AV_COLORS.length];}
+function initials(n){return n.split(' ').filter(w=>/[A-ZÀÉÈÊÎÙÛÂ]/.test(w[0])).slice(0,2).map(w=>w[0]).join('').toUpperCase()||n.slice(0,2).toUpperCase();}
+let crmFilter='all';
+VIEWS.clients=function(){
+  return `
+<div class="ph"><h2>Clients</h2><p>Vos clients et prospects</p></div>
+<div id="cl-list">
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <input class="sinp" id="clsrch" placeholder="Rechercher..." oninput="renderCl()" style="flex:1;min-width:180px">
+    <select class="finp" id="cl-cat" onchange="renderCl()" style="width:150px;background:var(--bg)">
+      <option value="">Tous</option>
+      <option value="Professionnel">Professionnels</option>
+      <option value="Particulier">Particuliers</option>
+    </select>
+    <select class="finp" id="cl-sta" onchange="renderCl()" style="width:130px;background:var(--bg)">
+      <option value="">Tous statuts</option>
+      <option value="actif">Actifs</option>
+      <option value="prospect">Prospects</option>
+    </select>
+    <button class="btn prim sm" onclick="openNewClient()">+ Client</button>
+  </div>
+  <div id="cl-view"></div>
+</div>
+<div id="cl-fiche" style="display:none"></div>`;
+};
+
+function renderCl(){
+  const q=(document.getElementById('clsrch')?.value||'').toLowerCase();
+  const cat=document.getElementById('cl-cat')?.value||'';
+  const sta=document.getElementById('cl-sta')?.value||'';
+  let list=CLIENTS;
+  if(cat)list=list.filter(c=>c.categorie===cat);
+  if(sta)list=list.filter(c=>c.statut===sta);
+  if(q)list=list.filter(c=>c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q)||(c.tel&&c.tel.includes(q)));
+  const el=document.getElementById('cl-view');
+  if(!el)return;
+  if(!list.length){el.innerHTML='<div class="card" style="text-align:center;color:var(--soft);padding:32px">Aucun résultat.</div>';return;}
+  const prof=list.filter(c=>c.categorie==='Professionnel').sort((a,b)=>b.ca-a.ca);
+  const part=list.filter(c=>c.categorie==='Particulier').sort((a,b)=>b.ca-a.ca);
+  function group(title,items,col){
+    if(!items.length)return '';
+    const caS=items.reduce((a,c)=>a+c.ca,0);
+    return '<div style="margin-bottom:20px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+      +'<div style="font-size:11px;font-weight:700;color:'+col+';text-transform:uppercase;letter-spacing:.8px">'+title+'</div>'
+      +'<div style="flex:1;height:1px;background:var(--bor)"></div>'
+      +'<div style="font-size:12px;color:var(--soft)">'+items.length+' · <span class="oxa" style="color:'+col+'">'+caS.toLocaleString('fr-FR')+' €</span></div>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:8px">'
+      +items.map(c=>{
+        const isProsp=c.statut==='prospect';
+        const statCol=isProsp?'var(--amber)':'var(--green)';
+        const statLbl=isProsp?'Prospect':'Actif';
+        const dvCnt=DEVIS.filter(d=>d.client===c.nom).length;
+        const faCnt=FACTURES.filter(f=>f.client===c.nom).length;
+        return '<div class="card" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:16px;border-left:3px solid '+col+'" onclick="openCl('+c.id+')">'
+          +'<div class="av-c" style="background:'+avColor(c.id)+';flex-shrink:0">'+initials(c.nom)+'</div>'
+          +'<div style="flex:1;min-width:0">'
+          +'<div style="font-weight:600;font-size:14px">'+c.nom+'</div>'
+          +'<div style="font-size:12px;color:var(--soft);margin-top:2px">'+c.ville+(c.tel?' · '+c.tel:'')+'</div>'
+          +'</div>'
+          +'<div style="text-align:right;flex-shrink:0">'
+          +'<div class="oxa" style="font-size:15px;font-weight:700;color:var(--blue)">'+c.ca.toLocaleString('fr-FR')+' €</div>'
+          +'<div style="font-size:11px;color:var(--mute);margin-top:2px">'+dvCnt+' devis · '+faCnt+' fact.</div>'
+          +'</div>'
+          +'<div style="flex-shrink:0"><span class="badge" style="background:'+statCol+'22;color:'+statCol+';border:1px solid '+statCol+'44">'+statLbl+'</span></div>'
+          +'</div>';
+      }).join('')
+      +'</div></div>';
+  }
+  el.innerHTML=group('Professionnels',prof,'var(--blue)')+group('Particuliers',part,'var(--green)');
+}
+
+function openCl(id){
+  const c=CLIENTS.find(x=>x.id===id);
+  if(!c)return;
+  document.getElementById('cl-list').style.display='none';
+  const f=document.getElementById('cl-fiche');f.style.display='block';
+  const dvs=DEVIS.filter(d=>d.client===c.nom);
+  const fas=FACTURES.filter(fa=>fa.client===c.nom);
+  f.innerHTML=`<button class="back-btn" onclick="backCl()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Retour</button>
+<div class="card" style="margin-bottom:14px">
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div class="av-c" style="width:52px;height:52px;font-size:19px;border-radius:12px;background:${avColor(c.id)};flex-shrink:0">${initials(c.nom)}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:20px;font-family:'Oxanium';font-weight:700">${c.nom}</div>
+      <div style="font-size:13px;color:var(--soft);margin-top:4px">${c.type} · ${c.categorie} · ${c.ville}</div>
+      <div style="display:flex;gap:16px;margin-top:6px;font-size:13px;flex-wrap:wrap">
+        ${c.tel?`<a href="tel:${c.tel}" style="color:var(--blue)">${c.tel}</a>`:''}
+        ${c.email?`<a href="mailto:${c.email}" style="color:var(--blue)">${c.email}</a>`:''}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+      <div class="oxa" style="font-size:22px;font-weight:700;color:var(--blue)">${c.ca.toLocaleString('fr-FR')} €</div>
+      <div style="font-size:11px;color:var(--soft)">CA total</div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        ${c.tel?`<a href="tel:${c.tel}" class="btn sm">📞 Appeler</a>`:''}
+        <button class="btn prim sm" onclick="backCl();go('devis')">+ Devis</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid2" style="margin-bottom:14px">
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px">Devis (${dvs.length})</div>
+    ${dvs.length?`<div style="display:flex;flex-direction:column;gap:6px">`+dvs.map(d=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg)">
+      <span class="oxa" style="color:var(--blue);font-weight:600;font-size:12px;flex-shrink:0">${d.ref}</span>
+      <span style="flex:1;font-size:12.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.prestation}</span>
+      <span class="oxa" style="font-size:13px;font-weight:700;flex-shrink:0">${d.montant.toLocaleString('fr-FR')} €</span>
+      <span>${badge(d.statut)}</span>
+    </div>`).join('')+`</div>`:'<p style="color:var(--mute);font-size:13px">Aucun devis.</p>'}
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px">Factures (${fas.length})</div>
+    ${fas.length?`<div style="display:flex;flex-direction:column;gap:6px">`+fas.map(fa=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg)">
+      <span class="oxa" style="color:var(--blue);font-weight:600;font-size:12px;flex-shrink:0">${fa.ref}</span>
+      <span style="flex:1;font-size:12.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fa.prestation}</span>
+      <span class="oxa" style="font-size:13px;font-weight:700;flex-shrink:0">${fa.montant.toLocaleString('fr-FR')} €</span>
+      <span>${badge(fa.statut)}</span>
+    </div>`).join('')+`</div>`:'<p style="color:var(--mute);font-size:13px">Aucune facture.</p>'}
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px">Note interne</div>
+    <textarea class="finp" id="cnote-${c.id}" rows="4" style="margin-bottom:10px">${c.note||''}</textarea>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn prim sm" onclick="saveCNote(${c.id})">Enregistrer</button>
+      <span id="cnoted-${c.id}" style="font-size:12px;color:var(--green);display:none">✓ Enregistré</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px">Historique (${c.interactions.length})</div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto;margin-bottom:12px">
+      ${c.interactions.length?c.interactions.map(it=>`<div style="display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:11px;color:var(--mute);flex-shrink:0;padding-top:2px">${it.date}</span>
+        <span style="font-size:13px;flex:1">${it.note}</span>
+      </div>`).join(''):'<p style="color:var(--mute);font-size:13px">Aucune interaction.</p>'}
+    </div>
+    <div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--bor)">
+      <input class="sinp" id="ci-note-${c.id}" placeholder="Ajouter une note..." style="flex:1">
+      <button class="btn prim sm" onclick="addInteraction(${c.id})">+</button>
+    </div>
+  </div>
+</div>`;
+}
+
+function addInteraction(id){
+  const c=CLIENTS.find(x=>x.id===id);
+  const inp=document.getElementById('ci-note-'+id);
+  if(!inp||!inp.value.trim())return;
+  const d=new Date();
+  const date=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+  c.interactions.unshift({date,type:'note',note:inp.value.trim()});
+  openCl(id);
+}
+
+function saveCNote(id){
+  const c=CLIENTS.find(x=>x.id===id);
+  c.note=document.getElementById('cnote-'+id).value;
+  const s=document.getElementById('cnoted-'+id);
+  s.style.display='inline';setTimeout(()=>s.style.display='none',2000);
+}
+
+function openNewClient(){
+  openM(`<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">Nouveau client</div><button class="mx" onclick="closeM()">×</button></div>
+  <div class="mb">
+    <div class="grid2">
+      <div class="frow"><label class="flbl">Nom / Société</label><input class="finp" id="nc-nom"></div>
+      <div class="frow"><label class="flbl">Ville</label><input class="finp" id="nc-ville" placeholder="Perpignan"></div>
+    </div>
+    <div class="grid2">
+      <div class="frow"><label class="flbl">Téléphone</label><input class="finp" id="nc-tel" type="tel"></div>
+      <div class="frow"><label class="flbl">Email</label><input class="finp" id="nc-email" type="email"></div>
+    </div>
+    <div class="grid2">
+      <div class="frow"><label class="flbl">Catégorie</label><select class="finp" id="nc-cat"><option value="Particulier">Particulier</option><option value="Professionnel">Professionnel</option></select></div>
+      <div class="frow"><label class="flbl">Type</label><input class="finp" id="nc-type" placeholder="Propriétaire, SCI..."></div>
+    </div>
+  </div>
+  <div class="mf"><button class="btn" onclick="closeM()">Annuler</button><button class="btn prim" onclick="saveNewClient()">Créer</button></div>`);
+}
+
+function saveNewClient(){
+  const nom=document.getElementById('nc-nom')?.value.trim();
+  if(!nom){alert('Nom requis.');return;}
+  const id=Math.max(...CLIENTS.map(c=>c.id))+1;
+  CLIENTS.push({id,nom,ville:document.getElementById('nc-ville')?.value||'',categorie:document.getElementById('nc-cat')?.value||'Particulier',type:document.getElementById('nc-type')?.value||'Propriétaire',ca:0,statut:'prospect',pipeline:'prospect',score:0,tags:[],note:'',tel:document.getElementById('nc-tel')?.value||'',email:document.getElementById('nc-email')?.value||'',prochaine:'—',interactions:[],historique:[]});
+  closeM();go('clients');
+}
+
+function backCl(){document.getElementById('cl-fiche').style.display='none';document.getElementById('cl-list').style.display='block';}
+
+/* ── RÉGLAGES ── */
+VIEWS.reglages=function(){return `
+<div class="ph"><h2>Réglages</h2><p>Paramètres de votre entreprise</p></div>
+<div class="grid2">
+  <div class="card"><div class="card-title">Mon entreprise</div>
+    <div class="frow"><label class="flbl">Raison sociale</label><input class="finp" value="SANITENERGIE"></div>
+    <div class="frow"><label class="flbl">Dirigeant</label><input class="finp" value="Mickael Basty"></div>
+    <div class="frow"><label class="flbl">SIRET</label><input class="finp" value="892 451 678 00019"></div>
+    <div class="frow"><label class="flbl">Adresse</label><input class="finp" value="14 rue de l'Industrie, 66380 Pia"></div>
+    <div class="frow"><label class="flbl">Téléphone</label><input class="finp" value="04 68 00 00 00"></div>
+    <div class="frow" style="margin:0"><label class="flbl">Email</label><input class="finp" value="contact@sanitenergie.fr"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="card"><div class="card-title">Devis & Factures</div>
+      <div class="frow"><label class="flbl">TVA appliquée</label><select class="finp"><option>10 % — Rénovation énergétique</option><option>20 % — Standard</option><option>5,5 % — Économies d'énergie</option></select></div>
+      <div class="frow"><label class="flbl">Conditions de paiement</label><input class="finp" value="30 jours fin de mois"></div>
+      <div class="frow" style="margin:0"><label class="flbl">Mention pied de page</label><textarea class="finp" rows="3">RGE QualiPAC · Assurance décennale MAAF n°123456 · RCS Perpignan</textarea></div>
+    </div>
+    <div class="card"><div class="card-title">Relances automatiques</div>
+      <div class="frow"><label class="flbl">1ère relance devis (jours)</label><input class="finp" type="number" value="5"></div>
+      <div class="frow"><label class="flbl">1ère relance facture (jours après échéance)</label><input class="finp" type="number" value="7"></div>
+      <div class="frow" style="margin:0"><label class="flbl">Ton des messages</label>
+        <div class="radio-row">
+          <div class="radio-opt on" onclick="pickTon(this)">Cordial</div>
+          <div class="radio-opt" onclick="pickTon(this)">Formel</div>
+          <div class="radio-opt" onclick="pickTon(this)">Ferme</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn prim" style="flex:1" onclick="alert('Réglages sauvegardés.')">Sauvegarder</button>
+      <button class="btn dang" onclick="alert('Réinitialisation — démo.')">Réinit.</button>
+    </div>
+  </div>
+</div>`;};
+function pickTon(el){el.parentElement.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('on'));el.classList.add('on');}
+
+
+/* ── DEVIS VOCAL & FORMULAIRE ── */
+let voiceRecog=null,_voiceActive=false,_ndLignes=[];
+
+/* — Utilitaires lignes — */
+function ndAutoVille(){
+  const v=(document.getElementById('nd-client')?.value||'').toLowerCase();
+  if(!v)return;
+  const c=CLIENTS.find(x=>x.nom.toLowerCase()===v||x.nom.toLowerCase().startsWith(v.split(' ')[0]));
+  if(c){const el=document.getElementById('nd-ville');if(el&&!el.value)el.value=c.ville;}
+}
+function ndLoadCatalogue(){
+  const presta=document.getElementById('nd-presta')?.value;
+  const cat=CATALOGUE[presta];
+  _ndLignes=cat?cat.lignes.map(l=>({...l,total:l.qte*l.pu})):[];
+  ndRenderLignes();
+}
+function ndAddLigne(){_ndLignes.push({desc:'',qte:1,unit:'ff',pu:0,total:0});ndRenderLignes();}
+function ndRenderLignes(){
+  const wrap=document.getElementById('nd-lignes-wrap');
+  const totWrap=document.getElementById('nd-totaux');
+  if(wrap)wrap.style.display=_ndLignes.length?'block':'none';
+  if(totWrap)totWrap.style.display=_ndLignes.length?'block':'none';
+  const el=document.getElementById('nd-lignes');if(!el)return;
+  el.innerHTML=_ndLignes.map((l,i)=>
+    '<div style="display:grid;grid-template-columns:1fr 60px 50px 80px 84px 26px;gap:5px;align-items:center;margin-bottom:4px">'
+    +'<input class="sinp" style="font-size:12px;padding:5px 8px" value="'+l.desc+'" oninput="_ndLignes['+i+'].desc=this.value">'
+    +'<input class="sinp" style="font-size:12px;padding:5px 7px;text-align:center" type="number" value="'+l.qte+'" min="0" step="0.5" oninput="_ndLignes['+i+'].qte=+this.value;ndCalcTotaux()">'
+    +'<input class="sinp" style="font-size:12px;padding:5px 6px;text-align:center" value="'+l.unit+'" oninput="_ndLignes['+i+'].unit=this.value">'
+    +'<input class="sinp" style="font-size:12px;padding:5px 7px;text-align:right" type="number" value="'+l.pu+'" min="0" step="10" oninput="_ndLignes['+i+'].pu=+this.value;ndCalcTotaux()">'
+    +'<div class="oxa" id="nd-row-tot-'+i+'" style="font-size:13px;font-weight:700;text-align:right;padding:0 4px;color:var(--blue)">'+(l.qte*l.pu).toLocaleString('fr-FR')+' €</div>'
+    +'<button onclick="_ndLignes.splice('+i+',1);ndRenderLignes()" style="background:none;border:none;color:var(--mute);cursor:pointer;font-size:18px;padding:0;line-height:1" onmouseover="this.style.color=\'var(--red)\'" onmouseout="this.style.color=\'var(--mute)\'">x</button>'
+    +'</div>'
+  ).join('');
+  ndCalcTotaux();
+}
+function ndCalcTotaux(){
+  _ndLignes.forEach(l=>l.total=l.qte*l.pu);
+  const ht=_ndLignes.reduce((a,l)=>a+l.total,0);
+  const tva=Math.round(ht*0.10);const ttc=ht+tva;
+  const fmt=n=>n.toLocaleString('fr-FR')+' €';
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=fmt(v);};
+  set('nd-ht',ht);set('nd-tva',tva);set('nd-ttc',ttc);
+  _ndLignes.forEach((l,i)=>{const e=document.getElementById('nd-row-tot-'+i);if(e)e.textContent=l.total.toLocaleString('fr-FR')+' €';});
+}
+
+/* — Bloc formulaire partagé — */
+function _formHTML(){
+  const clientNames=CLIENTS.map(c=>'<option value="'+c.nom+'">').join('');
+  const prestaOptions=Object.keys(CATALOGUE).map(k=>'<option value="'+k+'">'+k+'</option>').join('');
+  return '<datalist id="nd-cl-list">'+clientNames+'</datalist>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+    +'<div><label class="flbl">Client</label><input class="finp" id="nd-client" list="nd-cl-list" placeholder="Nom ou société" oninput="ndAutoVille()"></div>'
+    +'<div><label class="flbl">Ville</label><input class="finp" id="nd-ville" placeholder="Perpignan"></div>'
+    +'</div>'
+    +'<div style="margin-bottom:4px"><label class="flbl">Prestation</label>'
+    +'<select class="finp" id="nd-presta" onchange="ndLoadCatalogue()">'
+    +'<option value="">— Choisir une prestation —</option>'+prestaOptions
+    +'</select></div>'
+    +'<div id="nd-lignes-wrap" style="margin-top:14px;display:none">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.6px">Détail des lignes</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 60px 50px 80px 84px 26px;gap:5px;width:calc(100% - 120px)">'
+    +'<div></div>'
+    +'<div style="font-size:10px;color:var(--mute);text-align:center">Qté</div>'
+    +'<div style="font-size:10px;color:var(--mute);text-align:center">Unité</div>'
+    +'<div style="font-size:10px;color:var(--mute);text-align:right">PU €</div>'
+    +'<div style="font-size:10px;color:var(--mute);text-align:right">Total</div>'
+    +'<div></div>'
+    +'</div></div>'
+    +'<div id="nd-lignes"></div>'
+    +'<button class="btn sm" style="margin-top:8px;font-size:12px" onclick="ndAddLigne()">+ Ajouter une ligne</button>'
+    +'</div>'
+    +'<div id="nd-totaux" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid var(--bor)">'
+    +'<div style="display:flex;justify-content:flex-end">'
+    +'<div style="display:flex;flex-direction:column;gap:5px;min-width:240px">'
+    +'<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--soft)"><span>Total HT</span><span id="nd-ht" class="oxa">0 €</span></div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--soft)"><span>TVA 10 %</span><span id="nd-tva" class="oxa">0 €</span></div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding-top:6px;border-top:1px solid var(--bor)"><span>Total TTC</span><span id="nd-ttc" class="oxa" style="color:var(--blue)">0 €</span></div>'
+    +'</div></div>'
+    +'<div style="margin-top:12px">'
+    +'<label class="flbl">Date chantier prévue <span style="color:var(--mute);font-weight:400">(optionnel — crée un événement dans le calendrier)</span></label>'
+    +'<input class="finp" id="nd-datechan" type="date" style="width:190px">'
+    +'</div></div>';
+}
+
+/* — Formulaire manuel — */
+function openNewDevis(prefill){
+  _ndLignes=[];
+  openM('<div class="mh"><div class="oxa" style="font-weight:700;font-size:17px">Nouveau devis</div><button class="mx" onclick="closeM()">×</button></div>'
+    +'<div class="mb" style="min-width:580px">'+_formHTML()+'</div>'
+    +'<div class="mf"><button class="btn" onclick="closeM()">Annuler</button><button class="btn prim" onclick="saveNewDevis()">Créer le devis</button></div>');
+  if(prefill){setTimeout(()=>{
+    const el=document.getElementById('nd-client');if(el)el.value=prefill.client||'';
+    ndAutoVille();
+    const vl=document.getElementById('nd-ville');if(vl&&prefill.ville)vl.value=prefill.ville;
+    const pr=document.getElementById('nd-presta');if(pr&&prefill.presta){pr.value=prefill.presta;ndLoadCatalogue();}
+  },40);}
+}
+
+/* — Formulaire vocal — */
+function openVoiceDevis(){
+  _ndLignes=[];
+  const hasMic=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  const examples=[
+    '"Client Dupont, climatisation split, Perpignan"',
+    '"Pour Batipro 66, multi-split, ZAC Nord"',
+    '"Chauffe-eau thermodynamique chez Mme Martin, Pia"',
+    '"Rénovation salle de bain pour M. Serra"',
+  ];
+  openM('<div class="mh">'
+    +'<div><div class="oxa" style="font-weight:700;font-size:17px">Nouveau devis par vocal</div>'
+    +'<div style="font-size:12px;color:var(--soft);margin-top:2px">Parlez — le devis se remplit automatiquement</div></div>'
+    +'<button class="mx" onclick="stopVoice();closeM()">×</button></div>'
+    +'<div class="mb" style="min-width:580px">'
+    +'<div id="vd-step1">'
+    +'<div style="text-align:center;padding:24px 0 18px">'
+    +'<button id="voice-btn" onclick="toggleVoice()" style="width:88px;height:88px;border-radius:50%;border:3px solid var(--blue);background:var(--blueBg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;transition:.2s">'
+    +'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>'
+    +'<div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.05em">'+(hasMic?'PARLER':'MICRO')+'</div>'
+    +'</button>'
+    +'<div id="voice-status-lbl" style="margin-top:14px;font-size:13px;color:var(--soft)">'+(hasMic?'Appuyez puis parlez':'Micro indisponible sur ce navigateur')+'</div>'
+    +'</div>'
+    +'<div id="voice-transcript" style="min-height:48px;background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 18px;font-size:14px;margin-bottom:16px;display:flex;align-items:center">'
+    +'<span style="color:var(--mute);font-style:italic">La transcription apparaît ici...</span>'
+    +'</div>'
+    +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 16px">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Exemples — cliquez pour tester</div>'
+    +'<div style="display:flex;flex-direction:column;gap:6px">'
+    +examples.map(ex=>'<div style="font-size:13px;color:var(--soft);padding:7px 12px;background:var(--sur);border-radius:7px;cursor:pointer;border:1px solid transparent;transition:.1s" onclick="document.getElementById(\'voice-transcript\').innerHTML=\'<span style=color:var(--blue)>\'+this.textContent.slice(1,-1)+\'</span>\';parseVoiceInput(this.textContent.slice(1,-1))" onmouseover="this.style.borderColor=\'var(--bor2)\'" onmouseout="this.style.borderColor=\'transparent\'">'+ex+'</div>').join('')
+    +'</div></div></div>'
+    +'<div id="vd-step2" style="display:none">'+_formHTML()+'</div>'
+    +'</div>'
+    +'<div class="mf">'
+    +'<button class="btn" onclick="stopVoice();closeM()">Annuler</button>'
+    +'<button class="btn" onclick="vdReset()" id="vd-btn-reset" style="display:none">↩ Recommencer</button>'
+    +'<button class="btn prim" onclick="saveNewDevis()" id="vd-btn-create" style="display:none">✓ Créer le devis</button>'
+    +'</div>');
+}
+
+function vdReset(){
+  stopVoice();_ndLignes=[];
+  const s1=document.getElementById('vd-step1');const s2=document.getElementById('vd-step2');
+  if(s1)s1.style.display='block';if(s2)s2.style.display='none';
+  const tr=document.getElementById('voice-transcript');
+  if(tr)tr.innerHTML='<span style="color:var(--mute);font-style:italic">La transcription apparaît ici...</span>';
+  const lbl=document.getElementById('voice-status-lbl');
+  if(lbl){lbl.textContent='Appuyez puis parlez';lbl.style.color='var(--soft)';}
+  const btn=document.getElementById('voice-btn');
+  if(btn){btn.style.borderColor='var(--blue)';btn.style.background='var(--blueBg)';}
+  const br=document.getElementById('vd-btn-reset');if(br)br.style.display='none';
+  const bc=document.getElementById('vd-btn-create');if(bc)bc.style.display='none';
+}
+
+function vdShowForm(){
+  const s1=document.getElementById('vd-step1');const s2=document.getElementById('vd-step2');
+  if(s1)s1.style.display='none';if(s2)s2.style.display='block';
+  const br=document.getElementById('vd-btn-reset');if(br)br.style.display='inline-flex';
+  const bc=document.getElementById('vd-btn-create');if(bc)bc.style.display='inline-flex';
+}
+
+/* — Micro (MediaRecorder + Whisper via serveur PDF) — */
+const PDF_SERVER='https://sanitenergie-production.up.railway.app';
+let _mediaRecorder=null,_audioChunks=[];
+
+async function toggleVoice(){
+  if(_voiceActive){stopVoice();return;}
+  const btn=document.getElementById('voice-btn');
+  const lbl=document.getElementById('voice-status-lbl');
+  const tr=document.getElementById('voice-transcript');
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    _audioChunks=[];
+    const mime=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4';
+    _mediaRecorder=new MediaRecorder(stream,{mimeType:mime});
+    _mediaRecorder.ondataavailable=e=>{if(e.data.size>0)_audioChunks.push(e.data);};
+    _mediaRecorder.start(250);
+    _voiceActive=true;
+    if(btn){btn.style.borderColor='var(--red)';btn.style.background='rgba(248,113,113,.12)';}
+    if(lbl){lbl.textContent='Enregistrement… cliquez pour arrêter';lbl.style.color='var(--red)';}
+    if(tr)tr.innerHTML='<span style="color:var(--mute);font-style:italic">Parlez maintenant…</span>';
+  }catch(err){
+    if(lbl){lbl.textContent='Micro refusé : '+err.message;lbl.style.color='var(--red)';}
+  }
+}
+
+function stopVoice(){
+  if(!_voiceActive&&!_mediaRecorder)return;
+  _voiceActive=false;
+  const btn=document.getElementById('voice-btn');
+  const lbl=document.getElementById('voice-status-lbl');
+  const tr=document.getElementById('voice-transcript');
+  if(btn){btn.style.borderColor='var(--blue)';btn.style.background='var(--blueBg)';}
+  if(!_mediaRecorder){if(lbl){lbl.textContent='Appuyez pour parler';lbl.style.color='var(--soft)';}return;}
+  const mr=_mediaRecorder;_mediaRecorder=null;
+  mr.stream.getTracks().forEach(t=>t.stop());
+  mr.onstop=async()=>{
+    if(!_audioChunks.length){if(lbl){lbl.textContent='Rien enregistré';lbl.style.color='var(--soft)';}return;}
+    if(lbl){lbl.textContent='Transcription en cours…';lbl.style.color='var(--soft)';}
+    if(tr)tr.innerHTML='<span style="color:var(--mute);font-style:italic">Envoi au serveur Whisper…</span>';
+    const mime=_audioChunks[0]?.type||'audio/webm';
+    const blob=new Blob(_audioChunks,{type:mime});
+    const fd=new FormData();
+    fd.append('audio',blob,'record.'+(mime.includes('mp4')?'mp4':'webm'));
+    try{
+      const resp=await fetch(PDF_SERVER+'/api/transcribe',{method:'POST',body:fd});
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error||'Erreur serveur');}
+      const result=await resp.json();
+      const txt=result.transcription||'';
+      if(tr)tr.innerHTML='<span style="color:var(--ink)">'+txt+'</span>';
+      if(lbl){lbl.textContent='Analyse terminée ✓';lbl.style.color='var(--green)';}
+      if(result.data){
+        vdShowForm();
+        setTimeout(()=>{
+          const d=result.data;
+          const cl=document.getElementById('nd-client');if(cl&&d.client)cl.value=d.client;
+          if(Array.isArray(d.lignes)&&d.lignes.length){
+            _ndLignes=d.lignes.map(l=>({desc:l.designation||'',qte:Number(l.qte)||1,pu:Number(l.pu_ht)||0,tva:Number(l.tva)||10,unit:'u'}));
+            ndRenderLignes();
+          }
+        },50);
+      }else{
+        parseVoiceInput(txt);
+      }
+    }catch(e){
+      if(lbl){lbl.textContent='Erreur : '+e.message;lbl.style.color='var(--red)';}
+      if(tr)tr.innerHTML='<span style="color:var(--red)">Échec transcription. Serveur actif ? (port 3000)</span>';
+    }
+  };
+  mr.stop();
+}
+
+/* — Parsing vocal — */
+function parseVoiceInput(raw){
+  const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const t=norm(raw);
+  let clientNom='',clientVille='';
+  for(const c of CLIENTS){
+    const cn=norm(c.nom);
+    if(cn.split(' ').some(p=>p.length>3&&t.includes(p))){clientNom=c.nom;clientVille=c.ville;break;}
+  }
+  if(!clientNom){
+    const m=t.match(/(?:client|pour|chez|monsieur|madame|m |mme )\s*([a-z][a-z\- ]{1,25?})(?:\s*,|\s+clim|\s+multi|\s+sdb|\s+renov|\s+salle|\s+chauffe|\s+ballon|\s+depann|\s+entretien|\s+pac|$)/);
+    if(m)clientNom=m[1].trim().replace(/\b\w/g,c=>c.toUpperCase());
+  }
+  const villeMap={perpignan:'Perpignan',canet:'Canet',pia:'Pia',rivesaltes:'Rivesaltes','saint-esteve':'Saint-Estève','le soler':'Le Soler',thuir:'Thuir',argeles:'Argelès',collioure:'Collioure',elne:'Elne'};
+  let detectedVille=clientVille;
+  for(const [k,v] of Object.entries(villeMap)){if(t.includes(k)){detectedVille=v;break;}}
+  const pmap=[
+    [/(multi.?split|multi split)/,'Climatisation multi-split'],
+    [/(clim(?:atisation)? split)/,'Climatisation split'],
+    [/(pompe a chaleur|pac )/,'Pompe à chaleur air\/air'],
+    [/(salle de bain|renov.* sdb|sdb)/,'Rénovation SDB'],
+    [/(chauffe.?eau.*270|ballon.*270|270)/,'Chauffe-eau thermodynamique 270L'],
+    [/(chauffe.?eau|ballon)/,'Chauffe-eau thermodynamique'],
+    [/(clim(?:atisation)?)/,'Climatisation split'],
+    [/(entretien)/,'Entretien climatisation'],
+    [/(depannage|plomberie)/,'Dépannage plomberie'],
+  ];
+  let detectedPresta='';
+  for(const [rx,v] of pmap){if(rx.test(t)){detectedPresta=v;break;}}
+  vdShowForm();
+  setTimeout(()=>{
+    const cl=document.getElementById('nd-client');if(cl)cl.value=clientNom;
+    const vl=document.getElementById('nd-ville');if(vl)vl.value=detectedVille;
+    if(!detectedVille&&clientNom)ndAutoVille();
+    const pr=document.getElementById('nd-presta');
+    if(pr&&detectedPresta){pr.value=detectedPresta;ndLoadCatalogue();}
+  },50);
+}
+
+/* — Sauvegarde + génération PDF — */
+async function saveNewDevis(){
+  const client=document.getElementById('nd-client')?.value.trim();
+  const presta=document.getElementById('nd-presta')?.value||'Prestation';
+  const ville=document.getElementById('nd-ville')?.value.trim()||'Perpignan';
+  if(!client){alert('Client requis.');return;}
+  if(!_ndLignes.length){alert('Ajoutez au moins une prestation.');return;}
+  const ht=_ndLignes.reduce((a,l)=>a+(l.qte*l.pu),0);
+  const tvaAmt=Math.round(ht*0.10);const ttc=ht+tvaAmt;
+  const num=Math.max(...DEVIS.map(d=>+(d.ref.replace('DV-',''))||0))+1;
+  const ref='DV-'+String(num).padStart(3,'0');
+  const today=new Date();
+  const fmtDate=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  DEVIS.unshift({ref,client,ville,prestation:presta,montant:ttc,montantHT:ht,tva:tvaAmt,
+    dateEnvoi:fmtDate(today),statut:'dormant',
+    lignes:_ndLignes.map(l=>({...l,total:l.qte*l.pu}))});
+  const dateChan=document.getElementById('nd-datechan')?.value;
+  if(dateChan){
+    const cat=CATALOGUE[presta];const duree=Math.ceil(cat?.duree||1);
+    const startD=new Date(dateChan);
+    for(let i=0;i<duree;i++){
+      const d=new Date(startD);d.setDate(d.getDate()+i);
+      const newId=Math.max(0,...EVENTS.map(e=>e.id||0))+1;
+      EVENTS.push({id:newId,date:d.toISOString().slice(0,10),debut:'08:00',fin:'17:00',
+        titre:client+' — '+presta,type:(CATALOGUE[presta]?.type||'autre'),lieu:ville,devisRef:ref});
+    }
+  }
+  const cl=CLIENTS.find(c=>c.nom.toLowerCase()===client.toLowerCase());
+  if(cl){cl.ca+=ttc;if(cl.statut==='prospect')cl.statut='actif';}
+  stopVoice();closeM();
+  go('devis');
+  /* Génération PDF via serveur */
+  try{
+    const payload={
+      type:'devis',
+      client:{nom:client,adresse:ville},
+      lignes:_ndLignes.map(l=>({designation:l.desc,quantite:l.qte,prix_unitaire_ht:l.pu,taux_tva:l.tva})),
+      date_emission:today.toISOString().slice(0,10),
+    };
+    const resp=await fetch(PDF_SERVER+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(resp.ok){
+      const blob=await resp.blob();
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=ref+'.pdf';a.click();
+      URL.revokeObjectURL(url);
+      setTimeout(()=>{
+        const n=document.createElement('div');
+        n.style.cssText='position:fixed;top:70px;right:24px;background:var(--greenBg);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+        n.textContent='✓ '+ref+' créé + PDF téléchargé — '+ttc.toLocaleString('fr-FR')+' € TTC';
+        document.body.appendChild(n);setTimeout(()=>n.remove(),4000);
+      },100);
+      return;
+    }
+  }catch(_){}
+  /* Fallback si serveur hors ligne */
+  setTimeout(()=>{
+    const n=document.createElement('div');
+    n.style.cssText='position:fixed;top:70px;right:24px;background:var(--greenBg);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+    n.textContent='✓ '+ref+' créé — '+ttc.toLocaleString('fr-FR')+' € TTC (serveur PDF hors ligne)';
+    document.body.appendChild(n);setTimeout(()=>n.remove(),4000);
+  },100);
+}
+
+/* — Demo simulation — */
+function demoSimulation(){
+  go('devis');
+  setTimeout(()=>{
+    openVoiceDevis();
+    setTimeout(()=>{
+      const btn=document.getElementById('voice-btn');
+      const lbl=document.getElementById('voice-status-lbl');
+      const tr=document.getElementById('voice-transcript');
+      if(btn){btn.style.borderColor='var(--red)';btn.style.background='rgba(248,113,113,.12)';}
+      if(lbl){lbl.textContent='En écoute — parlez maintenant...';lbl.style.color='var(--red)';}
+      if(tr)tr.innerHTML='<span style="color:var(--mute);font-style:italic">Parlez...</span>';
+      const phrase='Client Laurent Mas, climatisation split, Perpignan';
+      let i=0;
+      const timer=setInterval(()=>{
+        i++;
+        if(tr)tr.innerHTML='<span style="color:var(--ink)">'+phrase.slice(0,i)+'<span style="opacity:.4">|</span></span>';
+        if(i>=phrase.length){
+          clearInterval(timer);
+          if(btn){btn.style.borderColor='var(--blue)';btn.style.background='var(--blueBg)';}
+          if(lbl){lbl.textContent='Analyse en cours...';lbl.style.color='var(--soft)';}
+          setTimeout(()=>parseVoiceInput(phrase),500);
+        }
+      },38);
+    },700);
+  },250);
+}
+
+/* ── INIT ── */
+function syncChantierEvents(){
+  // Remove old auto-generated events (those with chantierId set)
+  for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].chantierId)EVENTS.splice(i,1);}
+  CHANTIERS.forEach(ch=>{
+    // Parse debut/fin dd/mm → build date strings for 2026
+    function toISO(ddmm){
+      if(!ddmm)return null;
+      const [dd,mm]=ddmm.split('/');
+      return '2026-'+String(mm).padStart(2,'0')+'-'+String(dd).padStart(2,'0');
+    }
+    const dStart=toISO(ch.debut),dEnd=toISO(ch.fin);
+    if(!dStart)return;
+    // Generate one event per day between debut and fin
+    const start=new Date(dStart),end=new Date(dEnd||dStart);
+    for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+      const iso=d.toISOString().slice(0,10);
+      const alreadyExists=EVENTS.some(e=>!e.chantierId&&e.date===iso&&e.titre.includes(ch.client));
+      if(!alreadyExists){
+        const newId=Math.max(0,...EVENTS.map(e=>e.id||0))+1;
+        EVENTS.push({id:newId,date:iso,debut:'08:00',fin:'17:00',
+          titre:ch.client+' — '+ch.prestation,
+          type:ch.type||'autre',lieu:ch.adresse+', '+ch.ville,
+          chantierId:ch.id});
+      }
+    }
+  });
+}
+syncChantierEvents();
+buildNav();
+go('dashboard');
+setTimeout(()=>{const s=document.querySelector('.side-foot .ni');if(s)s.dataset.v='reglages';},0);
+</script>
+</body>
+</html>
