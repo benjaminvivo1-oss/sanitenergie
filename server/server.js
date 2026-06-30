@@ -25,7 +25,21 @@ fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(PDF_DIR,  { recursive: true });
 if (!fs.existsSync(CTR_FILE))  fs.writeFileSync(CTR_FILE,  '{}', 'utf8');
 if (!fs.existsSync(DOCS_FILE)) fs.writeFileSync(DOCS_FILE, '[]', 'utf8');
-const CHROME_PATH = process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+function findChrome() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const candidates = [
+    '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    '/opt/pw-browsers/chromium-1161/chrome-linux/chrome',
+    '/opt/pw-browsers/chromium/chrome-linux/chrome',
+  ];
+  for (const c of candidates) { try { fs.accessSync(c); return c; } catch {} }
+  return null;
+}
+const CHROME_PATH = findChrome();
 
 /* ── Clients API (initialisés à la demande pour ne pas crasher sans clés) ── */
 function getOpenAI() {
@@ -227,7 +241,11 @@ function renderHTML(doc, entreprise) {
 
 async function generatePDF(doc, entreprise) {
   const html    = renderHTML(doc, entreprise);
-  const browser = await chromium.launch({ executablePath: CHROME_PATH });
+  if (!CHROME_PATH) throw new Error('Chrome introuvable sur ce serveur');
+  const browser = await chromium.launch({
+    executablePath: CHROME_PATH,
+    args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'],
+  });
   const page    = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle' });
   const pdfPath = path.join(PDF_DIR, `${doc.numero}.pdf`);
