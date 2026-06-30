@@ -103,11 +103,18 @@ function nextNumero(type) {
 
 /* ── Calculs HT/TVA/TTC ── */
 function calcTotaux(lignes) {
-  const totalHT = lignes.reduce((s, l) => s + l.qte * l.pu_ht, 0);
+  // Accepte qte/pu_ht/tva OU quantite/prix_unitaire_ht/taux_tva
+  const norm = l => ({
+    qte  : Number(l.qte   || l.quantite          || 1),
+    pu_ht: Number(l.pu_ht || l.prix_unitaire_ht  || 0),
+    tva  : Number(l.tva   || l.taux_tva          || 20),
+  });
+  const totalHT = lignes.reduce((s, l) => { const n=norm(l); return s + n.qte * n.pu_ht; }, 0);
   const tvaMap  = {};
   for (const l of lignes) {
-    const base = l.qte * l.pu_ht;
-    tvaMap[l.tva] = (tvaMap[l.tva] || 0) + base;
+    const n = norm(l);
+    const base = n.qte * n.pu_ht;
+    tvaMap[n.tva] = (tvaMap[n.tva] || 0) + base;
   }
   const tvaDetails = Object.entries(tvaMap).map(([taux, base]) => ({
     taux    : parseFloat(taux),
@@ -134,12 +141,15 @@ function renderHTML(doc, entreprise) {
     ? fmtDate(addDays(doc.date_prestation, 30)) : '';
 
   const lignesHTML = doc.lignes.map((l, i) => {
-    const tot = round2(l.qte * l.pu_ht);
+    const qte   = Number(l.qte   || l.quantite         || 1);
+    const pu_ht = Number(l.pu_ht || l.prix_unitaire_ht || 0);
+    const tva   = Number(l.tva   || l.taux_tva         || 20);
+    const tot   = round2(qte * pu_ht);
     return `<tr class="${i % 2 === 1 ? 'alt' : ''}">
       <td>${l.designation}</td>
-      <td class="center">${l.qte}</td>
-      <td class="right">${fmtEur(l.pu_ht)}</td>
-      <td class="center">${l.tva} %</td>
+      <td class="center">${qte}</td>
+      <td class="right">${fmtEur(pu_ht)}</td>
+      <td class="center">${tva} %</td>
       <td class="right">${fmtEur(tot)}</td>
     </tr>`;
   }).join('');
