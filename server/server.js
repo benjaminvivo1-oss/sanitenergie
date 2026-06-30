@@ -3,7 +3,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { chromium } = require('playwright-core');
+const puppeteer = require('puppeteer');
 const multer = require('multer');
 const OpenAI = require('openai');
 
@@ -25,24 +25,6 @@ fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(PDF_DIR,  { recursive: true });
 if (!fs.existsSync(CTR_FILE))  fs.writeFileSync(CTR_FILE,  '{}', 'utf8');
 if (!fs.existsSync(DOCS_FILE)) fs.writeFileSync(DOCS_FILE, '[]', 'utf8');
-function findChrome() {
-  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
-  const candidates = [
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/google-chrome',
-    '/usr/bin/google-chrome-stable',
-    '/run/current-system/sw/bin/chromium',
-    '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
-    '/opt/pw-browsers/chromium-1161/chrome-linux/chrome',
-    '/opt/pw-browsers/chromium/chrome-linux/chrome',
-  ];
-  for (const c of candidates) { try { fs.accessSync(c); return c; } catch {} }
-  /* dernier recours : chercher chromium dans le PATH */
-  try { return require('child_process').execSync('which chromium || which chromium-browser || which google-chrome',{encoding:'utf8'}).trim(); } catch {}
-  return null;
-}
-const CHROME_PATH = findChrome();
 
 /* ── Clients API (initialisés à la demande pour ne pas crasher sans clés) ── */
 function getOpenAI() {
@@ -244,13 +226,12 @@ function renderHTML(doc, entreprise) {
 
 async function generatePDF(doc, entreprise) {
   const html    = renderHTML(doc, entreprise);
-  if (!CHROME_PATH) throw new Error('Chrome introuvable sur ce serveur');
-  const browser = await chromium.launch({
-    executablePath: CHROME_PATH,
-    args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'],
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage','--disable-gpu'],
   });
   const page    = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle' });
+  await page.setContent(html, { waitUntil: 'networkidle2' });
   const pdfPath = path.join(PDF_DIR, `${doc.numero}.pdf`);
   await page.pdf({ path: pdfPath, format: 'A4', margin: { top: 0, right: 0, bottom: 0, left: 0 }, printBackground: true });
   await browser.close();
