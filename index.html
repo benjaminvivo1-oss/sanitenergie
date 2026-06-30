@@ -201,10 +201,37 @@ select.finp{cursor:pointer}
 .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block}
 .av-c{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Oxanium';font-weight:700;color:#fff;font-size:13px;flex-shrink:0}
 
-@media(max-width:700px){
+/* ─── BOTTOM NAV MOBILE ─── */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--sur);border-top:1px solid var(--bor);z-index:200;justify-content:space-around;align-items:center;padding:0 4px}
+.mob-nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:8px;color:var(--soft);cursor:pointer;font-size:10px;font-weight:500;background:none;border:none;flex:1;transition:.12s}
+.mob-nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+.mob-nav-btn.on{color:var(--blue)}
+
+@media(max-width:768px){
   .side{display:none}
-  .kpis{grid-template-columns:1fr 1fr}
+  .mob-nav{display:flex}
+  .body{padding:16px 12px 72px}
+  .kpis{grid-template-columns:1fr 1fr;gap:10px}
   .grid2{grid-template-columns:1fr}
+  .top{padding:0 16px;height:50px}
+  .top-title{font-size:15px}
+  .rge-badge span{display:none}
+  .inner{max-width:100%}
+  .ph{margin-bottom:16px}
+  .ph h2{font-size:17px}
+  .card{padding:16px}
+  .kpi{padding:14px 16px}
+  .kpi-val{font-size:22px}
+  .tbl{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .cal-grid{grid-template-columns:40px repeat(5,1fr);font-size:11px}
+  .cal-ev{font-size:10px;padding:3px 5px}
+  .btn{padding:7px 11px;font-size:12px}
+  .alert{flex-direction:column;gap:8px;padding:14px}
+}
+
+@media(max-width:400px){
+  .kpis{grid-template-columns:1fr}
+  .kpi-val{font-size:20px}
 }
 </style>
 </head>
@@ -1714,6 +1741,27 @@ syncChantierEvents();
 buildNav();
 go('dashboard');
 setTimeout(()=>{const s=document.querySelector('.side-foot .ni');if(s)s.dataset.v='reglages';},0);
+
+/* ── Navigation mobile ── */
+function buildMobNav(){
+  const items=[
+    {v:'dashboard',label:'Accueil',icon:'<polyline points="3 9 12 2 21 9"/><polyline points="9 22 9 12 15 12 15 22"/><line x1="3" y1="9" x2="3" y2="22"/><line x1="21" y1="9" x2="21" y2="22"/>'},
+    {v:'devis',label:'Devis',icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'},
+    {v:'clients',label:'Clients',icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
+    {v:'calendrier',label:'Agenda',icon:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
+    {v:'reglages',label:'Plus',icon:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'},
+  ];
+  const nav=document.createElement('nav');
+  nav.className='mob-nav';
+  nav.innerHTML=items.map(i=>`<button class="mob-nav-btn" data-v="${i.v}" onclick="go('${i.v}');updateMobNav()"><svg viewBox="0 0 24 24">${i.icon}</svg>${i.label}</button>`).join('');
+  document.body.appendChild(nav);
+  updateMobNav();
+}
+function updateMobNav(){
+  document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.v===_curView));
+}
+buildMobNav();
+const _origGo=go;
 </script>
 </body>
 </html>
