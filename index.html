@@ -64,7 +64,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;font-size:14px}
 .card-title{font-size:11px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px}
 
 /* ─── KPI ROW ─── */
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
 .kpi{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rL);padding:18px 20px}
 .kpi-label{font-size:12px;color:var(--soft);font-weight:500;margin-bottom:8px}
 .kpi-val{font-family:'Oxanium';font-size:24px;font-weight:700;line-height:1;color:var(--ink)}
@@ -479,7 +479,6 @@ VIEWS.dashboard=function(){
   <div class="kpi"><div class="kpi-label">CA Juin 2026</div><div class="kpi-val oxa">19 200 €</div><div class="kpi-sub up">+12,3 % vs mai</div></div>
   <div class="kpi"><div class="kpi-label">Devis sans réponse</div><div class="kpi-val oxa">${dormCnt}</div><div class="kpi-sub warn">${fmt(dormAmt)} en jeu</div></div>
   <div class="kpi"><div class="kpi-label">Taux de conversion</div><div class="kpi-val oxa">68 %</div><div class="kpi-sub up">+3 pts vs mai</div></div>
-  <div class="kpi"><div class="kpi-label">Devis signés</div><div class="kpi-val oxa">12 840 €</div><div class="kpi-sub">7 convertis ce mois</div></div>
 </div>
 
 <div class="alert">
