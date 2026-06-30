@@ -234,6 +234,10 @@ select.finp{cursor:pointer}
   .kpis{grid-template-columns:1fr!important}
   .kpi-val{font-size:20px}
 }
+@media(max-width:600px){
+  .card-row-mobile{flex-direction:column!important;gap:6px!important}
+  .card-row-mobile .oxa{font-size:13px!important}
+}
 </style>
 </head>
 <body>
@@ -481,34 +485,56 @@ const mc=()=>`closeM()`;
 
 /* ── DASHBOARD ── */
 VIEWS.dashboard=function(){
+  const now=new Date();
+  const curM=now.getMonth()+1,curY=now.getFullYear();
+  function inCurMonth(d){const p=d.split('/');return +p[1]===curM&&+p[2]===curY;}
+  /* CA du mois = devis signés ce mois + factures payées ce mois */
+  const caSignes=DEVIS.filter(d=>d.statut==='signe'&&inCurMonth(d.dateEnvoi)).reduce((a,d)=>a+d.montant,0);
+  const caPayees=FACTURES.filter(f=>f.statut==='payee'&&inCurMonth(f.dateEmission)).reduce((a,f)=>a+f.montant,0);
+  const caMois=caSignes+caPayees;
+  /* taux de conversion */
+  const decided=DEVIS.filter(d=>d.statut==='signe'||d.statut==='refuse');
+  const txConv=decided.length?Math.round(DEVIS.filter(d=>d.statut==='signe').length/decided.length*100):0;
+  /* alertes */
   const dormCnt=DEVIS.filter(d=>d.statut==='dormant').length;
   const dormAmt=DEVIS.filter(d=>d.statut==='dormant').reduce((a,d)=>a+d.montant,0);
-  const retardAmt=FACTURES.filter(f=>f.statut==='en retard').reduce((a,f)=>a+f.montant,0);
+  const retardFact=FACTURES.filter(f=>f.statut==='en retard');
+  const retardAmt=retardFact.reduce((a,f)=>a+f.montant,0);
   const total=dormAmt+retardAmt;
+  const monthCnt=DEVIS.filter(d=>inCurMonth(d.dateEnvoi)).length;
   const recent=DEVIS.slice(0,5);
-  const now=new Date();
-  const monthCnt=DEVIS.filter(d=>{const p=d.dateEnvoi.split('/');return +p[1]===now.getMonth()+1&&+p[2]===now.getFullYear();}).length;
+  /* CA par prestation (devis signés ce mois) */
+  const byType={clim:0,sdb:0,chauf:0,plomb:0};
+  DEVIS.filter(d=>d.statut==='signe'&&inCurMonth(d.dateEnvoi)).forEach(d=>{
+    if(/clim|split|multi/i.test(d.prestation))byType.clim+=d.montant;
+    else if(/sdb|salle|bain/i.test(d.prestation))byType.sdb+=d.montant;
+    else if(/chauffe|thermodynamique|pac/i.test(d.prestation))byType.chauf+=d.montant;
+    else byType.plomb+=d.montant;
+  });
+  const byMax=Math.max(...Object.values(byType),1);
+  const moisNom=['Janv','Févr','Mars','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'][curM-1];
   return `
-<div class="ph"><h2>Bonjour Mickael</h2><p>Lundi 22 juin 2026 · Pia (66)</p></div>
+<div class="ph"><h2>Bonjour Mickael</h2><p>${now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} · Pia (66)</p></div>
 
 <div class="kpis">
-  <div class="kpi"><div class="kpi-label">CA Juin 2026</div><div class="kpi-val oxa">19 200 €</div><div class="kpi-sub up">+12,3 % vs mai</div></div>
-  <div class="kpi"><div class="kpi-label">Devis du mois</div><div class="kpi-val oxa">${monthCnt}</div><div class="kpi-sub">${monthCnt} devis envoyés</div></div>
-  <div class="kpi"><div class="kpi-label">Taux de conversion</div><div class="kpi-val oxa">68 %</div><div class="kpi-sub up">+3 pts vs mai</div></div>
+  <div class="kpi"><div class="kpi-label">CA ${moisNom} ${curY}</div><div class="kpi-val oxa">${caMois.toLocaleString('fr-FR')} €</div><div class="kpi-sub">${caSignes>0?caSignes.toLocaleString('fr-FR')+' € signés':'Aucun devis signé ce mois'}</div></div>
+  <div class="kpi"><div class="kpi-label">Devis du mois</div><div class="kpi-val oxa">${monthCnt}</div><div class="kpi-sub">${monthCnt===1?'1 devis envoyé':monthCnt+' devis envoyés'}</div></div>
+  <div class="kpi"><div class="kpi-label">Taux de conversion</div><div class="kpi-val oxa">${txConv} %</div><div class="kpi-sub">${DEVIS.filter(d=>d.statut==='signe').length} signés sur ${decided.length} décidés</div></div>
 </div>
 
 <div class="alert">
   <div><div style="font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">À récupérer</div><div class="alert-val">${fmt(total)}</div></div>
-  <div class="alert-txt">${dormCnt} devis sans réponse et ${FACTURES.filter(f=>f.statut==='en retard').length} factures impayées. Une relance ciblée peut changer la donne.</div>
+  <div class="alert-txt">${dormCnt} devis sans réponse et ${retardFact.length} facture${retardFact.length>1?'s':''} impayée${retardFact.length>1?'s':''}. Une relance ciblée peut changer la donne.</div>
   <button class="btn dang" onclick="go('relances')">Lancer les relances →</button>
 </div>
 
 <div class="card">
-  <div class="card-title">CA par prestation · Juin 2026</div>
-  <div class="pbar-row"><div class="pbar-lbl">Climatisation</div><div class="pbar-track"><div class="pbar-fill" style="width:45%;background:var(--blue)"></div></div><div class="pbar-val">8 640 €</div></div>
-  <div class="pbar-row"><div class="pbar-lbl">Rénovation SDB</div><div class="pbar-track"><div class="pbar-fill" style="width:30%;background:var(--blue);opacity:.7"></div></div><div class="pbar-val">5 760 €</div></div>
-  <div class="pbar-row"><div class="pbar-lbl">Chauffe-eau</div><div class="pbar-track"><div class="pbar-fill" style="width:15%;background:var(--blue);opacity:.45"></div></div><div class="pbar-val">2 880 €</div></div>
-  <div class="pbar-row" style="margin:0"><div class="pbar-lbl">Plomberie</div><div class="pbar-track"><div class="pbar-fill" style="width:10%;background:var(--blue);opacity:.25"></div></div><div class="pbar-val">1 920 €</div></div>
+  <div class="card-title">CA par prestation · ${moisNom} ${curY}</div>
+  ${[['Climatisation',byType.clim,1],['Rénovation SDB',byType.sdb,.7],['Chauffe-eau',byType.chauf,.45],['Plomberie',byType.plomb,.25]].map(([lbl,val,op],i,arr)=>{
+    const pct=byMax?Math.round(val/byMax*100):0;
+    const margin=i===arr.length-1?'style="margin:0"':'';
+    return `<div class="pbar-row" ${margin}><div class="pbar-lbl">${lbl}</div><div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:var(--blue);opacity:${op}"></div></div><div class="pbar-val">${val.toLocaleString('fr-FR')} €</div></div>`;
+  }).join('')}
 </div>
 
 <div class="card mt">
@@ -721,7 +747,10 @@ function openDevis(ref){
   const hasFact=FACTURES.some(f=>f.devisRef===d.ref);
   let foot=`<button class="btn" onclick="${mc()}">Fermer</button>`;
   if(d.statut==='dormant')foot+=`<button class="btn" onclick="relancerD('${d.client}',this)">Envoyer relance</button><button class="btn ok" onclick="markSigne('${d.ref}')">Marquer signé</button>`;
-  if(d.statut==='signe'&&!hasFact)foot+=`<button class="btn prim" onclick="creerFact('${d.ref}')">Créer la facture</button>`;
+  if(d.statut==='signe'){
+    foot+=`<button class="btn sm" style="color:var(--soft)" onclick="annulerSigne('${d.ref}')">↩ Annuler signature</button>`;
+    if(!hasFact)foot+=`<button class="btn prim" onclick="creerFact('${d.ref}')">Créer la facture</button>`;
+  }
   openM(`<div class="mh"><div><div class="oxa" style="font-weight:700;font-size:18px">${d.ref}</div><div style="color:var(--soft);font-size:13px;margin-top:3px">${d.client} · ${d.ville}</div></div>${badge(d.statut)}<button class="mx" onclick="${mc()}">×</button></div>
   <div class="mb"><div style="font-size:13px;color:var(--soft);margin-bottom:14px">${d.prestation} · envoyé le ${d.dateEnvoi}</div>${lignes(d.lignes)}</div>
   <div class="mf">${foot}</div>`);
@@ -731,7 +760,8 @@ function openFact(ref){
   const f=FACTURES.find(x=>x.ref===ref);if(!f)return;
   let foot=`<button class="btn" onclick="${mc()}">Fermer</button>`;
   if(f.statut==='en retard')foot+=`<button class="btn dang" onclick="relancerF('${f.client}',this)">Envoyer relance</button>`;
-  if(f.statut!=='payee')foot+=`<button class="btn ok" onclick="markPaid('${f.ref}');${mc()}">Marquer payée</button>`;
+  if(f.statut!=='payee')foot+=`<button class="btn ok" onclick="markPaid('${f.ref}')">Marquer payée</button>`;
+  if(f.statut==='payee')foot+=`<button class="btn sm" style="color:var(--soft)" onclick="annulerPaid('${f.ref}')">↩ Annuler paiement</button>`;
   const devisLink=f.devisRef?`<div class="li-r"><div class="li-lbl">Devis lié</div><div><a style="color:var(--blue);cursor:pointer;font-weight:600" onclick="${mc()};openDevis('${f.devisRef}')">${f.devisRef} →</a></div></div>`:'';
   openM(`<div class="mh"><div><div class="oxa" style="font-weight:700;font-size:18px">${f.ref}</div><div style="color:var(--soft);font-size:13px;margin-top:3px">${f.client} · ${f.ville}</div></div>${badge(f.statut)}<button class="mx" onclick="${mc()}">×</button></div>
   <div class="mb">
@@ -744,20 +774,48 @@ function openFact(ref){
   </div><div class="mf">${foot}</div>`);
 }
 
+function confirmAction(msg,onConfirm){
+  openM(`<div class="mh"><div style="font-size:16px;font-weight:600">${msg}</div><button class="mx" onclick="${mc()}">×</button></div>
+  <div class="mf">
+    <button class="btn" onclick="${mc()}">Annuler</button>
+    <button class="btn prim" onclick="(${onConfirm.toString()})();${mc()}">Confirmer</button>
+  </div>`);
+}
 function markSigne(ref){
-  const d=DEVIS.find(x=>x.ref===ref);d.statut='signe';
-  const b=document.getElementById('dbadge-'+ref);if(b)b.innerHTML=badge('signe');
-  const card=document.getElementById('dc-'+ref);
-  if(card){card.style.borderLeftColor='var(--green)';}
-  closeM();refreshUI();
+  confirmAction('Marquer ce devis comme signé ?',function(){
+    const d=DEVIS.find(x=>x.ref===ref);d.statut='signe';
+    const b=document.getElementById('dbadge-'+ref);if(b)b.innerHTML=badge('signe');
+    const card=document.getElementById('dc-'+ref);
+    if(card){card.style.borderLeftColor='var(--green)';}
+    refreshUI();
+  });
 }
 function markPaid(ref,btn){
-  const f=FACTURES.find(x=>x.ref===ref);f.statut='payee';f.jours=null;
-  const b=document.getElementById('fbadge-'+ref);if(b)b.innerHTML=badge('payee');
-  const card=document.getElementById('fc-'+ref);
-  if(card){card.style.borderLeftColor='var(--green)';}
-  if(btn)btn.closest('[onclick*="event.stopPropagation"]')?.remove();
-  closeM();refreshUI();
+  confirmAction('Marquer cette facture comme payée ?',function(){
+    const f=FACTURES.find(x=>x.ref===ref);f.statut='payee';f.jours=null;
+    const b=document.getElementById('fbadge-'+ref);if(b)b.innerHTML=badge('payee');
+    const card=document.getElementById('fc-'+ref);
+    if(card){card.style.borderLeftColor='var(--green)';}
+    refreshUI();
+  });
+}
+function annulerSigne(ref){
+  confirmAction('Repasser ce devis en "Dormant" ?',function(){
+    const d=DEVIS.find(x=>x.ref===ref);d.statut='dormant';
+    const b=document.getElementById('dbadge-'+ref);if(b)b.innerHTML=badge('dormant');
+    const card=document.getElementById('dc-'+ref);
+    if(card){card.style.borderLeftColor='var(--amber)';}
+    refreshUI();
+  });
+}
+function annulerPaid(ref){
+  confirmAction('Repasser cette facture en "En attente" ?',function(){
+    const f=FACTURES.find(x=>x.ref===ref);f.statut='en attente';
+    const b=document.getElementById('fbadge-'+ref);if(b)b.innerHTML=badge('en attente');
+    const card=document.getElementById('fc-'+ref);
+    if(card){card.style.borderLeftColor='var(--blue)';}
+    refreshUI();
+  });
 }
 function relancerD(client,btn){feedbackBtn(btn,'Envoyé ✓','ok');}
 function relancerF(client,btn){feedbackBtn(btn,'Envoyé ✓','ok');}
@@ -771,7 +829,9 @@ function creerFact(ref){
   const num=Math.max(...FACTURES.map(f=>+(f.ref.replace('FA-',''))||0))+1;
   const padded='FA-0'+String(num).padStart(2,'0');
   const ht=Math.round(d.montant/1.1);
-  const newF={ref:padded,client:d.client,ville:d.ville,prestation:d.prestation,montant:d.montant,montantHT:ht,tva:d.montant-ht,dateEmission:'22/06/2026',echeance:'22/07/2026',statut:'en attente',devisRef:d.ref,jours:null};
+  const fmtD=dt=>String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+  const today=new Date();const ech=new Date(today);ech.setDate(ech.getDate()+30);
+  const newF={ref:padded,client:d.client,ville:d.ville,prestation:d.prestation,montant:d.montant,montantHT:ht,tva:d.montant-ht,dateEmission:fmtD(today),echeance:fmtD(ech),statut:'en attente',devisRef:d.ref,jours:null};
   FACTURES.unshift(newF);
   closeM();refreshUI();go('devis');
   setTimeout(()=>{swTab(document.querySelectorAll('.tab')[1],'t-fact');},50);
@@ -815,7 +875,13 @@ VIEWS.relances=function(){
   </div>
 </div>`;
 };
-function lancerTout(){document.querySelectorAll('#content button.btn.sm:not(.ok):not(.dang)').forEach(b=>feedbackBtn(b,'Envoyé ✓','ok'));}
+function lancerTout(){
+  document.querySelectorAll('#content button.btn.sm:not(.ok):not(.dang)').forEach(b=>feedbackBtn(b,'Envoyé ✓','ok'));
+  /* marque tous les dormants comme "relancé" (on conserve dormant pour pouvoir encore agir) */
+  refreshUI();
+  const btn=document.querySelector('#content .btn.dang');
+  if(btn){btn.textContent='✓ Relances envoyées';btn.disabled=true;btn.style.opacity='.5';}
+}
 
 /* ── CHANTIERS ── */
 const CTYPE_COLOR={sdb:'var(--green)',clim:'var(--blue)',chauf:'var(--amber)',plomb:'var(--soft)'};
