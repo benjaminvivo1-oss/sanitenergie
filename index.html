@@ -472,14 +472,14 @@ VIEWS.dashboard=function(){
   const retardAmt=FACTURES.filter(f=>f.statut==='en retard').reduce((a,f)=>a+f.montant,0);
   const total=dormAmt+retardAmt;
   const recent=DEVIS.slice(0,5);
-  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'/');
-  const todayCnt=DEVIS.filter(d=>d.dateEnvoi===today).length;
+  const now=new Date();
+  const monthCnt=DEVIS.filter(d=>{const p=d.dateEnvoi.split('/');return +p[1]===now.getMonth()+1&&+p[2]===now.getFullYear();}).length;
   return `
 <div class="ph"><h2>Bonjour Mickael</h2><p>Lundi 22 juin 2026 · Pia (66)</p></div>
 
 <div class="kpis">
   <div class="kpi"><div class="kpi-label">CA Juin 2026</div><div class="kpi-val oxa">19 200 €</div><div class="kpi-sub up">+12,3 % vs mai</div></div>
-  <div class="kpi"><div class="kpi-label">Devis du jour</div><div class="kpi-val oxa">${todayCnt}</div><div class="kpi-sub">${todayCnt===0?'Aucun aujourd\'hui':todayCnt===1?'1 devis envoyé':todayCnt+' devis envoyés'}</div></div>
+  <div class="kpi"><div class="kpi-label">Devis du mois</div><div class="kpi-val oxa">${monthCnt}</div><div class="kpi-sub">${monthCnt} devis envoyés</div></div>
   <div class="kpi"><div class="kpi-label">Taux de conversion</div><div class="kpi-val oxa">68 %</div><div class="kpi-sub up">+3 pts vs mai</div></div>
 </div>
 
