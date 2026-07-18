@@ -1,0 +1,65 @@
+---
+---
+
+<header class="site-header">
+  <div class="container site-header__row">
+    <a href="/#contenu" class="site-header__brand">
+      <span class="site-header__mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+          <path d="M9 23 L16 8 L23 23" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="12.2" y1="17" x2="19.8" y2="17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      ChantierPilot
+    </a>
+
+    <a href="#rdv" class="btn btn--gold site-header__cta">Réserver une démo</a>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding-block: 1.1rem;
+    background: linear-gradient(180deg, rgba(15, 33, 29, 0.92), rgba(15, 33, 29, 0.55) 80%, transparent);
+    backdrop-filter: blur(6px);
+  }
+
+  .site-header__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .site-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--creme);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+
+  .site-header__mark {
+    color: var(--or-clair);
+    display: inline-flex;
+  }
+
+  .site-header__cta {
+    padding: 0.65em 1.3em;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 560px) {
+    .site-header__cta {
+      padding: 0.6em 1em;
+      font-size: 0.8rem;
+    }
+  }
+</style>

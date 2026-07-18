@@ -1,0 +1,98 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout
+  title="Mentions légales — ChantierPilot | Vivo Partner"
+  description="Mentions légales du site ChantierPilot, édité par Vivo Partner."
+>
+  <Header />
+
+  <main id="contenu" class="legal section">
+    <div class="container legal__inner">
+      <p class="eyebrow">Informations légales</p>
+      <h1 class="h2" style="margin-top:0.75rem;">Mentions légales</h1>
+
+      <div class="legal__block">
+        <h2 class="legal__h">Éditeur du site</h2>
+        <p>
+          Le site ChantierPilot est édité par <strong>Vivo Partner</strong>.<br />
+          [Forme juridique — à compléter], [Capital social — à compléter]<br />
+          [Adresse du siège social — à compléter]<br />
+          [SIREN / SIRET — à compléter]<br />
+          [Numéro de TVA intracommunautaire — à compléter]
+        </p>
+        <p>Contact : <a href="mailto:benjamin@vivopartner.com">benjamin@vivopartner.com</a></p>
+      </div>
+
+      <div class="legal__block">
+        <h2 class="legal__h">Directeur de la publication</h2>
+        <p>[Nom du responsable de publication — à compléter]</p>
+      </div>
+
+      <div class="legal__block">
+        <h2 class="legal__h">Hébergement</h2>
+        <p>
+          Ce site est hébergé par Vercel Inc.<br />
+          340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis<br />
+          <a href="https://vercel.com" target="_blank" rel="noopener noreferrer">vercel.com</a>
+        </p>
+      </div>
+
+      <div class="legal__block">
+        <h2 class="legal__h">Propriété intellectuelle</h2>
+        <p>
+          L'ensemble des contenus présents sur ce site (textes, visuels, identité de marque, logiciel
+          ChantierPilot) est la propriété exclusive de Vivo Partner, sauf mention contraire. Toute
+          reproduction sans autorisation préalable est interdite.
+        </p>
+      </div>
+
+      <div class="legal__block">
+        <h2 class="legal__h">Données personnelles</h2>
+        <p>
+          [Politique de confidentialité et de traitement des données personnelles — à compléter,
+          conformément au RGPD]
+        </p>
+      </div>
+
+      <div class="legal__block">
+        <h2 class="legal__h">Cookies</h2>
+        <p>[Politique de cookies — à compléter si des cookies non essentiels sont utilisés]</p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .legal__inner {
+    max-width: 720px;
+    padding-block: 2rem;
+  }
+
+  .legal__block {
+    margin-top: 2.5rem;
+  }
+
+  .legal__h {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--or-clair);
+  }
+
+  .legal__block p {
+    margin-top: 0.9rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(236, 230, 219, 0.75);
+  }
+
+  .legal__block a {
+    color: var(--or-clair);
+  }
+</style>

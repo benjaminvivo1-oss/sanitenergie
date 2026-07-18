@@ -1,0 +1,102 @@
+---
+const etapes = [
+  {
+    n: "1",
+    titre: "On regarde votre façon de travailler",
+    detail: "Un échange avec le fondateur, pas un commercial. On comprend votre métier avant de toucher un écran.",
+  },
+  {
+    n: "2",
+    titre: "On configure votre ChantierPilot",
+    detail: "Quelques jours suffisent. Vos devis, vos clients, vos modèles de relance — prêts à l'emploi.",
+  },
+  {
+    n: "3",
+    titre: "Vous gardez la main",
+    detail: "Sans engagement. Vous testez, vous ajustez, vous partez quand vous voulez.",
+  },
+];
+---
+
+<section class="section process">
+  <div class="container">
+    <div data-reveal="up">
+      <p class="eyebrow">Comment ça se passe</p>
+      <h2 class="h2" style="margin-top:0.75rem; max-width: 28ch;">
+        Une mise en route rapide. Aucun engagement à signer.
+      </h2>
+    </div>
+
+    <div class="process__timeline">
+      {etapes.map((e, i) => (
+        <div class="process__step" data-reveal="up" data-reveal-delay={String(i * 0.1)}>
+          <span class="process__n">{e.n}</span>
+          <h3 class="process__title">{e.titre}</h3>
+          <p class="process__detail">{e.detail}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .process__timeline {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    position: relative;
+  }
+
+  .process__timeline::before {
+    content: "";
+    position: absolute;
+    top: 1.1rem;
+    left: 6%;
+    right: 6%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(163, 133, 96, 0.5) 15%, rgba(163, 133, 96, 0.5) 85%, transparent);
+  }
+
+  .process__step {
+    position: relative;
+  }
+
+  .process__n {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--sapin);
+    border: 1px solid var(--or);
+    color: var(--or-clair);
+    font-family: var(--f-display);
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+  }
+
+  .process__title {
+    margin-top: 1.25rem;
+    font-size: 1.15rem;
+    color: var(--creme);
+  }
+
+  .process__detail {
+    margin-top: 0.6rem;
+    font-size: 0.95rem;
+    color: rgba(236, 230, 219, 0.68);
+    max-width: 34ch;
+  }
+
+  @media (max-width: 780px) {
+    .process__timeline {
+      grid-template-columns: 1fr;
+    }
+    .process__timeline::before {
+      display: none;
+    }
+  }
+</style>

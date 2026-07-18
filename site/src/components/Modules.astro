@@ -1,0 +1,125 @@
+---
+const modules = [
+  {
+    titre: "Avis Google automatisés",
+    detail: "Une demande d'avis envoyée au bon moment, après chaque chantier terminé.",
+  },
+  {
+    titre: "Origine des chantiers",
+    detail: "Bouche-à-oreille, pub, site — sachez enfin ce qui vous ramène des clients.",
+  },
+  {
+    titre: "Marge par chantier",
+    detail: "Le coût réel face au devis, chantier par chantier, sans tableur.",
+  },
+  {
+    titre: "Contrats de maintenance",
+    detail: "Pour plombiers et chauffagistes : suivi des contrats et relances d'entretien.",
+  },
+];
+---
+
+<section class="section section--deep modules">
+  <div class="container">
+    <div data-reveal="up">
+      <p class="eyebrow">Modules à la carte</p>
+      <h2 class="h2" style="margin-top:0.75rem; max-width: 30ch;">
+        Le socle suffit pour démarrer. Les modules suivent votre métier.
+      </h2>
+    </div>
+
+    <div class="modules__board" data-reveal="scale">
+      <ul class="modules__list">
+        {modules.map((m) => (
+          <li class="modules__item">
+            <span class="modules__check" aria-hidden="true"></span>
+            <div class="modules__body">
+              <span class="modules__title">{m.titre}</span>
+              <span class="modules__detail">{m.detail}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <p class="modules__note">Et si votre métier a besoin d'autre chose, on en parle en démo — le socle grandit avec vous.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .modules__board {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+    border: 1px solid rgba(163, 133, 96, 0.35);
+    border-radius: var(--radius-l);
+    padding: clamp(1.75rem, 4vw, 2.75rem);
+    background:
+      radial-gradient(120% 140% at 10% 0%, rgba(163, 133, 96, 0.06), transparent 60%),
+      var(--sapin-profond);
+    max-width: 760px;
+  }
+
+  .modules__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modules__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px dashed rgba(163, 133, 96, 0.3);
+  }
+
+  .modules__item:last-child {
+    border-bottom: none;
+  }
+
+  .modules__check {
+    flex-shrink: 0;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: 0.2rem;
+    border: 1px solid var(--or);
+    border-radius: 3px;
+    position: relative;
+  }
+
+  .modules__check::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: -1px;
+    width: 5px;
+    height: 9px;
+    border-right: 2px solid var(--or-clair);
+    border-bottom: 2px solid var(--or-clair);
+    transform: rotate(40deg);
+  }
+
+  .modules__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .modules__title {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--creme);
+  }
+
+  .modules__detail {
+    font-size: 0.9rem;
+    color: rgba(236, 230, 219, 0.62);
+  }
+
+  .modules__note {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: rgba(236, 230, 219, 0.5);
+  }
+</style>

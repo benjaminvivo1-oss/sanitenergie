@@ -1,0 +1,297 @@
+/* ==========================================================================
+   ChantierPilot — fonts (self-hosted, latin subset)
+   ========================================================================== */
+
+@font-face {
+  font-family: "Oxanium";
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url("/fonts/oxanium-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122;
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/space-grotesk-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122;
+}
+
+/* ==========================================================================
+   ChantierPilot — design tokens
+   ========================================================================== */
+
+:root {
+  /* palette */
+  --sapin: #16302b;
+  --sapin-profond: #0f211d;
+  --or: #a38560;
+  --or-clair: #c9a876;
+  --creme: #ece6db;
+
+  --sapin-rgb: 22, 48, 43;
+  --or-clair-rgb: 201, 168, 118;
+
+  /* type */
+  --f-display: "Oxanium", "Arial Narrow", sans-serif;
+  --f-body: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+
+  /* rhythm */
+  --gutter: clamp(1.5rem, 5vw, 4rem);
+  --section-y: clamp(4.5rem, 10vw, 9rem);
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 18px;
+
+  --ease-agency: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-m: 0.6s;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--sapin);
+  color-scheme: dark;
+  scroll-behavior: auto;
+}
+
+html.lenis {
+  height: auto;
+}
+
+body {
+  margin: 0;
+  background: var(--sapin);
+  color: var(--creme);
+  font-family: var(--f-body);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  line-height: 1.05;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  position: relative;
+  padding-block: var(--section-y);
+}
+
+.section--deep {
+  background: var(--sapin-profond);
+}
+
+.eyebrow {
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--or-clair);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 1.4em;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.h2 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.lede {
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  color: rgba(236, 230, 219, 0.78);
+  max-width: 46ch;
+}
+
+/* buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  padding: 0.9em 1.7em;
+  border-radius: var(--radius-s);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform 0.35s var(--ease-agency), background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+  white-space: nowrap;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--or-clair);
+  outline-offset: 3px;
+}
+
+.btn--gold {
+  background: linear-gradient(180deg, var(--or-clair), var(--or));
+  color: var(--sapin-profond);
+}
+
+.btn--gold:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: rgba(163, 133, 96, 0.55);
+  color: var(--creme);
+}
+
+.btn--ghost:hover {
+  border-color: var(--or-clair);
+  color: var(--or-clair);
+  transform: translateY(-2px);
+}
+
+/* the gold cordeau (signature scroll line) */
+.cordeau {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cordeau__wire {
+  position: absolute;
+  inset: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--or-clair) 8%, var(--or-clair) 92%, transparent);
+  transform-origin: top;
+  transform: scaleY(0);
+  opacity: 0.55;
+}
+
+.cordeau__bob {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--or-clair);
+  box-shadow: 0 0 14px rgba(var(--or-clair-rgb), 0.7);
+  transform: translate(-50%, -50%);
+}
+
+/* utility: reveal target base state (JS adds .is-visible via ScrollTrigger) */
+.reveal {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .cordeau__wire {
+    transform: scaleY(1) !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  background: var(--or-clair);
+  color: var(--sapin-profond);
+  padding: 0.6em 1em;
+  border-radius: var(--radius-s);
+  z-index: 100;
+  transition: top 0.25s ease;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+::selection {
+  background: var(--or-clair);
+  color: var(--sapin-profond);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--or-clair);
+  outline-offset: 3px;
+}

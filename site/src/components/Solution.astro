@@ -1,0 +1,134 @@
+---
+const briques = [
+  {
+    n: "01",
+    titre: "Le matin, vous savez où vous en êtes",
+    detail: "Tableau de bord du jour : chantiers en cours, rendez-vous, devis à suivre. Un coup d'œil, pas dix onglets.",
+  },
+  {
+    n: "02",
+    titre: "Vos devis partent, et reviennent tout seuls",
+    detail: "Relance automatique des devis non suivis — sans que vous ayez à y penser un seul soir.",
+  },
+  {
+    n: "03",
+    titre: "L'argent qui vous est dû ne s'oublie plus",
+    detail: "Relance automatique des factures impayées, avec un ton que vous choisissez.",
+  },
+  {
+    n: "04",
+    titre: "Toute la vie du client, au même endroit",
+    detail: "CRM clients : historique, chantiers passés, coordonnées, sans ressaisie.",
+  },
+  {
+    n: "05",
+    titre: "La facturation ne vous vole plus votre soirée",
+    detail: "Devis et factures générés en quelques clics, conformes, prêts à envoyer.",
+  },
+  {
+    n: "06",
+    titre: "Le chantier avance, vous le suivez sans y être",
+    detail: "Suivi de chantier centralisé : avancement, documents, échéances.",
+  },
+  {
+    n: "07",
+    titre: "Votre agenda parle à votre téléphone",
+    detail: "Calendrier synchronisable avec vos outils existants.",
+  },
+];
+---
+
+<section class="section solution" id="solution">
+  <div class="container">
+    <div class="solution__head" data-reveal="up">
+      <p class="eyebrow">La solution</p>
+      <h2 class="h2" style="margin-top:0.75rem; max-width: 34ch;">
+        ChantierPilot ne rajoute pas de travail. Il en enlève.
+      </h2>
+    </div>
+
+    <ol class="solution__list">
+      {briques.map((b, i) => (
+        <li class="solution__row" data-reveal="up" data-reveal-delay={String((i % 4) * 0.06)}>
+          <span class="solution__n" aria-hidden="true">{b.n}</span>
+          <div>
+            <h3 class="solution__title">{b.titre}</h3>
+            <p class="solution__detail">{b.detail}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .solution__head {
+    max-width: 640px;
+    margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  .solution__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    border-top: 1px solid rgba(163, 133, 96, 0.25);
+  }
+
+  .solution__row {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1.85rem 1.5rem 1.85rem 0;
+    border-bottom: 1px solid rgba(163, 133, 96, 0.25);
+  }
+
+  .solution__row:nth-child(odd) {
+    border-right: 1px solid rgba(163, 133, 96, 0.25);
+    padding-right: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .solution__row:nth-child(odd) {
+    padding-left: 0;
+  }
+
+  .solution__row:nth-child(even) {
+    padding-left: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .solution__n {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--or);
+    padding-top: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .solution__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--creme);
+  }
+
+  .solution__detail {
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    color: rgba(236, 230, 219, 0.68);
+    max-width: 40ch;
+  }
+
+  @media (max-width: 780px) {
+    .solution__list {
+      grid-template-columns: 1fr;
+    }
+    .solution__row:nth-child(odd) {
+      border-right: none;
+      padding-right: 0;
+    }
+    .solution__row:nth-child(even) {
+      padding-left: 0;
+    }
+  }
+</style>

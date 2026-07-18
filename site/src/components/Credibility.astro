@@ -1,0 +1,93 @@
+---
+const points = [
+  {
+    titre: "Spécialisés BTP, pas généralistes",
+    detail: "ChantierPilot n'est pas un logiciel de gestion pour tout le monde adapté au bâtiment. Il est pensé pour le bâtiment, point.",
+  },
+  {
+    titre: "Le fondateur au contact",
+    detail: "Vos échanges se font directement avec Vivo Partner, pas avec un centre d'appels.",
+  },
+  {
+    titre: "Une démo pour votre métier",
+    detail: "Électricien, plombier, couvreur — la démonstration parle de votre quotidien, pas d'un cas générique.",
+  },
+  {
+    titre: "Prix transparent, sans engagement",
+    detail: "Vous savez ce que vous payez. Vous partez quand vous voulez. C'est notre garantie, pas une astuce commerciale.",
+  },
+];
+---
+
+<section class="section credibility">
+  <div class="container">
+    <div data-reveal="up">
+      <p class="eyebrow">Pourquoi nous faire confiance</p>
+      <h2 class="h2" style="margin-top:0.75rem; max-width: 32ch;">
+        Vivo Partner est une jeune agence, spécialisée BTP dès le premier jour.
+      </h2>
+    </div>
+
+    <div class="credibility__grid">
+      {points.map((p, i) => (
+        <div class="credibility__item" data-reveal="up" data-reveal-delay={String((i % 2) * 0.08)}>
+          <h3 class="credibility__title">{p.titre}</h3>
+          <p class="credibility__detail">{p.detail}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="credibility__testimonial" data-reveal="up" aria-label="Emplacement réservé à un témoignage client">
+      <p class="credibility__testimonial-quote">[TÉMOIGNAGE CLIENT — à remplir]</p>
+      <p class="credibility__testimonial-meta">— Nom, métier, ville — à remplir avec un vrai avis</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .credibility__grid {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.75rem, 4vw, 3rem);
+  }
+
+  .credibility__title {
+    font-size: 1.05rem;
+    color: var(--or-clair);
+  }
+
+  .credibility__detail {
+    margin-top: 0.6rem;
+    font-size: 0.95rem;
+    color: rgba(236, 230, 219, 0.68);
+    max-width: 42ch;
+  }
+
+  .credibility__testimonial {
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+    padding: clamp(1.75rem, 4vw, 2.5rem);
+    border: 1px dashed rgba(163, 133, 96, 0.45);
+    border-radius: var(--radius-m);
+    background: rgba(163, 133, 96, 0.04);
+  }
+
+  .credibility__testimonial-quote {
+    font-family: var(--f-display);
+    font-size: 1.1rem;
+    color: rgba(236, 230, 219, 0.55);
+    font-style: italic;
+  }
+
+  .credibility__testimonial-meta {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: rgba(236, 230, 219, 0.4);
+  }
+
+  @media (max-width: 700px) {
+    .credibility__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

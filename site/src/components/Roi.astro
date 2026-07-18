@@ -1,0 +1,242 @@
+---
+---
+
+<section class="section section--deep roi" id="roi" data-cordeau-snap>
+  <div class="container">
+    <div class="roi__head" data-reveal="up">
+      <p class="eyebrow">Le retour sur investissement</p>
+      <h2 class="h2" style="margin-top:0.75rem; max-width: 30ch;">
+        Il suffit d'<span class="roi__accent">un seul devis sauvé</span> pour rentabiliser votre implémentation.
+      </h2>
+      <p class="lede" style="margin-top:1.25rem;">
+        Le reste, c'est du bénéfice pur. En général, ChantierPilot se rentabilise en
+        <strong style="color:var(--creme)">1 à 2 mois</strong>.
+      </p>
+    </div>
+
+    <div class="roi__panel" data-reveal="scale">
+      <div class="roi__simulator" data-simulator>
+        <div class="roi__slider-row">
+          <label for="devisSlider" class="roi__slider-label">
+            Combien de devis envoyez-vous par mois ?
+          </label>
+          <div class="roi__slider-value">
+            <span data-sim-devis>10</span> devis / mois
+          </div>
+        </div>
+
+        <div class="roi__slider-track">
+          <div class="roi__slider-fill" data-sim-fill aria-hidden="true"></div>
+          <input
+            type="range"
+            id="devisSlider"
+            data-sim-slider
+            min="2"
+            max="40"
+            step="1"
+            value="10"
+            aria-describedby="roiResult"
+          />
+        </div>
+
+        <div class="roi__result" id="roiResult">
+          <div class="roi__result-figure">
+            <span class="roi__currency">≈</span>
+            <span class="roi__result-number" data-sim-recovered>2 291</span>
+            <span class="roi__currency">€</span>
+            <span class="roi__result-suffix">récupérés / mois</span>
+          </div>
+          <p class="roi__result-note">
+            Estimation basée sur une valeur moyenne de devis BTP et un taux de conversion réaliste
+            grâce à la relance automatique. Vos chiffres réels dépendent de votre métier — on les
+            affine ensemble en démo.
+          </p>
+        </div>
+      </div>
+
+      <div class="roi__counter-block">
+        <p class="roi__counter-label">Sur une année, pour 10 devis/mois</p>
+        <div class="roi__counter">
+          <span class="roi__counter-num" data-counter="38280" data-counter-suffix=" €"></span>
+        </div>
+        <p class="roi__counter-sub">C'est le chiffre d'affaires qu'un artisan laisse dormir — et que ChantierPilot rattrape seul.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .roi__accent {
+    color: var(--or-clair);
+  }
+
+  .roi__panel {
+    margin-top: clamp(3rem, 7vw, 5rem);
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 1px;
+    background: rgba(163, 133, 96, 0.28);
+    border: 1px solid rgba(163, 133, 96, 0.28);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+  }
+
+  .roi__simulator,
+  .roi__counter-block {
+    background: var(--sapin-profond);
+    padding: clamp(1.75rem, 4vw, 3rem);
+  }
+
+  .roi__slider-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .roi__slider-label {
+    font-size: 0.95rem;
+    color: rgba(236, 230, 219, 0.75);
+    max-width: 26ch;
+  }
+
+  .roi__slider-value {
+    font-family: var(--f-display);
+    font-weight: 700;
+    color: var(--or-clair);
+    white-space: nowrap;
+  }
+
+  .roi__slider-track {
+    position: relative;
+    margin-top: 1.75rem;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(236, 230, 219, 0.12);
+  }
+
+  .roi__slider-fill {
+    position: absolute;
+    inset: 0;
+    width: 20%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--or), var(--or-clair));
+    pointer-events: none;
+  }
+
+  input[data-sim-slider] {
+    position: absolute;
+    inset: -10px 0;
+    width: 100%;
+    height: 26px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[data-sim-slider]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--or-clair);
+    border: 3px solid var(--sapin-profond);
+    box-shadow: 0 0 0 1px rgba(201, 168, 118, 0.6);
+    margin-top: 2px;
+  }
+
+  input[data-sim-slider]::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--or-clair);
+    border: 3px solid var(--sapin-profond);
+    box-shadow: 0 0 0 1px rgba(201, 168, 118, 0.6);
+  }
+
+  input[data-sim-slider]:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--creme);
+    outline-offset: 2px;
+  }
+
+  .roi__result {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px dashed rgba(163, 133, 96, 0.35);
+  }
+
+  .roi__result-figure {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    font-family: var(--f-display);
+    font-weight: 800;
+    color: var(--creme);
+  }
+
+  .roi__currency {
+    font-size: 1.4rem;
+    color: var(--or-clair);
+  }
+
+  .roi__result-number {
+    font-size: clamp(2.75rem, 6vw, 4rem);
+    color: var(--or-clair);
+  }
+
+  .roi__result-suffix {
+    font-family: var(--f-body);
+    font-weight: 500;
+    font-size: 1rem;
+    color: rgba(236, 230, 219, 0.65);
+    margin-left: 0.3rem;
+  }
+
+  .roi__result-note {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: rgba(236, 230, 219, 0.5);
+    max-width: 48ch;
+  }
+
+  .roi__counter-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .roi__counter-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(236, 230, 219, 0.55);
+  }
+
+  .roi__counter {
+    margin-top: 0.75rem;
+  }
+
+  .roi__counter-num {
+    font-family: var(--f-display);
+    font-weight: 800;
+    font-size: clamp(3rem, 7vw, 4.5rem);
+    color: var(--creme);
+  }
+
+  .roi__counter-sub {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: rgba(236, 230, 219, 0.6);
+  }
+
+  @media (max-width: 820px) {
+    .roi__panel {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,99 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container site-footer__row">
+    <div class="site-footer__brand">
+      <p class="site-footer__name">ChantierPilot</p>
+      <p class="site-footer__by">par Vivo Partner</p>
+    </div>
+
+    <p class="site-footer__signature">Automatise aujourd'hui. Accélère demain.</p>
+
+    <nav class="site-footer__links" aria-label="Pied de page">
+      <a href="mailto:benjamin@vivopartner.com">benjamin@vivopartner.com</a>
+      <a href="/mentions-legales">Mentions légales</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <p class="site-footer__copy">© {year} Vivo Partner. Tous droits réservés.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--sapin-profond);
+    padding-block: clamp(3rem, 6vw, 4.5rem) 2rem;
+    border-top: 1px solid rgba(163, 133, 96, 0.25);
+  }
+
+  .site-footer__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+
+  .site-footer__name {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--creme);
+  }
+
+  .site-footer__by {
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    color: rgba(236, 230, 219, 0.55);
+  }
+
+  .site-footer__signature {
+    font-family: var(--f-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(201, 168, 118, 0.65);
+    align-self: center;
+  }
+
+  .site-footer__links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .site-footer__links a {
+    text-decoration: none;
+    color: rgba(236, 230, 219, 0.75);
+    transition: color 0.25s ease;
+  }
+
+  .site-footer__links a:hover,
+  .site-footer__links a:focus-visible {
+    color: var(--or-clair);
+  }
+
+  .site-footer__copy {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(163, 133, 96, 0.15);
+    font-size: 0.78rem;
+    color: rgba(236, 230, 219, 0.4);
+  }
+
+  @media (max-width: 640px) {
+    .site-footer__row {
+      flex-direction: column;
+    }
+    .site-footer__links {
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+</style>

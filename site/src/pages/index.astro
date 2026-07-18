@@ -1,0 +1,58 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Hero from "../components/Hero.astro";
+import Problem from "../components/Problem.astro";
+import Solution from "../components/Solution.astro";
+import Roi from "../components/Roi.astro";
+import Process from "../components/Process.astro";
+import Modules from "../components/Modules.astro";
+import Credibility from "../components/Credibility.astro";
+import Pricing from "../components/Pricing.astro";
+import Faq from "../components/Faq.astro";
+import CtaFinal from "../components/CtaFinal.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout
+  title="ChantierPilot — le logiciel de gestion qui relance vos devis tout seul | Vivo Partner"
+  description="ChantierPilot centralise devis, factures, chantiers et clients pour les artisans du BTP, et relance automatiquement les devis et factures impayées. Rentabilisé en 1 à 2 mois."
+>
+  <Header />
+
+  <main class="cordeau-track" data-cordeau-track>
+    <div class="cordeau" aria-hidden="true">
+      <div class="cordeau__wire"></div>
+      <div class="cordeau__bob"></div>
+    </div>
+
+    <Hero />
+    <Problem />
+    <Solution />
+    <Roi />
+    <Process />
+    <Modules />
+    <Credibility />
+    <Pricing />
+    <Faq />
+    <CtaFinal />
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .cordeau-track {
+    position: relative;
+  }
+
+  .cordeau {
+    left: clamp(0.9rem, 2.4vw, 2.6rem);
+  }
+
+  @media (max-width: 720px) {
+    .cordeau {
+      display: none;
+    }
+  }
+</style>

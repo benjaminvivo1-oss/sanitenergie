@@ -1,0 +1,123 @@
+---
+const devis = [
+  { label: "Devis n°1", statut: "Envoyé le 3", etat: "oublié" },
+  { label: "Devis n°2", statut: "Envoyé le 7", etat: "oublié" },
+  { label: "Devis n°3", statut: "Envoyé le 9", etat: "relancé" },
+  { label: "Devis n°4", statut: "Envoyé le 14", etat: "oublié" },
+  { label: "Devis n°5", statut: "Envoyé le 18", etat: "oublié" },
+  { label: "Devis n°6", statut: "Envoyé le 22", etat: "oublié" },
+];
+---
+
+<section class="section problem">
+  <div class="container problem__grid">
+    <div class="problem__text" data-reveal="left">
+      <p class="eyebrow">Le problème</p>
+      <h2 class="h2">
+        Un artisan reçoit environ <span class="problem__num">10 demandes de devis</span> par mois.
+        Il n'en relance quasiment aucune.
+      </h2>
+      <p class="lede" style="margin-top:1.5rem;">
+        Pas par manque de sérieux — par manque de temps. Entre le chantier, les clients et l'administratif
+        du soir, la relance passe toujours après. Chaque devis qui reste sans réponse, c'est du chiffre
+        d'affaires qui part chez le concurrent qui, lui, a rappelé.
+      </p>
+      <p class="problem__punch">Un devis non relancé n'est pas perdu. Il est juste oublié.</p>
+    </div>
+
+    <div class="problem__visual" data-reveal="right" aria-hidden="true">
+      <ul class="problem__stack">
+        {devis.map((d) => (
+          <li class:list={["problem__card", d.etat === "oublié" && "is-fading"]}>
+            <span class="problem__card-label">{d.label}</span>
+            <span class="problem__card-meta">{d.statut}</span>
+            <span class:list={["problem__card-tag", d.etat === "relancé" && "is-active"]}>
+              {d.etat === "oublié" ? "sans relance" : "relancé"}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .problem__grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: center;
+  }
+
+  .problem__num {
+    color: var(--or-clair);
+  }
+
+  .problem__punch {
+    margin-top: 1.75rem;
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--creme);
+    border-left: 2px solid var(--or);
+    padding-left: 1.1rem;
+  }
+
+  .problem__stack {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .problem__card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(163, 133, 96, 0.28);
+    border-radius: var(--radius-m);
+    background: rgba(236, 230, 219, 0.03);
+    transition: opacity 0.4s ease, filter 0.4s ease;
+  }
+
+  .problem__card.is-fading {
+    opacity: 0.4;
+    filter: grayscale(0.6);
+  }
+
+  .problem__card-label {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .problem__card-meta {
+    font-size: 0.8rem;
+    color: rgba(236, 230, 219, 0.55);
+    margin-right: auto;
+  }
+
+  .problem__card-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.3em 0.7em;
+    border-radius: 999px;
+    border: 1px solid rgba(236, 230, 219, 0.2);
+    color: rgba(236, 230, 219, 0.5);
+  }
+
+  .problem__card-tag.is-active {
+    border-color: var(--or-clair);
+    color: var(--or-clair);
+  }
+
+  @media (max-width: 860px) {
+    .problem__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

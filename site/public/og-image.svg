@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="80%" cy="0%" r="80%">
+      <stop offset="0%" stop-color="#A38560" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#A38560" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0F211D"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <line x1="90" y1="90" x2="90" y2="540" stroke="#C9A876" stroke-width="1" opacity="0.5"/>
+  <circle cx="90" cy="90" r="5" fill="#C9A876"/>
+  <text x="150" y="260" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="4" fill="#C9A876">VIVO PARTNER — CHANTIERPILOT</text>
+  <text x="150" y="340" font-family="Georgia, serif" font-weight="700" font-size="58" fill="#ECE6DB">Vos devis non relancés dorment.</text>
+  <text x="150" y="410" font-family="Georgia, serif" font-weight="700" font-size="58" fill="#C9A876">Ils valent de l'argent.</text>
+  <text x="150" y="500" font-family="Arial, sans-serif" font-size="26" fill="#ECE6DB" opacity="0.75">Le logiciel de gestion qui relance vos devis et factures, tout seul.</text>
+</svg>

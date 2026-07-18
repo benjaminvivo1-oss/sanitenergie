@@ -1,0 +1,152 @@
+---
+const faqs = [
+  {
+    q: "C'est compliqué à mettre en place ?",
+    a: "Non. La configuration se fait en quelques jours, avec vous, pas à votre place à distance sans explication. Vous n'avez rien à installer ni à paramétrer seul.",
+  },
+  {
+    q: "Je ne suis pas à l'aise avec l'informatique, ça va être un problème ?",
+    a: "C'est justement pour ça que ChantierPilot existe. Pas de jargon, pas d'écran à onze menus. Si vous savez envoyer un SMS, vous savez utiliser ChantierPilot.",
+  },
+  {
+    q: "Et si ça ne marche pas pour mon métier précis ?",
+    a: "Le socle (devis, factures, relances, agenda) fonctionne pour tous les métiers du bâtiment. Les modules à la carte s'ajoutent selon votre spécialité. On en discute en démo avant toute décision.",
+  },
+  {
+    q: "Pourquoi pas un logiciel de gestion classique ?",
+    a: "Les logiciels classiques vous laissent tout faire manuellement — y compris les relances, qui finissent par ne jamais se faire. ChantierPilot les fait à votre place, automatiquement.",
+  },
+  {
+    q: "Je peux arrêter quand je veux ?",
+    a: "Oui. Aucun engagement. Si ChantierPilot ne vous convient pas, vous partez, sans justification à donner.",
+  },
+];
+---
+
+<section class="section faq" id="faq">
+  <div class="container faq__grid">
+    <div data-reveal="left">
+      <p class="eyebrow">Questions fréquentes</p>
+      <h2 class="h2" style="margin-top:0.75rem; max-width: 20ch;">Les vraies questions, les vraies réponses.</h2>
+    </div>
+
+    <div class="faq__list" data-reveal="right">
+      {faqs.map((f, i) => (
+        <div class="faq__item" data-faq-item data-open="false">
+          <button
+            class="faq__trigger"
+            data-faq-trigger
+            aria-expanded="false"
+            aria-controls={`faq-panel-${i}`}
+            id={`faq-trigger-${i}`}
+          >
+            <span>{f.q}</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </button>
+          <div
+            class="faq__panel"
+            data-faq-panel
+            id={`faq-panel-${i}`}
+            role="region"
+            aria-labelledby={`faq-trigger-${i}`}
+          >
+            <p class="faq__answer">{f.a}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq__grid {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  .faq__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .faq__item {
+    border-bottom: 1px solid rgba(163, 133, 96, 0.28);
+  }
+
+  .faq__trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: none;
+    border: none;
+    color: var(--creme);
+    text-align: left;
+    padding: 1.4rem 0;
+    font-family: var(--f-body);
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+
+  .faq__trigger:focus-visible {
+    outline: 2px solid var(--or-clair);
+    outline-offset: 4px;
+  }
+
+  .faq__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .faq__icon::before,
+  .faq__icon::after {
+    content: "";
+    position: absolute;
+    background: var(--or-clair);
+    transition: transform 0.3s var(--ease-agency);
+  }
+
+  .faq__icon::before {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    transform: translateY(-50%);
+  }
+
+  .faq__icon::after {
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    transform: translateX(-50%);
+  }
+
+  .faq__item[data-open="true"] .faq__icon::after {
+    transform: translateX(-50%) rotate(90deg);
+    opacity: 0;
+  }
+
+  .faq__panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s var(--ease-agency);
+  }
+
+  .faq__answer {
+    padding-bottom: 1.5rem;
+    font-size: 0.95rem;
+    color: rgba(236, 230, 219, 0.68);
+    max-width: 56ch;
+  }
+
+  @media (max-width: 780px) {
+    .faq__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

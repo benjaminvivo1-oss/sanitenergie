@@ -1,0 +1,106 @@
+---
+---
+
+<section class="hero section section--deep" data-hero id="contenu">
+  <div class="hero__texture" aria-hidden="true"></div>
+
+  <div class="container hero__grid">
+    <p class="eyebrow" data-hero-fade>Vivo Partner — ChantierPilot</p>
+
+    <h1 class="hero__thesis" data-hero-mark>
+      <span data-hero-word>Vos</span> <span data-hero-word>devis</span>
+      <span data-hero-word>non</span> <span data-hero-word>relancés</span><br />
+      <span data-hero-word>dorment.</span>
+    </h1>
+    <p class="hero__thesis2" data-hero-fade>Ils valent de l'argent.</p>
+
+    <p class="lede hero__lede" data-hero-fade>
+      ChantierPilot relance vos devis et vos factures impayées tout seul, sans que vous y pensiez.
+      Conçu pour les artisans du bâtiment — pas pour les développeurs.
+    </p>
+
+    <div class="hero__actions" data-hero-fade>
+      <a href="#rdv" class="btn btn--gold">Réserver une démo</a>
+      <a href="#roi" class="btn btn--ghost">Voir combien ça rapporte</a>
+    </div>
+  </div>
+
+  <p class="hero__signature" data-hero-fade>Automatise aujourd'hui. Accélère demain.</p>
+</section>
+
+<style>
+  .hero {
+    padding-block: clamp(6rem, 16vh, 10rem) clamp(5rem, 12vh, 8rem);
+    overflow: hidden;
+  }
+
+  .hero__texture {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(120% 90% at 85% -10%, rgba(163, 133, 96, 0.14), transparent 55%),
+      radial-gradient(80% 60% at 0% 110%, rgba(163, 133, 96, 0.08), transparent 60%),
+      repeating-linear-gradient(
+        100deg,
+        rgba(236, 230, 219, 0.025) 0px,
+        rgba(236, 230, 219, 0.025) 1px,
+        transparent 1px,
+        transparent 68px
+      ),
+      var(--sapin-profond);
+  }
+
+  .hero__grid {
+    position: relative;
+    z-index: 1;
+    max-width: 880px;
+  }
+
+  .hero__thesis {
+    margin-top: 1.2rem;
+    font-size: clamp(2.6rem, 6.4vw, 5.1rem);
+    color: var(--creme);
+  }
+
+  .hero__thesis2 {
+    margin-top: 0.3rem;
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 6.4vw, 5.1rem);
+    line-height: 1.05;
+    color: var(--or-clair);
+  }
+
+  .hero__lede {
+    margin-top: 1.75rem;
+  }
+
+  .hero__actions {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .hero__signature {
+    position: relative;
+    z-index: 1;
+    margin-top: clamp(3.5rem, 9vh, 6rem);
+    text-align: right;
+    padding-right: var(--gutter);
+    font-family: var(--f-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(201, 168, 118, 0.65);
+  }
+
+  @media (max-width: 640px) {
+    .hero__signature {
+      text-align: left;
+      padding-left: var(--gutter);
+      padding-right: var(--gutter);
+    }
+  }
+</style>
