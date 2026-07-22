@@ -441,7 +441,7 @@ const clientConfig = {
     devis:   { actif: true, niveaux: [0, 4, 10] },
     impayes: { actif: true, niveaux: [7, 15, 30] },
   },
-  modulesActifs: ["avis-google", "contrats-entretien", "suivi-chantier"],
+  modulesActifs: ["avis-google"],
 };
 
 /* =========================================================
@@ -881,8 +881,9 @@ function renderDashboard(){
   const devisTraites = devis.filter(d=>d.statut==='accepte'||d.statut==='refuse');
   const tauxAcceptation = devisTraites.length ? Math.round(devis.filter(d=>d.statut==='accepte').length / devisTraites.length * 100) : 0;
   const impayes = factures.filter(f=>f.statut==='impayee').reduce((s,f)=>s+f.totaux.ttc,0);
-  const contrats = Data.contrats();
-  const caRecurrent = contrats.reduce((s,c)=>s+c.montant,0);
+  const totalClients = Data.clients().length;
+  const avisCfg = Data.avisConfig();
+  const totalAvis = avisCfg.progression[avisCfg.progression.length-1].total;
 
   const saison = [4200,5100,9800,15200,18900,21400,13800,11200,9600,6300,5400,4800];
   const labelsSaison = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
@@ -898,8 +899,8 @@ function renderDashboard(){
 
     <div class="grid grid-3 mt16">
       <div class="kpi"><small>Taux d’acceptation devis</small><div class="val">${tauxAcceptation}%</div><div class="delta">devis acceptés / traités</div><div class="icon-badge c-blue">${icon('percent')}</div></div>
-      <div class="kpi"><small>CA récurrent sécurisé</small><div class="val">${fmtEUR(caRecurrent)}<span style="font-size:12px;color:var(--muted);font-weight:500;"> /an</span></div><div class="delta">contrats d’entretien</div><div class="icon-badge c-green">${icon('repeat')}</div></div>
-      <div class="kpi"><small>Chantiers en cours</small><div class="val">${Data.chantiers().filter(c=>chStatut(c)!=='termine').length}</div><div class="delta">suivi en temps réel</div><div class="icon-badge c-yellow">${icon('tool')}</div></div>
+      <div class="kpi"><small>Clients actifs</small><div class="val">${totalClients}</div><div class="delta">base clients</div><div class="icon-badge c-green">${icon('users')}</div></div>
+      <div class="kpi"><small>Avis Google</small><div class="val">★ ${avisCfg.noteMoyenne}</div><div class="delta">${totalAvis} avis obtenus</div><div class="icon-badge c-yellow">${icon('star')}</div></div>
     </div>
 
     <div class="section-title"><h2 style="font-size:18px;">Chiffre d’affaires</h2></div>
@@ -911,7 +912,7 @@ function renderDashboard(){
       <div class="card">
         <h3>Saisonnalité annuelle</h3>
         <div class="chart-box"><canvas id="chartSaison"></canvas></div>
-        <p class="small mt8">Les <b>contrats d’entretien</b> lissent le creux hivernal en sécurisant du CA récurrent d’octobre à février.</p>
+        <p class="small mt8">Le creux hivernal (octobre à février) contraste avec le pic mars-juin — un point de discussion pour lisser l’activité sur l’année.</p>
       </div>
     </div>
 
