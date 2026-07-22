@@ -1948,34 +1948,40 @@ function renderChantierPlanning(chantiers){
     </div>
   `;
 }
+function chCategoryColor(c){
+  const text = normalize(c.nom);
+  if(text.includes('hivernage') || text.includes('mise en service') || text.includes('entretien')) return '#60a5fa';
+  if(text.includes('gelcoat') || text.includes('osmose') || text.includes('renovation')) return '#f59e0b';
+  if(text.includes('liner')) return '#a78bfa';
+  return '#4ade80';
+}
 function renderChantierTable(chantiers){
   const rank = c=> (c.retard && chStatut(c)!=='termine') ? 0 : chStatut(c)==='termine' ? 2 : 1;
   const sorted = chantiers.slice().sort((a,b)=> rank(a)-rank(b) || new Date(a.dateDebut)-new Date(b.dateDebut));
   return `<div class="section-title"><h2 style="font-size:16px;">${chantiers.length} chantier${chantiers.length>1?'s':''}</h2></div>
-  <div class="card list-card table-wrap">
-    <table style="min-width:680px;">
-      <thead><tr><th>Client</th><th>Prestation</th><th>Avancement</th><th>Dates</th><th>Statut</th></tr></thead>
-      <tbody>
-        ${sorted.map(c=>{
-          const cl = Data.client(c.clientId);
-          const done = chDoneCount(c);
-          const pct = Math.round(done/PHASES.length*100);
-          const statut = chStatut(c);
-          const dateFin = c.phases[c.phases.length-1].prevue;
-          return `<tr class="click-row" onclick="openChantierDetail('${c.id}')">
-            <td><b>${esc(cl.nom)}</b><div class="small">${esc(c.adresse||cl.ville)}</div></td>
-            <td class="small">${esc(c.nom)}</td>
-            <td style="min-width:150px;">
-              <div class="flex" style="align-items:center;gap:8px;"><div class="progress-track" style="flex:1;"><div class="progress-fill" style="width:${pct}%;${c.retard&&statut!=='termine'?'background:var(--danger);':''}"></div></div><span class="mono" style="font-size:12px;">${pct}%</span></div>
-              <div class="small" style="margin-top:2px;">${done}/${PHASES.length} étapes</div>
-            </td>
-            <td class="small">${fmtDate(c.dateDebut)} → ${fmtDate(dateFin)}</td>
-            <td>${statut==='termine'?`<span class="badge accepte">Terminé</span>`:(c.retard?`<span class="badge refuse">Retard</span>`:`<span class="badge envoye">En cours</span>`)}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  </div>`;
+  ${sorted.map(c=>{
+    const cl = Data.client(c.clientId);
+    const done = chDoneCount(c);
+    const pct = Math.round(done/PHASES.length*100);
+    const statut = chStatut(c);
+    const dateFin = c.phases[c.phases.length-1].prevue;
+    const color = chCategoryColor(c);
+    return `<div class="item-card" style="cursor:pointer;" onclick="openChantierDetail('${c.id}')">
+      <div class="flex" style="align-items:center;gap:10px;">
+        <span style="width:10px;height:10px;border-radius:50%;background:${color};flex:none;"></span>
+        <div style="flex:1;min-width:0;">
+          <b>${esc(cl.nom)}</b>
+          <div class="small">${esc(c.adresse||cl.ville)} · ${esc(c.nom)}</div>
+        </div>
+        ${statut==='termine'?`<span class="badge accepte">Terminé</span>`:(c.retard?`<span class="badge refuse">Retard</span>`:`<span class="badge envoye">En cours</span>`)}
+      </div>
+      <div class="flex mt8" style="align-items:center;gap:10px;">
+        <div class="progress-track" style="flex:1;"><div class="progress-fill" style="width:${pct}%;background:${c.retard&&statut!=='termine'?'var(--danger)':color};"></div></div>
+        <span class="mono" style="font-size:13px;width:42px;text-align:right;">${pct}%</span>
+      </div>
+      <div class="small" style="margin-top:6px;">${done}/${PHASES.length} étapes · ${fmtDate(c.dateDebut)} → ${fmtDate(dateFin)}</div>
+    </div>`;
+  }).join('')}`;
 }
 function openChantierDetail(id){
   const c = Data.chantierOne(id);
@@ -1988,20 +1994,15 @@ function openChantierDetail(id){
     <h3 class="modal-title">${esc(c.nom)}</h3>
     <div class="small">${esc(cl.nom)} — ${esc(cl.ville)} · Piscine ${esc(cl.piscine.type)}, ${cl.piscine.volume} m³</div>
 
-    <div class="flex-between mt16"><b class="small" style="color:var(--text);">${done}/${PHASES.length} étapes</b><b class="small">${pct}%</b></div>
-    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;${c.retard&&statut!=='termine'?'background:var(--danger);':''}"></div></div>
+    <div class="card mt16" style="background:var(--bg);">
+      <div class="flex-between"><b class="small" style="color:var(--text);">Avancement global</b><span class="small">${done}/${PHASES.length} étapes</span></div>
+      <div class="flex mt8" style="align-items:center;gap:12px;">
+        <div class="progress-track" style="height:8px;"><div class="progress-fill" style="width:${pct}%;${c.retard&&statut!=='termine'?'background:var(--danger);':''}"></div></div>
+        <b class="mono" style="font-size:18px;">${pct}%</b>
+      </div>
+    </div>
 
     <div class="grid grid-2 mt16">
-      <div class="card" style="background:var(--bg);">
-        <b class="small" style="color:var(--text);">Étapes</b>
-        <div class="chk-list mt8">
-          ${c.phases.map((ph,i)=>`<div class="chk-row ${ph.reelle?'done':''}" onclick="toggleChantierPhase('${c.id}',${i})">
-            <div class="chk-box">${icon('check')}</div>
-            <span class="chk-lbl">${ph.nom}</span>
-            <span class="chk-date">${ph.reelle?fmtDate(ph.reelle):fmtDate(ph.prevue)}</span>
-          </div>`).join('')}
-        </div>
-      </div>
       <div class="card" style="background:var(--bg);">
         <b class="small" style="color:var(--text);">Informations</b>
         <div class="mt8" style="display:flex;flex-direction:column;gap:8px;">
@@ -2011,16 +2012,26 @@ function openChantierDetail(id){
           <div class="ic-row">${icon('calendar')}Fin prévue ${fmtDate(c.phases[c.phases.length-1].prevue)}</div>
         </div>
       </div>
+      <div class="card" style="background:var(--bg);">
+        <b class="small" style="color:var(--text);">Checklist</b>
+        <div class="chk-list mt8">
+          ${c.phases.map((ph,i)=>`<div class="chk-row ${ph.reelle?'done':''}" onclick="toggleChantierPhase('${c.id}',${i})">
+            <div class="chk-box">${icon('check')}</div>
+            <span class="chk-lbl" style="${ph.reelle?'text-decoration:line-through;':''}">${ph.nom}</span>
+            <span class="chk-date">${ph.reelle?fmtDate(ph.reelle):fmtDate(ph.prevue)}</span>
+          </div>`).join('')}
+        </div>
+      </div>
     </div>
 
-    <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Journal de chantier</h2></div>
+    <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Bloc-notes</h2></div>
     <div id="chantier-journal-${c.id}">${renderChantierJournal(c)}</div>
+    <textarea id="cjinput-${c.id}" placeholder="Ajouter une note..." rows="2" class="mt8" style="resize:none;"></textarea>
     <div class="btn-row mt8" style="align-items:center;">
-      <input id="cjinput-${c.id}" placeholder="Nouvelle entrée..." style="flex:1;min-width:160px;">
-      <label class="btn secondary small" style="cursor:pointer;margin:0;">${icon('eye')}Photo<input type="file" accept="image/*" id="cjphoto-${c.id}" style="display:none;" onchange="previewChantierPhoto('${c.id}')"></label>
+      <label class="btn secondary small" style="cursor:pointer;margin:0;">${icon('eye')}Joindre photo<input type="file" accept="image/*" id="cjphoto-${c.id}" style="display:none;" onchange="previewChantierPhoto('${c.id}')"></label>
+      <div id="cjphoto-preview-${c.id}" class="small" style="flex:1;"></div>
       <button class="btn small" onclick="addChantierJournal('${c.id}')">${icon('plus')}Ajouter</button>
     </div>
-    <div id="cjphoto-preview-${c.id}" class="small mt8"></div>
 
     ${statut==='termine' && photoEntries.length ? `
       <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Résultat final — avant / après</h2></div>
