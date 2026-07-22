@@ -1903,8 +1903,21 @@ const PHASES = ['Diagnostic','Vidange','Préparation / ponçage','Traitement osm
 function chDoneCount(c){ return c.phases.filter(p=>p.reelle).length; }
 function chStatut(c){ const n = chDoneCount(c); return n>=PHASES.length ? 'termine' : n>0 ? 'en_cours' : 'planifie'; }
 function chNextPhase(c){ return c.phases.find(p=>!p.reelle) || null; }
+let chantierSubView = 'planning';
 function renderChantiers(){
   const chantiers = Data.chantiers();
+  return `
+    <div class="page-head flex-between wrap">
+      <h2>Suivi de chantier</h2>
+      <div class="btn-row">
+        <button class="chip ${chantierSubView==='planning'?'active':''}" onclick="chantierSubView='planning';renderView()">Planning</button>
+        <button class="chip ${chantierSubView==='liste'?'active':''}" onclick="chantierSubView='liste';renderView()">Chantiers</button>
+      </div>
+    </div>
+    ${chantierSubView==='planning' ? renderChantierPlanning(chantiers) : renderChantierTable(chantiers)}
+  `;
+}
+function renderChantierPlanning(chantiers){
   const actifs = chantiers.filter(c=>chStatut(c)!=='termine');
   const enRetard = chantiers.filter(c=>c.retard && chStatut(c)!=='termine');
   const termines30j = chantiers.filter(c=>chStatut(c)==='termine' && c.clos && daysSince(c.clos)<=30);
@@ -1914,15 +1927,12 @@ function renderChantiers(){
     const db = chNextPhase(b) ? chNextPhase(b).prevue : b.phases[b.phases.length-1].prevue;
     return new Date(da) - new Date(db);
   });
-
   return `
-    <div class="page-head"><h2>Suivi de chantier</h2><div class="sub">Étapes, journal de chantier et photos</div></div>
-
     <div class="grid grid-4">
-      <div class="kpi"><small>Chantiers actifs</small><div class="val">${actifs.length}</div><div class="delta">en cours</div><div class="icon-badge c-blue">${icon('tool')}</div></div>
-      <div class="kpi ${enRetard.length?'danger':''}"><small>En retard</small><div class="val">${enRetard.length}</div><div class="delta">à surveiller</div><div class="icon-badge c-red">${icon('alert')}</div></div>
-      <div class="kpi"><small>Terminés (30 j)</small><div class="val">${termines30j.length}</div><div class="delta">réceptionnés</div><div class="icon-badge c-green">${icon('check')}</div></div>
-      <div class="kpi"><small>Photos publiées</small><div class="val">${totalPhotos}</div><div class="delta">avant / après</div><div class="icon-badge c-yellow">${icon('eye')}</div></div>
+      <div class="kpi"><small>Chantiers actifs</small><div class="val">${actifs.length}</div><div class="icon-badge c-blue">${icon('tool')}</div></div>
+      <div class="kpi ${enRetard.length?'danger':''}"><small>En retard</small><div class="val">${enRetard.length}</div><div class="icon-badge c-red">${icon('alert')}</div></div>
+      <div class="kpi"><small>Terminés (30 j)</small><div class="val">${termines30j.length}</div><div class="icon-badge c-green">${icon('check')}</div></div>
+      <div class="kpi"><small>Photos</small><div class="val">${totalPhotos}</div><div class="icon-badge c-yellow">${icon('eye')}</div></div>
     </div>
 
     ${enRetard.length ? `<div class="card mt16" style="border-left:3px solid var(--danger);">
@@ -1933,18 +1943,16 @@ function renderChantiers(){
     <div class="section-title"><h2 style="font-size:16px;">Planning de la semaine</h2></div>
     <div class="card">
       ${semaine.length ? `<ul class="timeline">
-        ${semaine.map(c=>{ const np = chNextPhase(c) || c.phases[c.phases.length-1]; return `<li><div class="tl-dot ${c.retard?'':'next'}" style="${c.retard?'background:var(--danger);color:#fff;':''}">${new Date(np.prevue).getDate()}</div><div><b>${esc(c.nom)}</b> — ${esc(Data.client(c.clientId).nom)}<div class="small">${np.nom} — prévu le ${fmtDate(np.prevue)}</div></div></li>`; }).join('')}
+        ${semaine.map(c=>{ const np = chNextPhase(c) || c.phases[c.phases.length-1]; return `<li><div class="tl-dot ${c.retard?'':'next'}" style="${c.retard?'background:var(--danger);color:#fff;':''}">${new Date(np.prevue).getDate()}</div><div><b>${esc(c.nom)}</b> — ${esc(Data.client(c.clientId).nom)}<div class="small">${np.nom} — ${fmtDate(np.prevue)}</div></div></li>`; }).join('')}
       </ul>` : `<div class="empty-note">Aucun chantier actif cette semaine.</div>`}
     </div>
-
-    <div class="section-title"><h2 style="font-size:16px;">Chantiers (${chantiers.length})</h2></div>
-    ${renderChantierTable(chantiers)}
   `;
 }
 function renderChantierTable(chantiers){
   const rank = c=> (c.retard && chStatut(c)!=='termine') ? 0 : chStatut(c)==='termine' ? 2 : 1;
   const sorted = chantiers.slice().sort((a,b)=> rank(a)-rank(b) || new Date(a.dateDebut)-new Date(b.dateDebut));
-  return `<div class="card list-card table-wrap">
+  return `<div class="section-title"><h2 style="font-size:16px;">${chantiers.length} chantier${chantiers.length>1?'s':''}</h2></div>
+  <div class="card list-card table-wrap">
     <table style="min-width:680px;">
       <thead><tr><th>Client</th><th>Prestation</th><th>Avancement</th><th>Dates</th><th>Statut</th></tr></thead>
       <tbody>
@@ -2005,12 +2013,6 @@ function openChantierDetail(id){
       </div>
     </div>
 
-    ${photoEntries.length ? `
-      <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Photos avant / après</h2></div>
-      <div id="chantier-photo-viewer">${renderPhotoComparator(c.id, photoEntries[photoEntries.length-1][0], photoEntries[photoEntries.length-1][1])}</div>
-      ${photoEntries.length>1 ? `<div class="photo-thumbs mt8">${photoEntries.map(([ph],i)=>`<button class="photo-thumb ${i===photoEntries.length-1?'active':''}" data-phase="${esc(ph)}" onclick="switchChantierPhoto('${c.id}','${esc(ph)}',this)">${esc(ph)}</button>`).join('')}</div>` : ''}
-    ` : ''}
-
     <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Journal de chantier</h2></div>
     <div id="chantier-journal-${c.id}">${renderChantierJournal(c)}</div>
     <div class="btn-row mt8" style="align-items:center;">
@@ -2020,8 +2022,14 @@ function openChantierDetail(id){
     </div>
     <div id="cjphoto-preview-${c.id}" class="small mt8"></div>
 
+    ${statut==='termine' && photoEntries.length ? `
+      <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Résultat final — avant / après</h2></div>
+      <div id="chantier-photo-viewer">${renderPhotoComparator(c.id, photoEntries[photoEntries.length-1][0], photoEntries[photoEntries.length-1][1])}</div>
+      ${photoEntries.length>1 ? `<div class="photo-thumbs mt8">${photoEntries.map(([ph],i)=>`<button class="photo-thumb ${i===photoEntries.length-1?'active':''}" data-phase="${esc(ph)}" onclick="switchChantierPhoto('${c.id}','${esc(ph)}',this)">${esc(ph)}</button>`).join('')}</div>` : ''}
+    ` : ''}
+
     <div class="btn-row mt16">
-      ${statut!=='termine' ? `<span class="badge envoye">${done}/${PHASES.length} étapes terminées</span>` : `<span class="badge accepte">Chantier réceptionné</span>`}
+      ${statut==='termine' ? `<span class="badge accepte">Chantier réceptionné</span>` : ''}
       <button class="btn secondary" onclick="voirVueClient('${c.id}')">${icon('eye')}Voir la vue client</button>
     </div>
   `);
@@ -2144,11 +2152,11 @@ function voirVueClient(id){
   const cl = Data.client(c.clientId);
   const done = chDoneCount(c);
   const pct = Math.round(done/PHASES.length*100);
+  const statut = chStatut(c);
   const photoEntries = Object.entries(c.photos||{});
   const lastJournal = (c.journal||[]).slice(0,3);
   openModal(`
-    <h3 class="modal-title">Vue client — lien de suivi (simulation)</h3>
-    <p class="small">C’est l’écran que ${esc(cl.nom)} ouvre depuis son téléphone en cliquant sur le lien reçu par SMS, sans créer de compte.</p>
+    <h3 class="modal-title">Vue client (simulation)</h3>
     <div class="phone-frame">
       <div class="pf-top">Suivi de mon chantier — AA Polyester</div>
       <div class="pf-body">
@@ -2158,8 +2166,8 @@ function voirVueClient(id){
         <div class="chk-list mt16">
           ${c.phases.map(ph=>`<div class="chk-row ${ph.reelle?'done':''}" style="cursor:default;"><div class="chk-box">${icon('check')}</div><span class="chk-lbl">${ph.nom}</span></div>`).join('')}
         </div>
-        ${photoEntries.length ? `<div class="small mt16"><b>Dernières photos</b></div>${renderPhotoComparator(c.id, photoEntries[photoEntries.length-1][0], photoEntries[photoEntries.length-1][1])}` : ''}
-        ${lastJournal.length ? `<div class="small mt16"><b>Dernières nouvelles du chantier</b></div><ul class="timeline">${lastJournal.map(j=>`<li><div class="tl-dot done" style="background:var(--bg);border:1px solid var(--border);color:var(--muted);">${new Date(j.date).getDate()}</div><div><div class="small">${fmtDate(j.date)}</div>${esc(j.texte)}${j.photo?`<img src="${j.photo}" class="journal-photo">`:''}</div></li>`).join('')}</ul>` : ''}
+        ${lastJournal.length ? `<div class="small mt16"><b>Dernières nouvelles</b></div><ul class="timeline">${lastJournal.map(j=>`<li><div class="tl-dot done" style="background:var(--bg);border:1px solid var(--border);color:var(--muted);">${new Date(j.date).getDate()}</div><div><div class="small">${fmtDate(j.date)}</div>${esc(j.texte)}${j.photo?`<img src="${j.photo}" class="journal-photo">`:''}</div></li>`).join('')}</ul>` : ''}
+        ${statut==='termine' && photoEntries.length ? `<div class="small mt16"><b>Résultat final</b></div>${renderPhotoComparator(c.id, photoEntries[photoEntries.length-1][0], photoEntries[photoEntries.length-1][1])}` : ''}
       </div>
     </div>
   `);
