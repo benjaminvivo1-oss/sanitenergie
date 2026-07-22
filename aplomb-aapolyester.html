@@ -1,0 +1,1607 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aplomb — AA Polyester</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --primary:#16302B;
+  --accent:#A38560;
+  --primary-l1:#1f453d;
+  --primary-l2:#2c5c50;
+  --accent-l1:#b89a78;
+  --bg:#f4f2ee;
+  --card:#ffffff;
+  --text:#1b201f;
+  --muted:#6b6f6d;
+  --border:#e3dfd6;
+  --danger:#a4372f;
+  --danger-bg:#fbe9e7;
+  --warn:#b8802e;
+  --warn-bg:#fdf2df;
+  --ok:#2e7d4f;
+  --ok-bg:#e6f4ea;
+  --radius:14px;
+  --shadow:0 2px 10px rgba(22,48,43,0.08);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Space Grotesk',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:78px;
+}
+h1,h2,h3,h4,.font-title{font-family:'Oxanium',sans-serif;}
+a{color:inherit;}
+button{font-family:'Space Grotesk',sans-serif;cursor:pointer;}
+::selection{background:var(--accent);color:#fff;}
+
+/* Topbar */
+.topbar{
+  background:var(--primary);
+  color:#fff;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+}
+.topbar .logo{
+  width:38px;height:38px;border-radius:10px;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Oxanium',sans-serif;font-weight:800;font-size:15px;color:var(--primary);
+  flex:none;
+}
+.topbar .brand{display:flex;flex-direction:column;line-height:1.15;}
+.topbar .brand b{font-family:'Oxanium',sans-serif;font-size:16px;letter-spacing:0.3px;}
+.topbar .brand span{font-size:11px;opacity:0.75;}
+.topbar .spacer{flex:1;}
+.topbar .clock{font-size:11px;opacity:0.8;text-align:right;}
+
+/* Tabs */
+nav.tabs{
+  display:flex;
+  overflow-x:auto;
+  gap:6px;
+  padding:8px 10px;
+  background:var(--primary-l1);
+  position:sticky;top:66px;z-index:49;
+  scrollbar-width:none;
+}
+nav.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{
+  flex:none;
+  border:none;
+  background:rgba(255,255,255,0.08);
+  color:#fff;
+  padding:9px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:500;
+  display:flex;align-items:center;gap:6px;
+  white-space:nowrap;
+  opacity:0.85;
+}
+.tab-btn .ic{font-size:14px;}
+.tab-btn.active{
+  background:var(--accent);
+  color:var(--primary);
+  opacity:1;
+  font-weight:700;
+}
+
+main#view{
+  max-width:1180px;
+  margin:0 auto;
+  padding:14px 12px 30px;
+}
+
+/* Layout helpers */
+.grid{display:grid;gap:12px;}
+.grid-2{grid-template-columns:1fr;}
+.grid-3{grid-template-columns:1fr;}
+.grid-4{grid-template-columns:repeat(2,1fr);}
+@media(min-width:640px){
+  .grid-2{grid-template-columns:1fr 1fr;}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+}
+@media(min-width:900px){
+  main#view{padding:22px 24px 40px;}
+}
+
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:16px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--border);
+}
+.card h3{margin:0 0 10px;font-size:15px;}
+.card + .card{margin-top:0;}
+
+.section-title{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:22px 0 10px;
+  gap:8px;flex-wrap:wrap;
+}
+.section-title h2{margin:0;font-size:19px;color:var(--primary);}
+.section-title .sub{color:var(--muted);font-size:12.5px;}
+
+.kpi{
+  background:var(--primary);
+  color:#fff;
+  border-radius:var(--radius);
+  padding:16px;
+  position:relative;
+  overflow:hidden;
+}
+.kpi small{opacity:0.7;font-size:11.5px;text-transform:uppercase;letter-spacing:0.6px;}
+.kpi .val{font-family:'Oxanium',sans-serif;font-size:26px;font-weight:700;margin-top:4px;}
+.kpi .delta{font-size:11.5px;margin-top:6px;color:var(--accent-l1);}
+.kpi.accent{background:var(--accent);color:var(--primary);}
+.kpi.accent .delta{color:var(--primary-l1);}
+
+.btn{
+  border:none;border-radius:10px;padding:10px 16px;font-size:13.5px;font-weight:600;
+  background:var(--primary);color:#fff;display:inline-flex;align-items:center;gap:6px;
+}
+.btn.secondary{background:#fff;color:var(--primary);border:1.5px solid var(--border);}
+.btn.accent{background:var(--accent);color:var(--primary);}
+.btn.ghost{background:transparent;color:var(--primary);border:1.5px solid var(--primary);}
+.btn.danger{background:var(--danger);color:#fff;}
+.btn.small{padding:6px 10px;font-size:12px;border-radius:8px;}
+.btn:disabled{opacity:0.4;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+.badge{
+  display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;
+  letter-spacing:0.3px;
+}
+.badge.brouillon{background:#ece9e2;color:#615c4d;}
+.badge.envoye{background:var(--warn-bg);color:var(--warn);}
+.badge.accepte{background:var(--ok-bg);color:var(--ok);}
+.badge.refuse{background:var(--danger-bg);color:var(--danger);}
+.badge.payee{background:var(--ok-bg);color:var(--ok);}
+.badge.impayee{background:var(--danger-bg);color:var(--danger);}
+.badge.info{background:#e7eef0;color:var(--primary-l2);}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{
+  text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);
+  padding:6px 8px;border-bottom:1px solid var(--border);
+}
+td{padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.table-wrap{overflow-x:auto;}
+.list-card{padding:0;overflow:hidden;}
+.list-card table{margin:0;}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.chip{
+  border:1.5px solid var(--border);background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--muted);
+}
+.chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+input,select,textarea{
+  width:100%;padding:9px 11px;border-radius:9px;border:1.5px solid var(--border);
+  font-family:'Space Grotesk',sans-serif;font-size:13.5px;background:#fff;color:var(--text);
+}
+label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin:10px 0 4px;}
+label:first-child{margin-top:0;}
+.form-row{display:grid;grid-template-columns:1fr;gap:0;}
+.form-row.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-row.cols-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;}
+
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(15,20,18,0.55);
+  display:flex;align-items:flex-end;justify-content:center;z-index:200;
+}
+@media(min-width:720px){.modal-overlay{align-items:center;}}
+.modal-overlay.hidden{display:none;}
+.modal-box{
+  background:#fff;border-radius:18px 18px 0 0;max-width:640px;width:100%;max-height:92vh;overflow-y:auto;
+  padding:20px;position:relative;
+}
+@media(min-width:720px){.modal-box{border-radius:18px;}}
+.modal-close{
+  position:sticky;top:0;float:right;background:var(--bg);border:none;border-radius:50%;
+  width:30px;height:30px;font-size:15px;color:var(--muted);margin-left:8px;
+}
+.modal-title{font-size:17px;margin:0 0 14px;color:var(--primary);padding-right:36px;}
+
+.toast{
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+  background:var(--primary);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.25);z-index:300;max-width:90vw;text-align:center;
+}
+.toast.hidden{display:none;}
+
+.timeline{list-style:none;margin:0;padding:0;}
+.timeline li{
+  display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed var(--border);
+}
+.timeline li:last-child{border-bottom:none;}
+.tl-dot{
+  width:22px;height:22px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;margin-top:1px;
+}
+.tl-dot.done{background:var(--ok);color:#fff;}
+.tl-dot.next{background:var(--warn);color:#fff;}
+.tl-dot.future{background:#eee;color:#999;border:1.5px dashed #ccc;}
+.msg-box{
+  background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12.5px;margin-top:6px;color:#333;
+  border-left:3px solid var(--accent);
+}
+.msg-box b{display:block;font-size:11px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+
+.progress-track{background:var(--border);border-radius:999px;height:8px;overflow:hidden;}
+.progress-fill{background:var(--accent);height:100%;border-radius:999px;}
+
+.kanban{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+.kanban-col{
+  flex:none;width:200px;background:#eee9e0;border-radius:12px;padding:8px;
+}
+.kanban-col h4{font-size:11.5px;margin:2px 6px 8px;color:var(--primary);text-transform:uppercase;letter-spacing:0.4px;}
+.kanban-card{
+  background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;box-shadow:var(--shadow);font-size:12.5px;
+  border-left:3px solid var(--accent);
+}
+.kanban-card b{display:block;font-size:13px;margin-bottom:2px;}
+
+.photo-compare{position:relative;width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#ccc;}
+.photo-compare img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;user-select:none;pointer-events:none;}
+.photo-compare .after-wrap{position:absolute;top:0;left:0;height:100%;overflow:hidden;width:50%;}
+.photo-compare .after-wrap img{width:var(--pc-w,100%);max-width:none;height:100%;}
+.photo-compare input[type=range]{
+  position:absolute;bottom:8px;left:8px;right:8px;width:calc(100% - 16px);accent-color:var(--accent);
+}
+.photo-compare .tag{
+  position:absolute;top:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:10.5px;padding:2px 8px;border-radius:999px;
+}
+.photo-compare .tag.left{left:8px;}
+.photo-compare .tag.right{right:8px;}
+
+.empty-note{color:var(--muted);font-size:12.5px;padding:14px 4px;}
+.small{font-size:12px;color:var(--muted);}
+.mt8{margin-top:8px;}
+.mt16{margin-top:16px;}
+.right{text-align:right;}
+.center{text-align:center;}
+.flex{display:flex;}
+.flex-between{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.gap6{gap:6px;}
+.wrap{flex-wrap:wrap;}
+.mono{font-family:'Oxanium',sans-serif;}
+.link-btn{background:none;border:none;color:var(--primary-l2);text-decoration:underline;font-size:12.5px;font-weight:600;padding:2px;}
+
+footer.app-footer{
+  text-align:center;padding:26px 16px 10px;color:var(--muted);font-size:11.5px;
+}
+footer.app-footer button{
+  background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:6px 14px;font-size:11.5px;
+}
+
+.phone-frame{
+  border:8px solid var(--primary);border-radius:28px;max-width:340px;margin:0 auto;overflow:hidden;background:#fff;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+.phone-frame .pf-top{background:var(--primary);color:#fff;padding:10px 14px;font-family:'Oxanium';font-size:13px;font-weight:700;}
+.phone-frame .pf-body{padding:12px;max-height:520px;overflow-y:auto;}
+
+@media print{
+  body *{visibility:hidden;}
+  #printArea, #printArea *{visibility:visible;}
+  #printArea{position:absolute;top:0;left:0;width:100%;padding:20px;}
+  .topbar,nav.tabs,footer.app-footer,.modal-close,.no-print{display:none !important;}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo" id="logoBadge">AP</div>
+  <div class="brand">
+    <b id="brandName">Aplomb</b>
+    <span id="brandSub">AA Polyester — Estagel</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="clock" id="clockBox"></div>
+</header>
+
+<nav class="tabs" id="tabsNav"></nav>
+
+<main id="view"></main>
+
+<footer class="app-footer">
+  <div>Aplomb — maquette de démonstration · données fictives</div>
+  <button onclick="resetDemo()">↺ Réinitialiser la démo</button>
+</footer>
+
+<div class="modal-overlay hidden" id="modalOverlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal-box" id="modalBox"></div>
+</div>
+<div class="toast hidden" id="toast"></div>
+<div id="printArea" style="display:none"></div>
+
+<script>
+/* =========================================================
+   CONFIG CLIENT — seul endroit où les données du client vivent
+   ========================================================= */
+const clientConfig = {
+  entreprise: {
+    nom: "AA Polyester",
+    metier: "Rénovation & réparation de piscines",
+    ville: "Estagel (66)",
+    email: "contact@aapolyester.fr",
+    telephone: "04 68 00 00 00",
+    siret: "000 000 000 00000",
+    mentionsLegales: "Assurance décennale — RC Pro",
+    logoUrl: "",
+  },
+  charte: {
+    couleurPrincipale: "#16302B",
+    couleurAccent: "#A38560",
+  },
+  facturation: {
+    tvaParDefaut: 20,
+    prefixeDevis: "DV",
+    prefixeFacture: "FA",
+  },
+  relances: {
+    devis:   { actif: true, niveaux: [0, 4, 10] },
+    impayes: { actif: true, niveaux: [7, 15, 30] },
+  },
+  modulesActifs: ["avis-google", "contrats-entretien", "suivi-chantier"],
+};
+
+/* =========================================================
+   UTILITAIRES
+   ========================================================= */
+const TODAY = new Date();
+function daysAgo(n){ const d = new Date(TODAY); d.setDate(d.getDate()-n); d.setHours(9,0,0,0); return d; }
+function daysFromNow(n){ return daysAgo(-n); }
+function iso(d){ return new Date(d).toISOString().slice(0,10); }
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d); return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function fmtDateLong(d){ if(!d) return '—'; const dt=new Date(d); return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}); }
+function fmtEUR(n){ return (Math.round(n*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
+function daysBetween(a,b){ const ms = new Date(iso(b)) - new Date(iso(a)); return Math.round(ms/86400000); }
+function daysSince(d){ return daysBetween(d, TODAY); }
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function shade(hex, pct){
+  hex = hex.replace('#','');
+  const num = parseInt(hex,16);
+  let r=(num>>16)&255, g=(num>>8)&255, b=num&255;
+  if(pct>0){ r+=(255-r)*pct; g+=(255-g)*pct; b+=(255-b)*pct; } else { r*=(1+pct); g*=(1+pct); b*=(1+pct); }
+  return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+}
+const MOIS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+function monthName(idx){ return MOIS_FR[((idx%12)+12)%12]; }
+function nextOccurrence(monthIdx){
+  const now = new Date(TODAY); const y = now.getFullYear();
+  let d = new Date(y, monthIdx, 15);
+  if(d < now) d = new Date(y+1, monthIdx, 15);
+  return d;
+}
+
+/* Stockage localStorage */
+const LS_PREFIX = 'aplomb_aap_';
+const store = {
+  get(key, fallback){ try{ const v = localStorage.getItem(LS_PREFIX+key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; } },
+  set(key, val){ localStorage.setItem(LS_PREFIX+key, JSON.stringify(val)); },
+  del(key){ localStorage.removeItem(LS_PREFIX+key); }
+};
+
+/* Modal / toast */
+function openModal(html){
+  document.getElementById('modalBox').innerHTML = '<button class="modal-close" onclick="closeModal()">✕</button>' + html;
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.add('hidden');
+  document.getElementById('modalBox').innerHTML = '';
+}
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.add('hidden'), 3200);
+}
+
+/* =========================================================
+   DONNEES DE DEMONSTRATION (seed)
+   ========================================================= */
+function photoUrl(seed, w, h){ return `https://picsum.photos/seed/${seed}/${w||640}/${h||440}`; }
+
+function buildSeed(){
+  const clients = [
+    {id:'c1', nom:'Marc Fabre', type:'particulier', ville:'Estagel', telephone:'06 12 34 56 01', email:'marc.fabre@mail.fr',
+      piscine:{type:'coque', dimensions:'8 × 4 × 1,5 m', volume:45, annee:2016, filtration:'sable'}, notes:'Client fidèle depuis 2016.'},
+    {id:'c2', nom:'Élodie Bonet', type:'particulier', ville:'Perpignan', telephone:'06 12 34 56 02', email:'elodie.bonet@mail.fr',
+      piscine:{type:'maçonnée', dimensions:'10 × 5 × 1,6 m', volume:72, annee:2010, filtration:'cartouche'}, notes:''},
+    {id:'c3', nom:'Camping Les Micocouliers', type:'camping', ville:'Estagel', telephone:'04 68 12 00 03', email:'contact@micocouliers-camping.fr',
+      piscine:{type:'maçonnée', dimensions:'20 × 10 × 1,8 m', volume:320, annee:2005, filtration:'sable collectif'}, notes:'Bassin collectif, contrôle ARS.'},
+    {id:'c4', nom:'Gîte Font Vive', type:'gite', ville:'Cases-de-Pène', telephone:'06 12 34 56 04', email:'contact@fontvive-gite.fr',
+      piscine:{type:'coque', dimensions:'9 × 4,5 × 1,5 m', volume:55, annee:2018, filtration:'cartouche'}, notes:''},
+    {id:'c5', nom:'Jean-Michel Ourliac', type:'particulier', ville:'Tautavel', telephone:'06 12 34 56 05', email:'jm.ourliac@mail.fr',
+      piscine:{type:'maçonnée', dimensions:'9 × 4 × 1,6 m', volume:52, annee:2008, filtration:'sable'}, notes:'Relance impayé en cours.'},
+    {id:'c6', nom:'Camping Le Roussillon Vert', type:'camping', ville:'Rivesaltes', telephone:'04 68 12 00 06', email:'contact@roussillonvert.fr',
+      piscine:{type:'maçonnée', dimensions:'25 × 12 × 1,8 m', volume:450, annee:2012, filtration:'sable collectif'}, notes:'Gros volume, rénovation gelcoat en cours de facturation.'},
+    {id:'c7', nom:'Sophie Delcros', type:'particulier', ville:'Millas', telephone:'06 12 34 56 07', email:'sophie.delcros@mail.fr',
+      piscine:{type:'coque', dimensions:'7 × 3,5 × 1,4 m', volume:32, annee:2020, filtration:'osmoseur'}, notes:''},
+    {id:'c8', nom:'Thierry Aznar', type:'particulier', ville:'Estagel', telephone:'06 12 34 56 08', email:'thierry.aznar@mail.fr',
+      piscine:{type:'maçonnée', dimensions:'10 × 5 × 1,5 m', volume:68, annee:2009, filtration:'sable'}, notes:''},
+    {id:'c9', nom:'Nathalie Puig', type:'particulier', ville:'Perpignan', telephone:'06 12 34 56 09', email:'nathalie.puig@mail.fr',
+      piscine:{type:'coque', dimensions:'8 × 4 × 1,5 m', volume:45, annee:2015, filtration:'cartouche'}, notes:'A refusé un devis en juillet.'},
+    {id:'c10', nom:'Camille Rousse', type:'particulier', ville:'Rivesaltes', telephone:'06 12 34 56 10', email:'camille.rousse@mail.fr',
+      piscine:{type:'maçonnée', dimensions:'11 × 5 × 1,7 m', volume:82, annee:2005, filtration:'sable'}, notes:'Pose de liner en cours.'},
+    {id:'c11', nom:'Hôtel Le Château d’Estagel', type:'hotel', ville:'Estagel', telephone:'04 68 12 00 11', email:'reception@chateau-estagel.fr',
+      piscine:{type:'maçonnée', dimensions:'15 × 7 × 1,6 m', volume:145, annee:2011, filtration:'sable'}, notes:'Client premium, contrat entretien complet.'},
+    {id:'c12', nom:'Bernard Falguera', type:'particulier', ville:'Cases-de-Pène', telephone:'06 12 34 56 12', email:'bernard.falguera@mail.fr',
+      piscine:{type:'coque', dimensions:'8 × 4 × 1,5 m', volume:45, annee:2017, filtration:'cartouche'}, notes:''},
+    {id:'c13', nom:'Isabelle Marty', type:'particulier', ville:'Tautavel', telephone:'06 12 34 56 13', email:'isabelle.marty@mail.fr',
+      piscine:{type:'maçonnée', dimensions:'9 × 4,5 × 1,6 m', volume:58, annee:2013, filtration:'sable'}, notes:''},
+    {id:'c14', nom:'Syndic Résidence Les Terrasses', type:'syndic', ville:'Perpignan', telephone:'04 68 12 00 14', email:'syndic.terrasses@gestion.fr',
+      piscine:{type:'maçonnée', dimensions:'12 × 6 × 1,6 m', volume:100, annee:2007, filtration:'sable'}, notes:'Copropriété, contrat entretien complet.'},
+    {id:'c15', nom:'Pierre Vidal', type:'particulier', ville:'Millas', telephone:'06 12 34 56 15', email:'pierre.vidal@mail.fr',
+      piscine:{type:'coque', dimensions:'7,5 × 3,8 × 1,4 m', volume:36, annee:2019, filtration:'cartouche'}, notes:''},
+  ];
+
+  const prestations = [
+    {id:'p1', designation:'Diagnostic et vidange complète', unite:'forfait', prix:180, tva:20, categorie:'Diagnostic'},
+    {id:'p2', designation:'Traitement osmose', unite:'m²', prix:85, tva:20, categorie:'Osmose'},
+    {id:'p3', designation:'Ponçage et préparation coque', unite:'m²', prix:45, tva:20, categorie:'Préparation'},
+    {id:'p4', designation:'Application gelcoat', unite:'m²', prix:120, tva:20, categorie:'Gelcoat'},
+    {id:'p5', designation:'Réparation de fissure sur coque', unite:'forfait', prix:250, tva:20, categorie:'Réparation'},
+    {id:'p6', designation:'Pose de liner', unite:'forfait', prix:1800, tva:20, categorie:'Liner'},
+    {id:'p7', designation:'Changement de pompe de filtration', unite:'forfait', prix:420, tva:20, categorie:'Filtration'},
+    {id:'p8', designation:'Remplacement filtre à sable', unite:'forfait', prix:650, tva:20, categorie:'Filtration'},
+    {id:'p9', designation:'Reprise de margelles', unite:'ml', prix:95, tva:20, categorie:'Margelles'},
+    {id:'p10', designation:'Hivernage', unite:'forfait', prix:220, tva:20, categorie:'Saisonnier'},
+    {id:'p11', designation:'Mise en service', unite:'forfait', prix:190, tva:20, categorie:'Saisonnier'},
+    {id:'p12', designation:'Contrat annuel deux passages', unite:'forfait', prix:380, tva:20, categorie:'Contrat'},
+  ];
+  const P = Object.fromEntries(prestations.map(p=>[p.id,p]));
+  function ligne(pid, qte, override){ const p=P[pid]; return Object.assign({designation:p.designation, unite:p.unite, qte, prixUnitaire:p.prix, tva:p.tva}, override||{}); }
+  function totaux(lignes){ let ht=0,tva=0; lignes.forEach(l=>{ const t=l.qte*l.prixUnitaire; ht+=t; tva+=t*l.tva/100; }); return {ht:Math.round(ht*100)/100, tva:Math.round(tva*100)/100, ttc:Math.round((ht+tva)*100)/100}; }
+
+  const devis = [
+    {id:'dv1', numero:'DV-2026-041', clientId:'c12', statut:'brouillon', dateCreation:iso(daysAgo(2)), dateEnvoi:null,
+      lignes:[ligne('p5',1), ligne('p3',20)]},
+    {id:'dv2', numero:'DV-2026-042', clientId:'c13', statut:'brouillon', dateCreation:iso(daysAgo(1)), dateEnvoi:null,
+      lignes:[ligne('p10',1), ligne('p9',8)]},
+    {id:'dv3', numero:'DV-2026-036', clientId:'c7', statut:'envoye', dateCreation:iso(daysAgo(2)), dateEnvoi:iso(daysAgo(1)),
+      lignes:[ligne('p2',32), ligne('p4',32)]},
+    {id:'dv4', numero:'DV-2026-030', clientId:'c8', statut:'envoye', dateCreation:iso(daysAgo(6)), dateEnvoi:iso(daysAgo(5)),
+      lignes:[ligne('p8',1), ligne('p7',1)]},
+    {id:'dv5', numero:'DV-2026-024', clientId:'c10', statut:'envoye', dateCreation:iso(daysAgo(12)), dateEnvoi:iso(daysAgo(11)),
+      lignes:[ligne('p6',1)]},
+    {id:'dv6', numero:'DV-2026-018', clientId:'c1', statut:'accepte', dateCreation:iso(daysAgo(40)), dateEnvoi:iso(daysAgo(39)), dateReponse:iso(daysAgo(35)),
+      lignes:[ligne('p11',1)]},
+    {id:'dv7', numero:'DV-2026-012', clientId:'c11', statut:'accepte', dateCreation:iso(daysAgo(70)), dateEnvoi:iso(daysAgo(69)), dateReponse:iso(daysAgo(64)),
+      lignes:[ligne('p3',60), ligne('p4',60), ligne('p9',25)]},
+    {id:'dv8', numero:'DV-2026-033', clientId:'c9', statut:'refuse', dateCreation:iso(daysAgo(9)), dateEnvoi:iso(daysAgo(8)), dateReponse:iso(daysAgo(6)),
+      lignes:[ligne('p5',1), ligne('p3',15)]},
+  ];
+  devis.forEach(d=>{ d.totaux = totaux(d.lignes); d.relanceSimOffset = null; });
+
+  const factures = [
+    {id:'fa1', numero:'FA-2026-018', clientId:'c1', devisId:'dv6', statut:'payee', dateEmission:iso(daysAgo(34)), dateEcheance:iso(daysAgo(4)), datePaiement:iso(daysAgo(20)),
+      lignes:[ligne('p11',1)]},
+    {id:'fa2', numero:'FA-2026-012', clientId:'c11', devisId:'dv7', statut:'payee', dateEmission:iso(daysAgo(63)), dateEcheance:iso(daysAgo(33)), datePaiement:iso(daysAgo(40)),
+      lignes:[ligne('p3',60), ligne('p4',60), ligne('p9',25)]},
+    {id:'fa3', numero:'FA-2026-020', clientId:'c3', statut:'payee', dateEmission:iso(daysAgo(58)), dateEcheance:iso(daysAgo(28)), datePaiement:iso(daysAgo(30)),
+      lignes:[{designation:'Hivernage collectif bassin 320 m³', unite:'forfait', qte:1, prixUnitaire:890, tva:20}]},
+    {id:'fa4', numero:'FA-2026-022', clientId:'c4', statut:'payee', dateEmission:iso(daysAgo(45)), dateEcheance:iso(daysAgo(15)), datePaiement:iso(daysAgo(18)),
+      lignes:[ligne('p11',1), ligne('p9',4)]},
+    {id:'fa5', numero:'FA-2026-028', clientId:'c5', statut:'impayee', dateEmission:iso(daysAgo(39)), dateEcheance:iso(daysAgo(9)),
+      lignes:[ligne('p5',1), ligne('p3',18)]},
+    {id:'fa6', numero:'FA-2026-005', clientId:'c6', statut:'impayee', dateEmission:iso(daysAgo(62)), dateEcheance:iso(daysAgo(32)),
+      lignes:[{designation:'Ponçage et préparation coque', unite:'m²', qte:70, prixUnitaire:45, tva:20}, {designation:'Application gelcoat', unite:'m²', qte:70, prixUnitaire:120, tva:20}]},
+  ];
+  factures.forEach(f=>{ f.totaux = totaux(f.lignes); });
+
+  const contrats = [
+    {id:'ct1', clientId:'c1', type:'Hivernage', mois:10, montant:220, derniere:iso(new Date(TODAY.getFullYear()-1,10,15))},
+    {id:'ct2', clientId:'c1', type:'Mise en service', mois:2, montant:190, derniere:iso(new Date(TODAY.getFullYear(),2,15))},
+    {id:'ct3', clientId:'c3', type:'Hivernage collectif', mois:9, montant:890, derniere:iso(new Date(TODAY.getFullYear()-1,9,20))},
+    {id:'ct4', clientId:'c3', type:'Mise en service collective', mois:2, montant:780, derniere:iso(new Date(TODAY.getFullYear(),2,20))},
+    {id:'ct5', clientId:'c6', type:'Hivernage collectif', mois:9, montant:1450, derniere:iso(new Date(TODAY.getFullYear()-1,9,25))},
+    {id:'ct6', clientId:'c6', type:'Mise en service collective', mois:3, montant:1290, derniere:iso(new Date(TODAY.getFullYear(),3,10))},
+    {id:'ct7', clientId:'c11', type:'Entretien complet', mois:(TODAY.getMonth()+1)%12, montant:1450, derniere:iso(new Date(TODAY.getFullYear(),3,5))},
+    {id:'ct8', clientId:'c11', type:'Hivernage', mois:10, montant:480, derniere:iso(new Date(TODAY.getFullYear()-1,10,10))},
+    {id:'ct9', clientId:'c14', type:'Mise en service', mois:2, montant:620, derniere:iso(new Date(TODAY.getFullYear(),2,8))},
+    {id:'ct10', clientId:'c14', type:'Hivernage', mois:9, montant:690, derniere:iso(new Date(TODAY.getFullYear()-1,9,12))},
+    {id:'ct11', clientId:'c13', type:'Hivernage', mois:9, montant:220, derniere:iso(new Date(TODAY.getFullYear()-1,9,18))},
+    {id:'ct12', clientId:'c13', type:'Mise en service', mois:2, montant:190, derniere:iso(new Date(TODAY.getFullYear(),2,18))},
+    {id:'ct13', clientId:'c2', type:'Contrat annuel deux passages', mois:(TODAY.getMonth()+1)%12, montant:380, derniere:iso(new Date(TODAY.getFullYear(),2,12))},
+    {id:'ct14', clientId:'c4', type:'Mise en service', mois:3, montant:190, derniere:iso(new Date(TODAY.getFullYear(),3,2))},
+    {id:'ct15', clientId:'c7', type:'Mise en service', mois:3, montant:190, derniere:iso(new Date(TODAY.getFullYear(),3,8))},
+    {id:'ct16', clientId:'c8', type:'Hivernage', mois:10, montant:220, derniere:iso(new Date(TODAY.getFullYear()-1,10,20))},
+    {id:'ct17', clientId:'c10', type:'Hivernage', mois:9, montant:220, derniere:iso(new Date(TODAY.getFullYear()-1,9,22))},
+    {id:'ct18', clientId:'c12', type:'Mise en service', mois:2, montant:190, derniere:iso(new Date(TODAY.getFullYear(),2,25))},
+  ];
+
+  const chantiers = [
+    {id:'ch1', nom:'Rénovation gelcoat complète', clientId:'c12', phaseActuelle:4, dateDebut:iso(daysAgo(21)), retard:false,
+      phases:[
+        {nom:'Diagnostic', prevue:iso(daysAgo(21)), reelle:iso(daysAgo(21)), notes:'Coque en bon état général, quelques cloques localisées côté profond.'},
+        {nom:'Vidange', prevue:iso(daysAgo(19)), reelle:iso(daysAgo(19)), notes:'Vidange complète réalisée sans incident.'},
+        {nom:'Préparation / ponçage', prevue:iso(daysAgo(16)), reelle:iso(daysAgo(15)), notes:'Ponçage complet, quelques reprises sur les zones cloquées.'},
+        {nom:'Traitement osmose', prevue:iso(daysAgo(11)), reelle:iso(daysAgo(10)), notes:'Traitement osmose sur 32 m², séchage 72h.'},
+        {nom:'Application gelcoat', prevue:iso(daysAgo(3)), reelle:null, notes:'Application en 2 couches en cours cette semaine.'},
+        {nom:'Finitions et margelles', prevue:iso(daysFromNow(3)), reelle:null, notes:''},
+        {nom:'Remise en eau', prevue:iso(daysFromNow(6)), reelle:null, notes:''},
+        {nom:'Réception', prevue:iso(daysFromNow(8)), reelle:null, notes:''},
+      ],
+      photos:{ 'Préparation / ponçage':{avant:photoUrl('cpb-poncage-av-ch1'), apres:photoUrl('cpb-poncage-ap-ch1')}, 'Application gelcoat':{avant:photoUrl('cpb-gelcoat-av-ch1'), apres:photoUrl('cpb-gelcoat-mid-ch1')} }},
+    {id:'ch2', nom:'Pose de liner', clientId:'c10', phaseActuelle:2, dateDebut:iso(daysAgo(14)), retard:true,
+      phases:[
+        {nom:'Diagnostic', prevue:iso(daysAgo(14)), reelle:iso(daysAgo(14)), notes:'Ancien liner très abîmé, remplacement validé avec le client.'},
+        {nom:'Vidange', prevue:iso(daysAgo(12)), reelle:iso(daysAgo(12)), notes:'Vidange OK.'},
+        {nom:'Préparation / ponçage', prevue:iso(daysAgo(5)), reelle:null, notes:'Retard fournisseur sur la livraison du liner (2 jours).'},
+        {nom:'Traitement osmose', prevue:iso(daysFromNow(1)), reelle:null, notes:''},
+        {nom:'Application gelcoat', prevue:iso(daysFromNow(1)), reelle:null, notes:'Non concerné (pose liner).'},
+        {nom:'Finitions et margelles', prevue:iso(daysFromNow(4)), reelle:null, notes:''},
+        {nom:'Remise en eau', prevue:iso(daysFromNow(6)), reelle:null, notes:''},
+        {nom:'Réception', prevue:iso(daysFromNow(7)), reelle:null, notes:''},
+      ],
+      photos:{ 'Diagnostic':{avant:photoUrl('cpb-diag-av-ch2'), apres:photoUrl('cpb-diag-ap-ch2')} }},
+    {id:'ch3', nom:'Traitement osmose collectif', clientId:'c14', phaseActuelle:3, dateDebut:iso(daysAgo(9)), retard:false,
+      phases:[
+        {nom:'Diagnostic', prevue:iso(daysAgo(9)), reelle:iso(daysAgo(9)), notes:'Cloques d’osmose détectées sur 40% de la surface.'},
+        {nom:'Vidange', prevue:iso(daysAgo(7)), reelle:iso(daysAgo(7)), notes:''},
+        {nom:'Préparation / ponçage', prevue:iso(daysAgo(4)), reelle:iso(daysAgo(4)), notes:'Ponçage complet des zones atteintes.'},
+        {nom:'Traitement osmose', prevue:iso(daysAgo(1)), reelle:null, notes:'Application en cours, 2ème passe prévue demain.'},
+        {nom:'Application gelcoat', prevue:iso(daysFromNow(4)), reelle:null, notes:''},
+        {nom:'Finitions et margelles', prevue:iso(daysFromNow(7)), reelle:null, notes:''},
+        {nom:'Remise en eau', prevue:iso(daysFromNow(9)), reelle:null, notes:''},
+        {nom:'Réception', prevue:iso(daysFromNow(10)), reelle:null, notes:''},
+      ],
+      photos:{ 'Traitement osmose':{avant:photoUrl('cpb-osmose-av-ch3'), apres:photoUrl('cpb-osmose-ap-ch3')} }},
+    {id:'ch4', nom:'Réparation fissure + ponçage', clientId:'c1', phaseActuelle:7, dateDebut:iso(daysAgo(18)), retard:false, clos:iso(daysAgo(5)),
+      phases:[
+        {nom:'Diagnostic', prevue:iso(daysAgo(18)), reelle:iso(daysAgo(18)), notes:''},
+        {nom:'Vidange', prevue:iso(daysAgo(17)), reelle:iso(daysAgo(17)), notes:''},
+        {nom:'Préparation / ponçage', prevue:iso(daysAgo(14)), reelle:iso(daysAgo(14)), notes:''},
+        {nom:'Traitement osmose', prevue:iso(daysAgo(12)), reelle:iso(daysAgo(12)), notes:'Non concerné.'},
+        {nom:'Application gelcoat', prevue:iso(daysAgo(10)), reelle:iso(daysAgo(10)), notes:'Réparation de fissure traitée.'},
+        {nom:'Finitions et margelles', prevue:iso(daysAgo(8)), reelle:iso(daysAgo(8)), notes:''},
+        {nom:'Remise en eau', prevue:iso(daysAgo(6)), reelle:iso(daysAgo(6)), notes:''},
+        {nom:'Réception', prevue:iso(daysAgo(5)), reelle:iso(daysAgo(5)), notes:'Client très satisfait du résultat.'},
+      ],
+      photos:{ 'Application gelcoat':{avant:photoUrl('cpb-gelcoat-av-ch4'), apres:photoUrl('cpb-gelcoat-ap-ch4')} }},
+    {id:'ch5', nom:'Mise en service + margelles', clientId:'c4', phaseActuelle:7, dateDebut:iso(daysAgo(28)), retard:false, clos:iso(daysAgo(20)),
+      phases:[
+        {nom:'Diagnostic', prevue:iso(daysAgo(28)), reelle:iso(daysAgo(28)), notes:''},
+        {nom:'Vidange', prevue:iso(daysAgo(27)), reelle:iso(daysAgo(27)), notes:'Non concerné.'},
+        {nom:'Préparation / ponçage', prevue:iso(daysAgo(25)), reelle:iso(daysAgo(25)), notes:''},
+        {nom:'Traitement osmose', prevue:iso(daysAgo(24)), reelle:iso(daysAgo(24)), notes:'Non concerné.'},
+        {nom:'Application gelcoat', prevue:iso(daysAgo(23)), reelle:iso(daysAgo(23)), notes:'Non concerné.'},
+        {nom:'Finitions et margelles', prevue:iso(daysAgo(22)), reelle:iso(daysAgo(22)), notes:'4 margelles reprises.'},
+        {nom:'Remise en eau', prevue:iso(daysAgo(21)), reelle:iso(daysAgo(21)), notes:''},
+        {nom:'Réception', prevue:iso(daysAgo(20)), reelle:iso(daysAgo(20)), notes:''},
+      ],
+      photos:{ 'Finitions et margelles':{avant:photoUrl('cpb-margelles-av-ch5'), apres:photoUrl('cpb-margelles-ap-ch5')} }},
+    {id:'ch6', nom:'Remplacement filtre à sable + pompe', clientId:'c3', phaseActuelle:7, dateDebut:iso(daysAgo(65)), retard:false, clos:iso(daysAgo(60)),
+      phases:[
+        {nom:'Diagnostic', prevue:iso(daysAgo(65)), reelle:iso(daysAgo(65)), notes:'Pompe HS, filtre entartré.'},
+        {nom:'Vidange', prevue:iso(daysAgo(64)), reelle:iso(daysAgo(64)), notes:'Non concerné.'},
+        {nom:'Préparation / ponçage', prevue:iso(daysAgo(63)), reelle:iso(daysAgo(63)), notes:'Non concerné.'},
+        {nom:'Traitement osmose', prevue:iso(daysAgo(62)), reelle:iso(daysAgo(62)), notes:'Non concerné.'},
+        {nom:'Application gelcoat', prevue:iso(daysAgo(61)), reelle:iso(daysAgo(61)), notes:'Non concerné.'},
+        {nom:'Finitions et margelles', prevue:iso(daysAgo(61)), reelle:iso(daysAgo(61)), notes:'Non concerné.'},
+        {nom:'Remise en eau', prevue:iso(daysAgo(60)), reelle:iso(daysAgo(60)), notes:''},
+        {nom:'Réception', prevue:iso(daysAgo(60)), reelle:iso(daysAgo(60)), notes:'Filtre et pompe changés, local technique nettoyé.'},
+      ],
+      photos:{ 'Réception':{avant:photoUrl('cpb-localtech-av-ch6'), apres:photoUrl('cpb-localtech-ap-ch6')} }},
+  ];
+
+  const avisDemandes = [
+    {id:'ad1', clientId:'c1', chantierId:'ch4', dateEnvoi:iso(daysAgo(3)), statut:'cliquee'},
+    {id:'ad2', clientId:'c4', chantierId:'ch5', dateEnvoi:iso(daysAgo(18)), statut:'publiee', note:5},
+    {id:'ad3', clientId:'c3', chantierId:'ch6', dateEnvoi:iso(daysAgo(58)), statut:'publiee', note:5},
+    {id:'ad4', clientId:'c8', chantierId:null, dateEnvoi:iso(daysAgo(50)), statut:'publiee', note:4},
+    {id:'ad5', clientId:'c2', chantierId:null, dateEnvoi:iso(daysAgo(75)), statut:'publiee', note:5},
+    {id:'ad6', clientId:'c13', chantierId:null, dateEnvoi:iso(daysAgo(95)), statut:'publiee', note:5},
+    {id:'ad7', clientId:'c15', chantierId:null, dateEnvoi:iso(daysAgo(110)), statut:'publiee', note:4},
+    {id:'ad8', clientId:'c7', chantierId:null, dateEnvoi:iso(daysAgo(130)), statut:'publiee', note:5},
+    {id:'ad9', clientId:'c11', chantierId:null, dateEnvoi:iso(daysAgo(40)), statut:'envoyee'},
+    {id:'ad10', clientId:'c9', chantierId:null, dateEnvoi:iso(daysAgo(150)), statut:'interne', note:2},
+  ];
+
+  const avisConfig = {
+    smsTemplate: `Bonjour {prenom}, merci d’avoir fait confiance à AA Polyester ! Êtes-vous satisfait(e) des travaux ? Répondez OUI ou NON.`,
+    emailTemplate: `Bonjour {prenom},\n\nVos travaux sont terminés depuis quelques jours. Nous espérons que tout est parfait !\nPourriez-vous nous accorder 30 secondes pour partager votre expérience ?\n\nL’équipe AA Polyester — Estagel.`,
+    lienGoogle: 'https://g.page/r/aapolyester-estagel/review',
+    progression: [
+      {mois: monthName(TODAY.getMonth()-5), total:7},
+      {mois: monthName(TODAY.getMonth()-4), total:12},
+      {mois: monthName(TODAY.getMonth()-3), total:18},
+      {mois: monthName(TODAY.getMonth()-2), total:24},
+      {mois: monthName(TODAY.getMonth()-1), total:29},
+      {mois: monthName(TODAY.getMonth()), total:34},
+    ],
+    noteMoyenne:4.8,
+  };
+
+  return {clients, prestations, devis, factures, contrats, chantiers, avisDemandes, avisConfig};
+}
+
+function seedIfNeeded(force){
+  if(force || !store.get('seeded_v1', false)){
+    const seed = buildSeed();
+    store.set('clients', seed.clients);
+    store.set('prestations', seed.prestations);
+    store.set('devis', seed.devis);
+    store.set('factures', seed.factures);
+    store.set('contrats', seed.contrats);
+    store.set('chantiers', seed.chantiers);
+    store.set('avisDemandes', seed.avisDemandes);
+    store.set('avisConfig', seed.avisConfig);
+    store.set('seeded_v1', true);
+  }
+}
+
+/* Accessors */
+const Data = {
+  clients: ()=>store.get('clients', []),
+  setClients: v=>store.set('clients', v),
+  prestations: ()=>store.get('prestations', []),
+  devis: ()=>store.get('devis', []),
+  setDevis: v=>store.set('devis', v),
+  factures: ()=>store.get('factures', []),
+  setFactures: v=>store.set('factures', v),
+  contrats: ()=>store.get('contrats', []),
+  setContrats: v=>store.set('contrats', v),
+  chantiers: ()=>store.get('chantiers', []),
+  setChantiers: v=>store.set('chantiers', v),
+  avisDemandes: ()=>store.get('avisDemandes', []),
+  setAvisDemandes: v=>store.set('avisDemandes', v),
+  avisConfig: ()=>store.get('avisConfig', {}),
+  setAvisConfig: v=>store.set('avisConfig', v),
+  client: id=>Data.clients().find(c=>c.id===id),
+  devisOne: id=>Data.devis().find(d=>d.id===id),
+  factureOne: id=>Data.factures().find(f=>f.id===id),
+  chantierOne: id=>Data.chantiers().find(c=>c.id===id),
+};
+
+function calcTotaux(lignes){ let ht=0,tva=0; lignes.forEach(l=>{ const t=l.qte*l.prixUnitaire; ht+=t; tva+=t*l.tva/100; }); return {ht:Math.round(ht*100)/100, tva:Math.round(tva*100)/100, ttc:Math.round((ht+tva)*100)/100}; }
+
+/* =========================================================
+   TEXTES DES RELANCES
+   ========================================================= */
+const RELANCE_DEVIS_TEXTES = [
+  {jour:0, label:'Envoi initial',
+    email: (d,c)=>`Bonjour ${c.nom.split(' ')[0]},\n\nVeuillez trouver ci-joint votre devis ${d.numero} d’un montant de ${fmtEUR(d.totaux.ttc)} TTC pour les travaux sur votre piscine. Il reste valable 30 jours.\n\nAA Polyester — Estagel — 04 68 00 00 00`,
+    sms: (d,c)=>`AA Polyester: votre devis ${d.numero} (${fmtEUR(d.totaux.ttc)} TTC) vous a été envoyé par email. Des questions ? 04 68 00 00 00.`},
+  {jour:4, label:'Relance 1',
+    email: (d,c)=>`Bonjour ${c.nom.split(' ')[0]},\n\nNous revenons vers vous concernant le devis ${d.numero} envoyé le ${fmtDate(d.dateEnvoi)}. N’hésitez pas à nous contacter si vous avez des questions ou souhaitez ajuster la prestation.\n\nAA Polyester`,
+    sms: (d,c)=>`AA Polyester: votre devis ${d.numero} est toujours en attente de votre retour. Une question ? Appelez le 04 68 00 00 00.`},
+  {jour:10, label:'Relance 2',
+    email: (d,c)=>`Bonjour ${c.nom.split(' ')[0]},\n\nVotre devis ${d.numero} approche de sa date de validité. Afin de garantir le tarif et la disponibilité de nos équipes, merci de nous confirmer votre décision dans les meilleurs délais.\n\nAA Polyester`,
+    sms: (d,c)=>`AA Polyester: dernier rappel — votre devis ${d.numero} (${fmtEUR(d.totaux.ttc)}) expire bientôt. Contactez le 04 68 00 00 00 pour le valider.`},
+];
+
+const RELANCE_IMPAYES_TEXTES = [
+  {jour:7, label:'Rappel courtois',
+    email:(f,c)=>`Bonjour ${c.nom.split(' ')[0]},\n\nSauf erreur de notre part, la facture ${f.numero} d’un montant de ${fmtEUR(f.totaux.ttc)} TTC, échue le ${fmtDate(f.dateEcheance)}, ne nous est pas encore parvenue. Merci de régulariser dans les meilleurs délais.\n\nAA Polyester`,
+    sms:(f,c)=>`AA Polyester: la facture ${f.numero} (${fmtEUR(f.totaux.ttc)}) est échue depuis le ${fmtDate(f.dateEcheance)}. Merci de régulariser. 04 68 00 00 00.`},
+  {jour:15, label:'Relance ferme',
+    email:(f,c)=>`Bonjour ${c.nom.split(' ')[0]},\n\nMalgré notre précédent message, la facture ${f.numero} d’un montant de ${fmtEUR(f.totaux.ttc)} TTC reste impayée, échue depuis le ${fmtDate(f.dateEcheance)}. Nous vous demandons de procéder au règlement sous 8 jours.\n\nAA Polyester`,
+    sms:(f,c)=>`AA Polyester: la facture ${f.numero} est toujours impayée (échéance ${fmtDate(f.dateEcheance)}). Merci de régulariser sous 8 jours.`},
+  {jour:30, label:'Dernier avis avant mise en demeure',
+    email:(f,c)=>`Madame, Monsieur,\n\nEn l’absence de règlement de la facture ${f.numero} d’un montant de ${fmtEUR(f.totaux.ttc)} TTC, échue depuis le ${fmtDate(f.dateEcheance)}, nous vous informons qu’une mise en demeure va être émise. Nous vous invitons à régulariser votre situation sans délai.\n\nAA Polyester`,
+    sms:(f,c)=>`AA Polyester: DERNIER AVIS avant mise en demeure — facture ${f.numero} (${fmtEUR(f.totaux.ttc)}) impayée depuis le ${fmtDate(f.dateEcheance)}. Contactez-nous au 04 68 00 00 00.`},
+];
+
+function joursEcoulesDevis(d){
+  if(d.relanceSimOffset!=null) return d.relanceSimOffset;
+  if(!d.dateEnvoi) return null;
+  return daysSince(d.dateEnvoi);
+}
+function joursRetardFacture(f){
+  if(f.relanceSimOffset!=null) return f.relanceSimOffset;
+  return daysSince(f.dateEcheance);
+}
+
+/* =========================================================
+   MODULE REGISTRY
+   ========================================================= */
+const MODULE_REGISTRY = {};
+function registerModule(mod){ MODULE_REGISTRY[mod.id] = mod; }
+
+const SOCLE_TABS = [
+  {id:'dashboard', nom:'Dashboard', icone:'📊', render: renderDashboard, init: initDashboard},
+  {id:'devis', nom:'Devis', icone:'📄', render: renderDevis},
+  {id:'factures', nom:'Factures', icone:'🧾', render: renderFactures},
+  {id:'clients', nom:'Clients', icone:'👤', render: renderClients},
+  {id:'relances', nom:'Relances', icone:'⏰', render: renderRelances},
+];
+
+function getAllTabs(){
+  const modTabs = clientConfig.modulesActifs.map(id=>MODULE_REGISTRY[id]).filter(Boolean);
+  return SOCLE_TABS.concat(modTabs);
+}
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+function renderDashboard(){
+  const devis = Data.devis(), factures = Data.factures();
+  const now = TODAY;
+  const caMois = factures.filter(f=>f.statut==='payee' && new Date(f.datePaiement).getMonth()===now.getMonth() && new Date(f.datePaiement).getFullYear()===now.getFullYear()).reduce((s,f)=>s+f.totaux.ttc,0);
+  const caAnnee = factures.filter(f=>f.statut==='payee' && new Date(f.datePaiement).getFullYear()===now.getFullYear()).reduce((s,f)=>s+f.totaux.ttc,0);
+  const devisEnCours = devis.filter(d=>d.statut==='envoye');
+  const devisTraites = devis.filter(d=>d.statut==='accepte'||d.statut==='refuse');
+  const tauxAcceptation = devisTraites.length ? Math.round(devis.filter(d=>d.statut==='accepte').length / devisTraites.length * 100) : 0;
+  const impayes = factures.filter(f=>f.statut==='impayee').reduce((s,f)=>s+f.totaux.ttc,0);
+  const contrats = Data.contrats();
+  const caRecurrent = contrats.reduce((s,c)=>s+c.montant,0);
+
+  const saison = [4200,5100,9800,15200,18900,21400,13800,11200,9600,6300,5400,4800];
+  const labelsSaison = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+
+  const html = `
+    <div class="section-title"><h2>Tableau de bord</h2><span class="sub">${fmtDateLong(now)}</span></div>
+    <div class="grid grid-4">
+      <div class="kpi"><small>CA du mois</small><div class="val">${fmtEUR(caMois)}</div><div class="delta">encaissé ce mois-ci</div></div>
+      <div class="kpi accent"><small>CA de l’année</small><div class="val">${fmtEUR(caAnnee)}</div><div class="delta">factures payées</div></div>
+      <div class="kpi"><small>Devis en cours</small><div class="val">${devisEnCours.length}</div><div class="delta">${fmtEUR(devisEnCours.reduce((s,d)=>s+d.totaux.ttc,0))} potentiel</div></div>
+      <div class="kpi" style="background:${impayes>0?'var(--danger)':'var(--primary)'}"><small>Impayés</small><div class="val">${fmtEUR(impayes)}</div><div class="delta">${factures.filter(f=>f.statut==='impayee').length} facture(s)</div></div>
+    </div>
+
+    <div class="grid grid-3 mt16">
+      <div class="card"><small class="small">Taux d’acceptation devis</small><div class="mono" style="font-size:24px;font-weight:700;color:var(--primary);margin-top:6px;">${tauxAcceptation}%</div></div>
+      <div class="card"><small class="small">CA récurrent sécurisé (contrats)</small><div class="mono" style="font-size:24px;font-weight:700;color:var(--primary);margin-top:6px;">${fmtEUR(caRecurrent)}<span style="font-size:12px;color:var(--muted);font-weight:500;"> /an</span></div></div>
+      <div class="card"><small class="small">Chantiers en cours</small><div class="mono" style="font-size:24px;font-weight:700;color:var(--primary);margin-top:6px;">${Data.chantiers().filter(c=>c.phaseActuelle<7).length}</div></div>
+    </div>
+
+    <div class="section-title"><h2>Saisonnalité — CA mensuel</h2><span class="sub">Le creux hivernal contraste avec le pic mars-juin</span></div>
+    <div class="card">
+      <canvas id="chartSaison" height="220"></canvas>
+      <p class="small mt8">Argument commercial : les <b>contrats d’entretien</b> (hivernages + mises en service) lissent ce creux en sécurisant du chiffre d’affaires récurrent d’octobre à février.</p>
+    </div>
+
+    <div class="section-title"><h2>À surveiller</h2></div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Devis en attente de relance</h3>
+        ${devisEnCours.length ? `<ul class="timeline">${devisEnCours.map(d=>{const c=Data.client(d.clientId); return `<li><div class="tl-dot next">${joursEcoulesDevis(d)}j</div><div><b>${d.numero}</b> — ${esc(c.nom)}<div class="small">${fmtEUR(d.totaux.ttc)} TTC</div></div></li>`;}).join('')}</ul>` : `<div class="empty-note">Aucun devis en attente.</div>`}
+        <button class="btn secondary small mt8" onclick="setTab('relances')">Voir les relances →</button>
+      </div>
+      <div class="card">
+        <h3>Factures impayées</h3>
+        ${factures.filter(f=>f.statut==='impayee').length ? `<ul class="timeline">${factures.filter(f=>f.statut==='impayee').map(f=>{const c=Data.client(f.clientId); return `<li><div class="tl-dot" style="background:var(--danger);color:#fff;">J+${joursRetardFacture(f)}</div><div><b>${f.numero}</b> — ${esc(c.nom)}<div class="small">${fmtEUR(f.totaux.ttc)} TTC</div></div></li>`;}).join('')}</ul>` : `<div class="empty-note">Aucun impayé.</div>`}
+        <button class="btn secondary small mt8" onclick="setTab('relances')">Voir les relances →</button>
+      </div>
+    </div>
+  `;
+  return html;
+}
+function chartFallback(canvasId, msg){
+  const el = document.getElementById(canvasId);
+  if(el) el.outerHTML = `<div class="empty-note">${msg}</div>`;
+}
+function initDashboard(){
+  const ctx = document.getElementById('chartSaison');
+  if(!ctx) return;
+  if(typeof Chart==='undefined'){ chartFallback('chartSaison','Graphique indisponible hors connexion (Chart.js non chargé).'); return; }
+  new Chart(ctx, {
+    type:'bar',
+    data:{ labels:['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'],
+      datasets:[{ label:'CA mensuel estimé (€)', data:[4200,5100,9800,15200,18900,21400,13800,11200,9600,6300,5400,4800],
+        backgroundColor: [4200,5100,9800,15200,18900,21400,13800,11200,9600,6300,5400,4800].map((v,i)=> (i<=1||i>=9) ? shade(clientConfig.charte.couleurPrincipale,0.15) : clientConfig.charte.couleurAccent),
+        borderRadius:6 }] },
+    options:{ plugins:{legend:{display:false}}, scales:{ y:{ticks:{callback:v=>v/1000+'k'}} } }
+  });
+}
+
+/* =========================================================
+   DEVIS
+   ========================================================= */
+let devisFilter = 'tous';
+function renderDevis(){
+  const all = Data.devis();
+  const filtered = devisFilter==='tous' ? all : all.filter(d=>d.statut===devisFilter);
+  const statutLabel = {brouillon:'Brouillon', envoye:'Envoyé', accepte:'Accepté', refuse:'Refusé'};
+  const rows = filtered.slice().sort((a,b)=> new Date(b.dateCreation)-new Date(a.dateCreation)).map(d=>{
+    const c = Data.client(d.clientId);
+    return `<tr>
+      <td><b>${d.numero}</b></td>
+      <td>${esc(c.nom)}</td>
+      <td>${fmtDate(d.dateCreation)}</td>
+      <td class="right mono">${fmtEUR(d.totaux.ttc)}</td>
+      <td><span class="badge ${d.statut}">${statutLabel[d.statut]}</span></td>
+      <td class="right">
+        <div class="btn-row" style="justify-content:flex-end;">
+          <button class="btn secondary small" onclick="previewDevisPDF('${d.id}')">PDF</button>
+          ${d.statut==='brouillon' ? `<button class="btn accent small" onclick="envoyerDevis('${d.id}')">Envoyer</button>` : ''}
+          ${d.statut==='envoye' ? `<button class="btn secondary small" onclick="statuerDevis('${d.id}','accepte')">Accepté</button><button class="btn secondary small" onclick="statuerDevis('${d.id}','refuse')">Refusé</button>` : ''}
+          ${d.statut==='accepte' && !d._converti ? `<button class="btn small" onclick="convertirDevisEnFacture('${d.id}')">→ Facture</button>` : ''}
+          ${d.statut==='accepte' && d._converti ? `<span class="badge info">Facturé</span>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="section-title"><h2>Devis</h2><button class="btn accent" onclick="openDevisForm()">+ Nouveau devis</button></div>
+    <div class="filters">
+      ${['tous','brouillon','envoye','accepte','refuse'].map(f=>`<button class="chip ${devisFilter===f?'active':''}" onclick="devisFilter='${f}';renderView()">${f==='tous'?'Tous':statutLabel[f]}</button>`).join('')}
+    </div>
+    <div class="card list-card table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>Client</th><th>Date</th><th class="right">Montant TTC</th><th>Statut</th><th></th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="6"><div class="empty-note">Aucun devis dans ce filtre.</div></td></tr>`}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function markConverted(devisId){ const d=Data.devisOne(devisId); d._converti=true; Data.setDevis(Data.devis().map(x=>x.id===d.id?d:x)); }
+
+function openDevisForm(){
+  const clients = Data.clients();
+  const prestations = Data.prestations();
+  openModal(`
+    <h3 class="modal-title">Nouveau devis</h3>
+    <label>Client</label>
+    <select id="ndv-client">${clients.map(c=>`<option value="${c.id}">${esc(c.nom)} — ${esc(c.ville)}</option>`).join('')}</select>
+    <label>Bibliothèque de prestations (clic pour ajouter une ligne)</label>
+    <div class="btn-row" style="max-height:120px;overflow-y:auto;">
+      ${prestations.map(p=>`<button class="chip" onclick="addLigneToForm('${p.id}')">${esc(p.designation)} — ${p.prix}€/${p.unite}</button>`).join('')}
+    </div>
+    <div id="ndv-lignes" class="mt16"></div>
+    <div class="flex-between mt16"><b>Total TTC</b><b id="ndv-total" class="mono">0,00 €</b></div>
+    <div class="btn-row mt16"><button class="btn" onclick="saveNewDevis()">Enregistrer le brouillon</button><button class="btn secondary" onclick="closeModal()">Annuler</button></div>
+  `);
+  window._ndvLignes = [];
+  renderNdvLignes();
+}
+function addLigneToForm(pid){
+  const p = Data.prestations().find(x=>x.id===pid);
+  window._ndvLignes.push({designation:p.designation, unite:p.unite, qte:1, prixUnitaire:p.prix, tva:p.tva});
+  renderNdvLignes();
+}
+function removeLigneForm(idx){ window._ndvLignes.splice(idx,1); renderNdvLignes(); }
+function updateLigneQte(idx, val){ window._ndvLignes[idx].qte = parseFloat(val)||0; renderNdvLignes(); }
+function renderNdvLignes(){
+  const box = document.getElementById('ndv-lignes');
+  if(!box) return;
+  box.innerHTML = window._ndvLignes.length ? window._ndvLignes.map((l,i)=>`
+    <div class="flex-between" style="padding:6px 0;border-bottom:1px dashed var(--border);">
+      <span style="flex:1;">${esc(l.designation)}</span>
+      <input type="number" min="0" step="0.5" value="${l.qte}" style="width:64px;margin:0 8px;" onchange="updateLigneQte(${i}, this.value)">
+      <span class="small">${l.unite}</span>
+      <span class="mono" style="width:90px;text-align:right;">${fmtEUR(l.qte*l.prixUnitaire*(1+l.tva/100))}</span>
+      <button class="link-btn" onclick="removeLigneForm(${i})">✕</button>
+    </div>`).join('') : `<div class="empty-note">Cliquez sur une prestation ci-dessus pour ajouter une ligne.</div>`;
+  const t = calcTotaux(window._ndvLignes);
+  const totalEl = document.getElementById('ndv-total');
+  if(totalEl) totalEl.textContent = fmtEUR(t.ttc);
+}
+function saveNewDevis(){
+  if(!window._ndvLignes.length){ toast('Ajoutez au moins une ligne.'); return; }
+  const clientId = document.getElementById('ndv-client').value;
+  const all = Data.devis();
+  const numero = clientConfig.facturation.prefixeDevis + '-2026-' + String(50+all.length).padStart(3,'0');
+  const nd = {id: uid('dv'), numero, clientId, statut:'brouillon', dateCreation: iso(TODAY), dateEnvoi:null, lignes: window._ndvLignes, relanceSimOffset:null};
+  nd.totaux = calcTotaux(nd.lignes);
+  Data.setDevis([nd, ...all]);
+  closeModal();
+  toast(`Devis ${numero} créé en brouillon.`);
+  setTab('devis');
+}
+function envoyerDevis(id){
+  const all = Data.devis();
+  const d = all.find(x=>x.id===id);
+  d.statut = 'envoye'; d.dateEnvoi = iso(TODAY); d.relanceSimOffset = null;
+  Data.setDevis(all);
+  toast(`Devis ${d.numero} envoyé par email et SMS.`);
+  renderView();
+}
+function statuerDevis(id, statut){
+  const all = Data.devis();
+  const d = all.find(x=>x.id===id);
+  d.statut = statut; d.dateReponse = iso(TODAY);
+  Data.setDevis(all);
+  toast(`Devis ${d.numero} marqué ${statut==='accepte'?'accepté':'refusé'}. Les relances s’arrêtent.`);
+  renderView();
+}
+function convertirDevisEnFacture(devisId){
+  const d = Data.devisOne(devisId);
+  const factures = Data.factures();
+  const numero = clientConfig.facturation.prefixeFacture + '-2026-' + String(30+factures.length).padStart(3,'0');
+  const nf = {id: uid('fa'), numero, clientId:d.clientId, devisId:d.id, statut:'impayee', dateEmission: iso(TODAY), dateEcheance: iso(daysFromNow(30)), lignes:d.lignes, totaux:d.totaux};
+  Data.setFactures([nf, ...factures]);
+  markConverted(devisId);
+  toast(`Facture ${numero} créée à partir du devis ${d.numero}, sans ressaisie.`);
+  setTab('factures');
+}
+function previewDevisPDF(id){
+  const d = Data.devisOne(id), c = Data.client(d.clientId);
+  document.getElementById('printArea').innerHTML = buildPdfHTML('DEVIS', d, c);
+  openModal(`<h3 class="modal-title">Aperçu — Devis ${d.numero}</h3>
+    <div style="border:1px solid var(--border);border-radius:10px;padding:16px;">${buildPdfHTML('DEVIS', d, c)}</div>
+    <div class="btn-row mt16"><button class="btn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button><button class="btn secondary" onclick="closeModal()">Fermer</button></div>`);
+}
+
+function buildPdfHTML(type, doc, client){
+  const e = clientConfig.entreprise;
+  return `
+    <div style="font-family:'Space Grotesk',sans-serif;color:#1b201f;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid ${clientConfig.charte.couleurPrincipale};padding-bottom:12px;margin-bottom:16px;">
+        <div>
+          <div style="font-family:'Oxanium',sans-serif;font-weight:800;font-size:20px;color:${clientConfig.charte.couleurPrincipale};">${esc(e.nom)}</div>
+          <div class="small">${esc(e.metier)}</div>
+          <div class="small">${esc(e.ville)} · ${esc(e.telephone)} · ${esc(e.email)}</div>
+          <div class="small">SIRET ${esc(e.siret)} · ${esc(e.mentionsLegales)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Oxanium',sans-serif;font-weight:700;font-size:18px;">${type} ${esc(doc.numero)}</div>
+          <div class="small">Date : ${fmtDate(doc.dateEmission||doc.dateCreation)}</div>
+          ${doc.dateEcheance ? `<div class="small">Échéance : ${fmtDate(doc.dateEcheance)}</div>` : ''}
+        </div>
+      </div>
+      <div class="small" style="margin-bottom:12px;"><b>Client :</b> ${esc(client.nom)} — ${esc(client.ville)}<br>${esc(client.telephone)} · ${esc(client.email)}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:${clientConfig.charte.couleurPrincipale};color:#fff;"><th style="padding:6px;text-align:left;">Désignation</th><th style="padding:6px;">Qté</th><th style="padding:6px;">PU HT</th><th style="padding:6px;">TVA</th><th style="padding:6px;text-align:right;">Total TTC</th></tr></thead>
+        <tbody>
+          ${doc.lignes.map(l=>`<tr><td style="padding:6px;border-bottom:1px solid #eee;">${esc(l.designation)}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:center;">${l.qte} ${esc(l.unite)}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:center;">${fmtEUR(l.prixUnitaire)}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:center;">${l.tva}%</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:right;">${fmtEUR(l.qte*l.prixUnitaire*(1+l.tva/100))}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top:14px;text-align:right;">
+        <div>Total HT : <b>${fmtEUR(doc.totaux.ht)}</b></div>
+        <div>TVA : <b>${fmtEUR(doc.totaux.tva)}</b></div>
+        <div style="font-size:16px;margin-top:4px;">Total TTC : <b style="color:${clientConfig.charte.couleurPrincipale}">${fmtEUR(doc.totaux.ttc)}</b></div>
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================================
+   FACTURES
+   ========================================================= */
+function renderFactures(){
+  const factures = Data.factures().slice().sort((a,b)=> new Date(b.dateEmission)-new Date(a.dateEmission));
+  const rows = factures.map(f=>{
+    const c = Data.client(f.clientId);
+    const retard = f.statut==='impayee' ? joursRetardFacture(f) : null;
+    return `<tr>
+      <td><b>${f.numero}</b></td>
+      <td>${esc(c.nom)}</td>
+      <td>${fmtDate(f.dateEcheance)}</td>
+      <td class="right mono">${fmtEUR(f.totaux.ttc)}</td>
+      <td>${f.statut==='payee' ? `<span class="badge payee">Payée</span>` : `<span class="badge impayee">Impayée · J+${retard}</span>`}</td>
+      <td class="right">
+        <div class="btn-row" style="justify-content:flex-end;">
+          <button class="btn secondary small" onclick="previewDevisPDF && previewFacturePDF('${f.id}')">PDF</button>
+          ${f.statut==='impayee' ? `<button class="btn accent small" onclick="marquerPayee('${f.id}')">Marquer payée</button>` : ''}
+          ${f.statut==='impayee' && retard>=30 ? `<button class="btn danger small" onclick="previewMiseEnDemeure('${f.id}')">Mise en demeure</button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="section-title"><h2>Factures</h2></div>
+    <div class="card list-card table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>Client</th><th>Échéance</th><th class="right">Montant TTC</th><th>Statut</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+function previewFacturePDF(id){
+  const f = Data.factureOne(id), c = Data.client(f.clientId);
+  openModal(`<h3 class="modal-title">Aperçu — Facture ${f.numero}</h3>
+    <div style="border:1px solid var(--border);border-radius:10px;padding:16px;">${buildPdfHTML('FACTURE', f, c)}</div>
+    <div class="btn-row mt16"><button class="btn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button><button class="btn secondary" onclick="closeModal()">Fermer</button></div>`);
+}
+function marquerPayee(id){
+  const all = Data.factures();
+  const f = all.find(x=>x.id===id);
+  f.statut = 'payee'; f.datePaiement = iso(TODAY); f.relanceSimOffset = null;
+  Data.setFactures(all);
+  toast(`Facture ${f.numero} marquée payée. Les relances s’arrêtent.`);
+  renderView();
+}
+function previewMiseEnDemeure(id){
+  const f = Data.factureOne(id), c = Data.client(f.clientId), e = clientConfig.entreprise;
+  openModal(`
+    <h3 class="modal-title">Mise en demeure — ${f.numero}</h3>
+    <div style="border:1px solid var(--border);border-radius:10px;padding:20px;font-size:13px;line-height:1.6;">
+      <div style="text-align:right;">${esc(e.nom)}<br>${esc(e.ville)}<br>${esc(e.telephone)}</div>
+      <p class="mt16"><b>Objet : Mise en demeure de payer — Facture ${f.numero}</b></p>
+      <p>Madame, Monsieur ${esc(c.nom)},</p>
+      <p>Par la présente, nous vous mettons en demeure de régler, sous huitaine à compter de la réception de ce courrier, la somme de <b>${fmtEUR(f.totaux.ttc)}</b> correspondant à la facture ${f.numero} émise le ${fmtDate(f.dateEmission)} et échue depuis le ${fmtDate(f.dateEcheance)}, soit ${joursRetardFacture(f)} jours de retard à ce jour.</p>
+      <p>À défaut de règlement dans ce délai, nous nous verrons contraints d’engager toute action judiciaire utile au recouvrement de cette créance, majorée des intérêts de retard et frais de recouvrement applicables.</p>
+      <p>Nous restons à votre disposition pour tout arrangement amiable préalable.</p>
+      <p class="mt16">Fait à ${esc(e.ville)}, le ${fmtDate(TODAY)}<br>${esc(e.nom)}</p>
+    </div>
+    <div class="btn-row mt16"><button class="btn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button><button class="btn secondary" onclick="closeModal()">Fermer</button></div>
+  `);
+}
+
+/* =========================================================
+   CLIENTS
+   ========================================================= */
+const TYPE_LABEL = {particulier:'Particulier', camping:'Camping', gite:'Gîte', hotel:'Hôtel', syndic:'Syndic'};
+function renderClients(){
+  const clients = Data.clients().slice().sort((a,b)=>a.nom.localeCompare(b.nom));
+  return `
+    <div class="section-title"><h2>Clients</h2><button class="btn accent" onclick="openClientForm()">+ Nouveau client</button></div>
+    <div class="grid grid-3">
+      ${clients.map(c=>`
+        <div class="card" style="cursor:pointer;" onclick="openClientFiche('${c.id}')">
+          <div class="flex-between"><h3 style="margin:0;">${esc(c.nom)}</h3><span class="badge info">${TYPE_LABEL[c.type]}</span></div>
+          <div class="small mt8">${esc(c.ville)} · ${esc(c.telephone)}</div>
+          <div class="small">Piscine ${c.piscine.type} · ${c.piscine.volume} m³ · ${c.piscine.annee}</div>
+        </div>`).join('')}
+    </div>
+  `;
+}
+function openClientForm(){
+  openModal(`
+    <h3 class="modal-title">Nouveau client</h3>
+    <label>Nom</label><input id="nc-nom" placeholder="Nom du client">
+    <div class="form-row cols-2"><div><label>Ville</label><input id="nc-ville" placeholder="Ville"></div><div><label>Type</label><select id="nc-type">${Object.entries(TYPE_LABEL).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div></div>
+    <div class="form-row cols-2"><div><label>Téléphone</label><input id="nc-tel" placeholder="06 00 00 00 00"></div><div><label>Email</label><input id="nc-email" placeholder="email@mail.fr"></div></div>
+    <div class="form-row cols-2"><div><label>Type de piscine</label><select id="nc-piscine-type"><option value="coque">Coque</option><option value="maçonnée">Maçonnée</option></select></div><div><label>Volume (m³)</label><input id="nc-volume" type="number" value="45"></div></div>
+    <div class="btn-row mt16"><button class="btn" onclick="saveNewClient()">Enregistrer</button><button class="btn secondary" onclick="closeModal()">Annuler</button></div>
+  `);
+}
+function saveNewClient(){
+  const nom = document.getElementById('nc-nom').value.trim();
+  if(!nom){ toast('Le nom est obligatoire.'); return; }
+  const nc = {
+    id: uid('c'), nom, type: document.getElementById('nc-type').value,
+    ville: document.getElementById('nc-ville').value || '—',
+    telephone: document.getElementById('nc-tel').value || '—',
+    email: document.getElementById('nc-email').value || '—',
+    piscine:{ type: document.getElementById('nc-piscine-type').value, dimensions:'—', volume: parseFloat(document.getElementById('nc-volume').value)||0, annee: new Date().getFullYear(), filtration:'sable' },
+    notes:''
+  };
+  Data.setClients([nc, ...Data.clients()]);
+  closeModal();
+  toast(`Client ${nom} ajouté.`);
+  setTab('clients');
+}
+function openClientFiche(id){
+  const c = Data.client(id);
+  const devis = Data.devis().filter(d=>d.clientId===id);
+  const factures = Data.factures().filter(f=>f.clientId===id);
+  const chantiers = Data.chantiers().filter(ch=>ch.clientId===id);
+  const contrats = Data.contrats().filter(ct=>ct.clientId===id);
+  const events = [
+    ...devis.map(d=>({date:d.dateCreation, txt:`Devis ${d.numero} créé (${d.statut})`})),
+    ...factures.map(f=>({date:f.dateEmission, txt:`Facture ${f.numero} émise — ${fmtEUR(f.totaux.ttc)}`})),
+    ...chantiers.map(ch=>({date:ch.dateDebut, txt:`Chantier « ${ch.nom} » démarré`})),
+  ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  openModal(`
+    <h3 class="modal-title">${esc(c.nom)}</h3>
+    <div class="small">${esc(c.ville)} · ${esc(c.telephone)} · ${esc(c.email)}</div>
+    <div class="card mt16" style="background:var(--bg);box-shadow:none;">
+      <b>Caractéristiques piscine</b>
+      <div class="small mt8">Type : ${esc(c.piscine.type)} — Dimensions : ${esc(c.piscine.dimensions||'—')} — Volume : ${c.piscine.volume} m³<br>Année : ${c.piscine.annee} — Filtration : ${esc(c.piscine.filtration)}</div>
+    </div>
+    ${contrats.length ? `<div class="mt16"><b>Contrats d’entretien</b><ul class="small">${contrats.map(ct=>`<li>${esc(ct.type)} — ${fmtEUR(ct.montant)}/an</li>`).join('')}</ul></div>` : ''}
+    <div class="mt16"><b>Historique</b>
+      <ul class="timeline">${events.length? events.map(e=>`<li><div class="tl-dot done">•</div><div>${fmtDate(e.date)} — ${esc(e.txt)}</div></li>`).join('') : `<div class="empty-note">Aucun historique.</div>`}</ul>
+    </div>
+    ${c.notes ? `<div class="small mt8"><i>${esc(c.notes)}</i></div>` : ''}
+    <div class="btn-row mt16"><button class="btn secondary" onclick="closeModal()">Fermer</button></div>
+  `);
+}
+
+/* =========================================================
+   RELANCES
+   ========================================================= */
+function renderRelances(){
+  const devisEnAttente = Data.devis().filter(d=>d.statut==='envoye');
+  const facturesImpayees = Data.factures().filter(f=>f.statut==='impayee');
+  return `
+    <div class="section-title"><h2>Relances programmées</h2><span class="sub">Automatisées — email + SMS, sans action de l’artisan</span></div>
+
+    <div class="section-title"><h2 style="font-size:16px;">Relances devis (J0 / J+4 / J+10)</h2></div>
+    ${devisEnAttente.length ? devisEnAttente.map(d=>renderRelanceDevisCard(d)).join('') : `<div class="card"><div class="empty-note">Aucun devis en attente de relance.</div></div>`}
+
+    <div class="section-title mt16"><h2 style="font-size:16px;">Relances impayés (J+7 / J+15 / J+30)</h2></div>
+    ${facturesImpayees.length ? facturesImpayees.map(f=>renderRelanceFactureCard(f)).join('') : `<div class="card"><div class="empty-note">Aucune facture impayée.</div></div>`}
+  `;
+}
+function renderRelanceDevisCard(d){
+  const c = Data.client(d.clientId);
+  const jours = joursEcoulesDevis(d);
+  const niveaux = clientConfig.relances.devis.niveaux;
+  const prochain = niveaux.find(n=>n>jours);
+  return `
+    <div class="card mt8">
+      <div class="flex-between wrap">
+        <div><b>${d.numero}</b> — ${esc(c.nom)} <span class="small">(${fmtEUR(d.totaux.ttc)} TTC, envoyé le ${fmtDate(d.dateEnvoi)})</span></div>
+        <div class="btn-row">
+          ${prochain!=null ? `<button class="btn accent small" onclick="simulerRelanceDevis('${d.id}', ${prochain})">Simuler J+${prochain}</button>` : `<span class="badge info">Relances terminées</span>`}
+        </div>
+      </div>
+      <ul class="timeline mt8">
+        ${RELANCE_DEVIS_TEXTES.map(r=>{
+          const done = jours >= r.jour;
+          const isNext = !done && r.jour === prochain;
+          return `<li>
+            <div class="tl-dot ${done?'done':isNext?'next':'future'}">${done?'✓':isNext?'→':r.jour}</div>
+            <div style="flex:1;">
+              <div class="flex-between"><b>${r.label} (J${r.jour===0?'0':'+'+r.jour})</b><span class="small">${done?'Envoyée':'Programmée'}</span></div>
+              ${done || isNext ? `<div class="msg-box"><b>Email</b>${esc(r.email(d,c)).replace(/\n/g,'<br>')}</div><div class="msg-box"><b>SMS</b>${esc(r.sms(d,c))}</div>` : ''}
+            </div>
+          </li>`;
+        }).join('')}
+      </ul>
+    </div>
+  `;
+}
+function simulerRelanceDevis(id, niveau){
+  const all = Data.devis();
+  const d = all.find(x=>x.id===id);
+  d.relanceSimOffset = niveau;
+  Data.setDevis(all);
+  toast(`Relance J+${niveau} envoyée pour ${d.numero} (email + SMS).`);
+  renderView();
+}
+function renderRelanceFactureCard(f){
+  const c = Data.client(f.clientId);
+  const jours = joursRetardFacture(f);
+  const niveaux = clientConfig.relances.impayes.niveaux;
+  const prochain = niveaux.find(n=>n>jours);
+  return `
+    <div class="card mt8">
+      <div class="flex-between wrap">
+        <div><b>${f.numero}</b> — ${esc(c.nom)} <span class="small">(${fmtEUR(f.totaux.ttc)} TTC, échue le ${fmtDate(f.dateEcheance)})</span></div>
+        <div class="btn-row">
+          ${prochain!=null ? `<button class="btn accent small" onclick="simulerRelanceFacture('${f.id}', ${prochain})">Simuler J+${prochain}</button>` : ''}
+          ${jours>=30 ? `<button class="btn danger small" onclick="previewMiseEnDemeure('${f.id}')">Mise en demeure</button>` : ''}
+        </div>
+      </div>
+      <ul class="timeline mt8">
+        ${RELANCE_IMPAYES_TEXTES.map(r=>{
+          const done = jours >= r.jour;
+          const isNext = !done && r.jour === prochain;
+          return `<li>
+            <div class="tl-dot ${done?'done':isNext?'next':'future'}">${done?'✓':isNext?'→':r.jour}</div>
+            <div style="flex:1;">
+              <div class="flex-between"><b>${r.label} (J+${r.jour})</b><span class="small">${done?'Envoyée':'Programmée'}</span></div>
+              ${done || isNext ? `<div class="msg-box"><b>Email</b>${esc(r.email(f,c)).replace(/\n/g,'<br>')}</div><div class="msg-box"><b>SMS</b>${esc(r.sms(f,c))}</div>` : ''}
+            </div>
+          </li>`;
+        }).join('')}
+      </ul>
+    </div>
+  `;
+}
+function simulerRelanceFacture(id, niveau){
+  const all = Data.factures();
+  const f = all.find(x=>x.id===id);
+  f.relanceSimOffset = niveau;
+  Data.setFactures(all);
+  toast(`Relance J+${niveau} envoyée pour ${f.numero}${niveau>=30?' — mise en demeure disponible':''}.`);
+  renderView();
+}
+
+/* =========================================================
+   MODULE : AVIS GOOGLE
+   ========================================================= */
+const STATUT_AVIS_LABEL = {envoyee:'Envoyée', cliquee:'Cliquée', publiee:'Avis publié', interne:'Retour interne (privé)'};
+function renderAvisGoogle(){
+  const cfg = Data.avisConfig();
+  const demandes = Data.avisDemandes().slice().sort((a,b)=>new Date(b.dateEnvoi)-new Date(a.dateEnvoi));
+  const total = cfg.progression[cfg.progression.length-1].total;
+  const tauxConv = Math.round(demandes.filter(d=>d.statut==='publiee').length / demandes.length * 100);
+  return `
+    <div class="section-title"><h2>Avis Google</h2><span class="sub">Déclenchement automatique J+2 après clôture de chantier</span></div>
+    <div class="grid grid-4">
+      <div class="kpi"><small>Avis obtenus</small><div class="val">${total}</div><div class="delta">sur 6 mois</div></div>
+      <div class="kpi accent"><small>Note moyenne</small><div class="val">★ ${cfg.noteMoyenne}</div><div class="delta">Google</div></div>
+      <div class="kpi"><small>Taux de conversion</small><div class="val">${tauxConv}%</div><div class="delta">demandes → avis publié</div></div>
+      <div class="kpi"><small>Demandes envoyées</small><div class="val">${demandes.length}</div><div class="delta">historique visible</div></div>
+    </div>
+
+    <div class="section-title"><h2 style="font-size:16px;">Progression sur 6 mois</h2></div>
+    <div class="card"><canvas id="chartAvis" height="200"></canvas></div>
+
+    <div class="section-title"><h2 style="font-size:16px;">Texte du SMS envoyé (éditable)</h2></div>
+    <div class="card">
+      <textarea id="avis-sms-text" rows="3">${esc(cfg.smsTemplate)}</textarea>
+      <div class="btn-row mt8"><button class="btn secondary small" onclick="saveAvisTexts()">Enregistrer le texte</button></div>
+      <div class="small mt8">Lien Google fiche entreprise : <a href="#" onclick="return false;">${esc(cfg.lienGoogle)}</a></div>
+    </div>
+
+    <div class="section-title"><h2 style="font-size:16px;">Demandes envoyées</h2><button class="btn accent small" onclick="simulerNouvelleDemandeAvis()">Simuler nouvelle demande (fin de chantier J+2)</button></div>
+    <div class="card list-card table-wrap">
+      <table>
+        <thead><tr><th>Client</th><th>Date d’envoi</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+          ${demandes.map(d=>{ const c = Data.client(d.clientId); return `<tr>
+            <td>${esc(c.nom)}</td><td>${fmtDate(d.dateEnvoi)}</td>
+            <td><span class="badge ${d.statut==='publiee'?'accepte':d.statut==='interne'?'refuse':'envoye'}">${STATUT_AVIS_LABEL[d.statut]}${d.note?` · ${'★'.repeat(d.note)}`:''}</span></td>
+            <td class="right">${d.statut!=='publiee' && d.statut!=='interne' ? `<button class="btn secondary small" onclick="avancerStatutAvis('${d.id}')">Simuler clic → avis</button>` : ''}</td>
+          </tr>`; }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="card mt16" style="background:var(--bg);box-shadow:none;">
+      <b class="small">Filtre de satisfaction</b>
+      <div class="small mt8">1. On demande d’abord : « Êtes-vous satisfait(e) ? » — 2. Si <b>oui</b> → redirection vers la fiche Google. — 3. Si <b>non</b> → le retour arrive en interne, en privé, sans jamais toucher la note publique.</div>
+      <button class="btn secondary small mt8" onclick="simulerFiltreAvis()">Voir la simulation du filtre</button>
+    </div>
+  `;
+}
+function initAvisGoogle(){
+  const ctx = document.getElementById('chartAvis');
+  if(!ctx) return;
+  if(typeof Chart==='undefined'){ chartFallback('chartAvis','Graphique indisponible hors connexion (Chart.js non chargé).'); return; }
+  const cfg = Data.avisConfig();
+  new Chart(ctx, {type:'line', data:{ labels: cfg.progression.map(p=>p.mois),
+    datasets:[{ label:'Avis cumulés', data: cfg.progression.map(p=>p.total), borderColor: clientConfig.charte.couleurAccent, backgroundColor: clientConfig.charte.couleurAccent+'33', fill:true, tension:0.35, pointRadius:4 }] },
+    options:{ plugins:{legend:{display:false}} } });
+}
+function saveAvisTexts(){
+  const cfg = Data.avisConfig();
+  cfg.smsTemplate = document.getElementById('avis-sms-text').value;
+  Data.setAvisConfig(cfg);
+  toast('Texte du SMS mis à jour.');
+}
+function simulerNouvelleDemandeAvis(){
+  const clients = Data.clients();
+  const c = clients[Math.floor(Math.random()*clients.length)];
+  const nd = {id: uid('ad'), clientId:c.id, chantierId:null, dateEnvoi: iso(TODAY), statut:'envoyee'};
+  Data.setAvisDemandes([nd, ...Data.avisDemandes()]);
+  toast(`Demande d’avis envoyée à ${c.nom} (J+2 après fin de chantier).`);
+  renderView();
+}
+function avancerStatutAvis(id){
+  const all = Data.avisDemandes();
+  const d = all.find(x=>x.id===id);
+  if(d.statut==='envoyee'){ d.statut='cliquee'; toast('Le client a cliqué sur le lien de satisfaction.'); }
+  else if(d.statut==='cliquee'){ d.statut='publiee'; d.note=5; toast('Avis 5 étoiles publié sur Google !'); }
+  Data.setAvisDemandes(all);
+  renderView();
+}
+function simulerFiltreAvis(){
+  openModal(`
+    <h3 class="modal-title">Simulation — filtre de satisfaction</h3>
+    <div class="phone-frame"><div class="pf-top">SMS reçu</div><div class="pf-body">
+      <div class="msg-box">${esc(Data.avisConfig().smsTemplate.replace('{prenom}','Marc'))}</div>
+      <div class="btn-row mt16"><button class="btn small" onclick="filtreAvisReponse(true)">Le client répond OUI</button><button class="btn secondary small" onclick="filtreAvisReponse(false)">Le client répond NON</button></div>
+      <div id="filtre-result" class="mt16"></div>
+    </div></div>
+  `);
+}
+function filtreAvisReponse(satisfait){
+  const box = document.getElementById('filtre-result');
+  if(satisfait){
+    box.innerHTML = `<div class="msg-box"><b>Redirection publique</b>Merci ! Vous êtes redirigé vers notre fiche Google : ${esc(Data.avisConfig().lienGoogle)}</div>`;
+  } else {
+    box.innerHTML = `<div class="msg-box" style="border-color:var(--danger);"><b>Retour interne (privé)</b>Merci pour votre retour, il est transmis en interne à l’équipe AA Polyester — jamais publié publiquement.</div>`;
+  }
+}
+registerModule({id:'avis-google', nom:'Avis Google', icone:'⭐', render: renderAvisGoogle, init: initAvisGoogle});
+
+/* =========================================================
+   MODULE : CONTRATS D'ENTRETIEN
+   ========================================================= */
+function renderContrats(){
+  const contrats = Data.contrats();
+  const caRecurrent = contrats.reduce((s,c)=>s+c.montant,0);
+  const clientsAvecContrat = new Set(contrats.map(c=>c.clientId));
+  const clientsSansContrat = Data.clients().filter(c=>!clientsAvecContrat.has(c.id));
+
+  const monthCounts = new Array(12).fill(0);
+  contrats.forEach(c=>monthCounts[c.mois]++);
+
+  const rows = contrats.slice().sort((a,b)=>{
+    const na = nextOccurrence(a.mois), nb = nextOccurrence(b.mois); return na-nb;
+  }).map(c=>{
+    const cl = Data.client(c.clientId);
+    const next = nextOccurrence(c.mois);
+    const joursRestants = daysBetween(TODAY, next);
+    const relanceDue = joursRestants<=45;
+    return `<tr>
+      <td>${esc(cl.nom)}</td>
+      <td>${esc(c.type)}</td>
+      <td>${fmtDate(next)} <span class="small">(${joursRestants}j)</span></td>
+      <td class="right mono">${fmtEUR(c.montant)}</td>
+      <td>${relanceDue ? `<span class="badge envoye">Relance renouvellement active</span>` : `<span class="badge info">À venir</span>`}</td>
+      <td class="right">${relanceDue ? `<button class="btn accent small" onclick="genererDevisRenouvellement('${c.id}')">Réponse positive → devis</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="section-title"><h2>Contrats d’entretien</h2><button class="btn accent" onclick="openContratForm()">+ Nouveau contrat</button></div>
+    <div class="grid grid-3">
+      <div class="kpi"><small>CA récurrent sécurisé</small><div class="val">${fmtEUR(caRecurrent)}</div><div class="delta">par an</div></div>
+      <div class="kpi accent"><small>Contrats actifs</small><div class="val">${contrats.length}</div><div class="delta">${clientsAvecContrat.size} clients sous contrat</div></div>
+      <div class="kpi"><small>Clients sans contrat</small><div class="val">${clientsSansContrat.length}</div><div class="delta">à relancer</div></div>
+    </div>
+
+    <div class="section-title"><h2 style="font-size:16px;">Calendrier annuel des interventions</h2><span class="sub">Pic hivernages (oct-nov) et mises en service (mars-avr)</span></div>
+    <div class="card"><canvas id="chartContrats" height="200"></canvas></div>
+
+    <div class="section-title"><h2 style="font-size:16px;">Liste des contrats actifs</h2></div>
+    <div class="card list-card table-wrap">
+      <table>
+        <thead><tr><th>Client</th><th>Type</th><th>Prochaine intervention</th><th class="right">Montant</th><th>Relance</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div class="section-title"><h2 style="font-size:16px;">Clients sans contrat</h2></div>
+    <div class="card">
+      ${clientsSansContrat.length ? `<ul class="timeline">${clientsSansContrat.map(c=>`<li><div class="tl-dot future">!</div><div class="flex-between" style="flex:1;"><div><b>${esc(c.nom)}</b><div class="small">${esc(c.ville)} — jamais reconduit</div></div><button class="btn secondary small" onclick="openContratForm('${c.id}')">Proposer un contrat</button></div></li>`).join('')}</ul>` : `<div class="empty-note">Tous les clients sont sous contrat.</div>`}
+    </div>
+  `;
+}
+function initContrats(){
+  const ctx = document.getElementById('chartContrats');
+  if(!ctx) return;
+  if(typeof Chart==='undefined'){ chartFallback('chartContrats','Graphique indisponible hors connexion (Chart.js non chargé).'); return; }
+  const contrats = Data.contrats();
+  const monthCounts = new Array(12).fill(0);
+  contrats.forEach(c=>monthCounts[c.mois]++);
+  new Chart(ctx, {type:'bar', data:{ labels:['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'],
+    datasets:[{ label:'Interventions programmées', data: monthCounts, backgroundColor: monthCounts.map((v,i)=> (i===9||i===10||i===2||i===3) ? clientConfig.charte.couleurAccent : shade(clientConfig.charte.couleurPrincipale,0.25)), borderRadius:6 }] },
+    options:{ plugins:{legend:{display:false}}, scales:{y:{ticks:{stepSize:1}}} } });
+}
+function openContratForm(prefClientId){
+  const clients = Data.clients();
+  openModal(`
+    <h3 class="modal-title">Nouveau contrat d’entretien</h3>
+    <label>Client</label><select id="nct-client">${clients.map(c=>`<option value="${c.id}" ${c.id===prefClientId?'selected':''}>${esc(c.nom)}</option>`).join('')}</select>
+    <div class="form-row cols-2">
+      <div><label>Type de contrat</label><select id="nct-type"><option>Hivernage</option><option>Mise en service</option><option>Entretien complet</option><option>Contrat annuel deux passages</option></select></div>
+      <div><label>Mois de déclenchement</label><select id="nct-mois">${MOIS_FR.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}</select></div>
+    </div>
+    <label>Montant annuel (€)</label><input id="nct-montant" type="number" value="220">
+    <div class="btn-row mt16"><button class="btn" onclick="saveNewContrat()">Enregistrer</button><button class="btn secondary" onclick="closeModal()">Annuler</button></div>
+  `);
+}
+function saveNewContrat(){
+  const nc = {
+    id: uid('ct'), clientId: document.getElementById('nct-client').value,
+    type: document.getElementById('nct-type').value,
+    mois: parseInt(document.getElementById('nct-mois').value),
+    montant: parseFloat(document.getElementById('nct-montant').value)||0,
+    derniere: iso(TODAY),
+  };
+  Data.setContrats([nc, ...Data.contrats()]);
+  closeModal();
+  toast('Nouveau contrat enregistré.');
+  setTab('contrats-entretien');
+}
+function genererDevisRenouvellement(contratId){
+  const ct = Data.contrats().find(c=>c.id===contratId);
+  const cl = Data.client(ct.clientId);
+  const prestaId = ct.type.toLowerCase().includes('hivernage') ? 'p10' : 'p11';
+  const presta = Data.prestations().find(p=>p.id===prestaId);
+  const ligne = {designation: presta.designation, unite: presta.unite, qte:1, prixUnitaire: presta.prix, tva: presta.tva};
+  const all = Data.devis();
+  const numero = clientConfig.facturation.prefixeDevis + '-2026-' + String(50+all.length).padStart(3,'0');
+  const nd = {id: uid('dv'), numero, clientId: ct.clientId, statut:'brouillon', dateCreation: iso(TODAY), dateEnvoi:null, lignes:[ligne], relanceSimOffset:null};
+  nd.totaux = calcTotaux(nd.lignes);
+  Data.setDevis([nd, ...all]);
+  toast(`Réponse positive de ${cl.nom} — devis ${numero} pré-rempli créé automatiquement.`);
+  renderView();
+}
+registerModule({id:'contrats-entretien', nom:'Contrats', icone:'📅', render: renderContrats, init: initContrats});
+
+/* =========================================================
+   MODULE : SUIVI DE CHANTIER
+   ========================================================= */
+const PHASES = ['Diagnostic','Vidange','Préparation / ponçage','Traitement osmose','Application gelcoat','Finitions et margelles','Remise en eau','Réception'];
+let chantierView = 'kanban';
+function renderChantiers(){
+  const chantiers = Data.chantiers();
+  const enRetard = chantiers.filter(c=>c.retard && c.phaseActuelle<7);
+  const semaine = chantiers.filter(c=>c.phaseActuelle<7);
+
+  return `
+    <div class="section-title"><h2>Suivi de chantier</h2>
+      <div class="btn-row"><button class="chip ${chantierView==='kanban'?'active':''}" onclick="chantierView='kanban';renderView()">Kanban</button><button class="chip ${chantierView==='liste'?'active':''}" onclick="chantierView='liste';renderView()">Liste</button></div>
+    </div>
+
+    ${enRetard.length ? `<div class="card" style="border-left:4px solid var(--danger);"><b style="color:var(--danger);">⚠ Chantiers en retard</b><ul class="small mt8">${enRetard.map(c=>`<li>${esc(c.nom)} — ${esc(Data.client(c.clientId).nom)} : phase « ${PHASES[c.phaseActuelle]} » en retard</li>`).join('')}</ul></div>` : ''}
+
+    <div class="section-title"><h2 style="font-size:16px;">Planning de la semaine</h2></div>
+    <div class="card">
+      <ul class="timeline">
+        ${semaine.map(c=>{ const ph=c.phases[c.phaseActuelle]; return `<li><div class="tl-dot next">${new Date(ph.prevue).getDate()}</div><div><b>${esc(c.nom)}</b> — ${esc(Data.client(c.clientId).nom)}<div class="small">${PHASES[c.phaseActuelle]} — prévu le ${fmtDate(ph.prevue)}</div></div></li>`; }).join('')}
+      </ul>
+    </div>
+
+    <div class="section-title"><h2 style="font-size:16px;">Chantiers</h2></div>
+    ${chantierView==='kanban' ? renderKanban(chantiers) : renderChantierListe(chantiers)}
+  `;
+}
+function renderKanban(chantiers){
+  return `<div class="kanban">
+    ${PHASES.map((ph,i)=>{
+      const items = chantiers.filter(c=>c.phaseActuelle===i);
+      return `<div class="kanban-col"><h4>${ph}</h4>
+        ${items.map(c=>`<div class="kanban-card" onclick="openChantierDetail('${c.id}')"><b>${esc(c.nom)}</b>${esc(Data.client(c.clientId).nom)}${c.retard?'<div class="small" style="color:var(--danger);">⚠ retard</div>':''}</div>`).join('') || `<div class="small" style="padding:6px;">—</div>`}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function renderChantierListe(chantiers){
+  return `<div class="grid grid-3">
+    ${chantiers.map(c=>{
+      const cl = Data.client(c.clientId);
+      const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
+      return `<div class="card" style="cursor:pointer;" onclick="openChantierDetail('${c.id}')">
+        <div class="flex-between"><b>${esc(c.nom)}</b>${c.phaseActuelle===7?`<span class="badge accepte">Terminé</span>`:c.retard?`<span class="badge refuse">Retard</span>`:`<span class="badge envoye">En cours</span>`}</div>
+        <div class="small mt8">${esc(cl.nom)} — ${esc(cl.ville)}</div>
+        <div class="small mt8">${PHASES[c.phaseActuelle]}</div>
+        <div class="progress-track mt8"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function openChantierDetail(id){
+  const c = Data.chantierOne(id);
+  const cl = Data.client(c.clientId);
+  const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
+  const photoPhases = Object.keys(c.photos||{});
+  openModal(`
+    <h3 class="modal-title">${esc(c.nom)}</h3>
+    <div class="small">${esc(cl.nom)} — ${esc(cl.ville)} · Piscine ${esc(cl.piscine.type)}, ${cl.piscine.volume} m³</div>
+    <div class="progress-track mt16"><div class="progress-fill" style="width:${pct}%;"></div></div>
+    <ul class="timeline mt8">
+      ${c.phases.map((ph,i)=>{
+        const done = i < c.phaseActuelle || (i===c.phaseActuelle && ph.reelle);
+        const current = i===c.phaseActuelle && !ph.reelle;
+        return `<li>
+          <div class="tl-dot ${done?'done':current?'next':'future'}">${done?'✓':i+1}</div>
+          <div style="flex:1;">
+            <div class="flex-between"><b>${PHASES[i]}</b><span class="small">Prévu ${fmtDate(ph.prevue)}${ph.reelle?` · Réel ${fmtDate(ph.reelle)}`:''}</span></div>
+            ${ph.notes ? `<div class="small">${esc(ph.notes)}</div>` : ''}
+            ${c.photos && c.photos[PHASES[i]] ? renderPhotoComparator(c.id, PHASES[i], c.photos[PHASES[i]]) : ''}
+          </div>
+        </li>`;
+      }).join('')}
+    </ul>
+    <div class="btn-row mt16">
+      ${c.phaseActuelle<7 ? `<button class="btn accent" onclick="avancerPhase('${c.id}')">Simuler changement de phase</button>` : `<span class="badge accepte">Chantier réceptionné</span>`}
+      <button class="btn secondary" onclick="voirVueClient('${c.id}')">Voir la vue client</button>
+    </div>
+  `);
+}
+let pcCounter = 0;
+function placeholderPhoto(label){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="440"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${clientConfig.charte.couleurPrincipale}"/><stop offset="1" stop-color="${clientConfig.charte.couleurAccent}"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><text x="50%" y="50%" fill="#ffffff" font-family="sans-serif" font-size="24" text-anchor="middle" dominant-baseline="middle">${label}</text></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+function onPhotoError(img, label){
+  img.onerror = null;
+  img.src = placeholderPhoto(label);
+}
+function renderPhotoComparator(chantierId, phaseName, photos){
+  pcCounter++;
+  const cid = 'pc'+pcCounter;
+  return `
+    <div class="photo-compare mt8" id="${cid}">
+      <img src="${photos.avant}" onerror="onPhotoError(this,'Photo avant')">
+      <div class="after-wrap" style="width:50%;"><img src="${photos.apres}" style="width:200%;" onerror="onPhotoError(this,'Photo après')"></div>
+      <span class="tag left">Avant</span><span class="tag right">Après</span>
+      <input type="range" min="0" max="100" value="50" oninput="updatePhotoCompare('${cid}', this.value)">
+    </div>
+  `;
+}
+function updatePhotoCompare(cid, val){
+  const box = document.getElementById(cid);
+  if(!box) return;
+  box.querySelector('.after-wrap').style.width = val+'%';
+  box.querySelector('.after-wrap img').style.width = (10000/val)+'%';
+}
+function avancerPhase(id){
+  const all = Data.chantiers();
+  const c = all.find(x=>x.id===id);
+  c.phases[c.phaseActuelle].reelle = iso(TODAY);
+  if(c.phaseActuelle < 7){
+    c.phaseActuelle++;
+    c.retard = false;
+  }
+  Data.setChantiers(all);
+  toast(`Phase « ${PHASES[c.phaseActuelle-1]||PHASES[0]} » terminée. Notification envoyée au client.`);
+  if(c.phaseActuelle===7){
+    const cl = Data.client(c.clientId);
+    const ad = {id: uid('ad'), clientId: c.clientId, chantierId: c.id, dateEnvoi: iso(daysFromNow(2)), statut:'envoyee'};
+    Data.setAvisDemandes([ad, ...Data.avisDemandes()]);
+    toast(`Chantier réceptionné — demande d’avis Google programmée à J+2 pour ${cl.nom}.`);
+  }
+  closeModal();
+  renderView();
+}
+function voirVueClient(id){
+  const c = Data.chantierOne(id);
+  const cl = Data.client(c.clientId);
+  const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
+  openModal(`
+    <h3 class="modal-title">Vue client — lien de suivi (simulation)</h3>
+    <p class="small">C’est l’écran que ${esc(cl.nom)} ouvre depuis son téléphone en cliquant sur le lien reçu par SMS, sans créer de compte.</p>
+    <div class="phone-frame">
+      <div class="pf-top">Suivi de mon chantier — AA Polyester</div>
+      <div class="pf-body">
+        <b>${esc(c.nom)}</b>
+        <div class="progress-track mt8"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        <div class="small mt8">Étape en cours : <b>${PHASES[Math.min(c.phaseActuelle, 7)]}</b></div>
+        <ul class="timeline mt16">
+          ${c.phases.slice(0, c.phaseActuelle+1).map((ph,i)=>`<li><div class="tl-dot ${ph.reelle?'done':'next'}">${ph.reelle?'✓':i+1}</div><div>${PHASES[i]}${ph.reelle?` — ${fmtDate(ph.reelle)}`:' — en cours'}</div></li>`).join('')}
+        </ul>
+        ${Object.keys(c.photos||{}).length ? `<div class="small mt8"><b>Photos</b></div>${Object.entries(c.photos).map(([ph,p])=>renderPhotoComparator(c.id, ph, p)).join('')}` : ''}
+      </div>
+    </div>
+  `);
+}
+registerModule({id:'suivi-chantier', nom:'Chantiers', icone:'🏗️', render: renderChantiers, init: null});
+
+/* =========================================================
+   ROUTER / NAV / INIT
+   ========================================================= */
+let currentTab = 'dashboard';
+function setTab(id){ currentTab = id; renderView(); }
+function buildNav(){
+  const tabs = getAllTabs();
+  document.getElementById('tabsNav').innerHTML = tabs.map(t=>`<button class="tab-btn" data-tab="${t.id}" onclick="setTab('${t.id}')"><span class="ic">${t.icone}</span>${t.nom}</button>`).join('');
+}
+function renderView(){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===currentTab));
+  const tabs = getAllTabs();
+  const tab = tabs.find(t=>t.id===currentTab) || tabs[0];
+  document.getElementById('view').innerHTML = tab.render(clientConfig);
+  if(tab.init) tab.init(clientConfig);
+  window.scrollTo({top:0, behavior:'instant'});
+}
+function applyCharte(){
+  const root = document.documentElement.style;
+  const p = clientConfig.charte.couleurPrincipale, a = clientConfig.charte.couleurAccent;
+  root.setProperty('--primary', p);
+  root.setProperty('--accent', a);
+  root.setProperty('--primary-l1', shade(p,0.18));
+  root.setProperty('--primary-l2', shade(p,0.32));
+  root.setProperty('--accent-l1', shade(a,0.25));
+  document.getElementById('brandName').textContent = 'Aplomb';
+  document.getElementById('brandSub').textContent = `${clientConfig.entreprise.nom} — ${clientConfig.entreprise.ville}`;
+  document.getElementById('logoBadge').textContent = clientConfig.entreprise.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.title = `Aplomb — ${clientConfig.entreprise.nom}`;
+}
+function updateClock(){
+  document.getElementById('clockBox').textContent = TODAY.toLocaleDateString('fr-FR',{weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+}
+function resetDemo(){
+  if(!confirm('Réinitialiser toutes les données de démonstration ?')) return;
+  seedIfNeeded(true);
+  toast('Démo réinitialisée.');
+  currentTab = 'dashboard';
+  renderView();
+}
+function init(){
+  applyCharte();
+  seedIfNeeded(false);
+  buildNav();
+  updateClock();
+  renderView();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
