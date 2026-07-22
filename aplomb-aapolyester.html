@@ -1227,24 +1227,73 @@ function buildPdfHTML(type, doc, client){
    ========================================================= */
 let factureSearch = '';
 let factureStatusFilter = 'tous';
+let factureCategoryFilter = 'tous';
+const FACTURE_CATEGORIES = ['Contrat d’entretien', 'Rénovation', 'Réparation', 'Installation', 'Autre'];
+function categoriserFacture(f){
+  const text = normalize(f.lignes.map(l=>l.designation).join(' '));
+  if(text.includes('hivernage') || text.includes('mise en service') || text.includes('contrat annuel')) return 'Contrat d’entretien';
+  if(text.includes('gelcoat') || text.includes('osmose') || text.includes('poncage')) return 'Rénovation';
+  if(text.includes('liner')) return 'Installation';
+  if(text.includes('fissure') || text.includes('filtre') || text.includes('pompe') || text.includes('margelle') || text.includes('diagnostic') || text.includes('vidange')) return 'Réparation';
+  return 'Autre';
+}
+function factureCardHTML(f){
+  const c = Data.client(f.clientId);
+  const retard = f.statut==='impayee' ? joursRetardFacture(f) : null;
+  const wash = f.statut==='payee' ? 'wash-green' : 'wash-red';
+  return `<div class="item-card ${wash}">
+    <div class="flex-between wrap">
+      <div>
+        <div class="flex wrap" style="align-items:center;gap:8px;"><b style="font-size:15px;">${f.numero}</b><span class="badge ${f.statut==='payee'?'payee':'impayee'}">${f.statut==='payee'?'Envoyée payée':'Envoyée non payée'}</span><span class="badge info">${categoriserFacture(f)}</span></div>
+        <div class="small mt8">${esc(c.nom)}</div>
+      </div>
+      <div class="btn-row">
+        ${f.statut==='impayee' ? `<button class="btn accent small" onclick="marquerPayee('${f.id}')">${icon('check')}Marquer payée</button>` : ''}
+        <button class="icon-btn" onclick="previewFacturePDF('${f.id}')" title="Aperçu">${icon('eye')}</button>
+        <button class="icon-btn" onclick="imprimerFacture('${f.id}')" title="Imprimer / PDF">${icon('download')}</button>
+        <button class="icon-btn" onclick="dupliquerFacture('${f.id}')" title="Dupliquer">${icon('copy')}</button>
+        <button class="icon-btn danger" onclick="deleteFacture('${f.id}')" title="Supprimer">${icon('x')}</button>
+      </div>
+    </div>
+    <div class="grid grid-4 mt8">
+      <div><div class="small">Montant TTC</div><div class="mono" style="font-size:18px;">${fmtEUR(f.totaux.ttc)}</div></div>
+      <div><div class="small">Montant HT</div><div>${fmtEUR(f.totaux.ht)}</div></div>
+      <div><div class="small">TVA</div><div>${fmtEUR(f.totaux.tva)}</div></div>
+      <div><div class="small">Échéance</div><div>${fmtDate(f.dateEcheance)}${retard!=null?` <span style="color:#f87171;">(J+${retard})</span>`:''}</div></div>
+    </div>
+    ${f.statut==='impayee' && retard>=30 ? `<div class="btn-row mt8"><button class="btn danger small" onclick="previewMiseEnDemeure('${f.id}')">Mise en demeure</button></div>` : ''}
+  </div>`;
+}
 function renderFactures(){
   const all = Data.factures().slice().sort((a,b)=> new Date(b.dateEmission)-new Date(a.dateEmission));
   const nonPayeeCount = all.filter(f=>f.statut==='impayee').length;
-  const factures = all.filter(f=>{
+  const filtered = all.filter(f=>{
     const c = Data.client(f.clientId);
     const q = factureSearch.trim().toLowerCase();
     const matchSearch = !q || f.numero.toLowerCase().includes(q) || c.nom.toLowerCase().includes(q);
     const matchStatus = factureStatusFilter==='tous' || f.statut===factureStatusFilter;
-    return matchSearch && matchStatus;
+    const matchCat = factureCategoryFilter==='tous' || categoriserFacture(f)===factureCategoryFilter;
+    return matchSearch && matchStatus && matchCat;
   });
+
+  let listHTML;
+  if(!filtered.length){
+    listHTML = `<div class="empty-note">Aucune facture ne correspond.</div>`;
+  } else if(factureCategoryFilter==='tous'){
+    const groups = {};
+    filtered.forEach(f=>{ const cat = categoriserFacture(f); (groups[cat] = groups[cat]||[]).push(f); });
+    listHTML = FACTURE_CATEGORIES.filter(cat=>groups[cat] && groups[cat].length).map(cat=>`
+      <div class="section-title" style="margin-top:20px;"><h2 style="font-size:15px;">${cat} (${groups[cat].length})</h2></div>
+      ${groups[cat].map(factureCardHTML).join('')}
+    `).join('');
+  } else {
+    listHTML = filtered.map(factureCardHTML).join('');
+  }
+
   return `
     <div class="page-head flex-between wrap">
-      <div><h2>Factures ${nonPayeeCount ? `<span class="badge impayee" style="font-size:11px;">non payée : ${nonPayeeCount}</span>` : ''}</h2><div class="sub">Gérez vos factures et les échéances</div></div>
-      <div class="btn-row">
-        <button class="chip active">Factures</button>
-        <button class="chip" onclick="setTab('contrats-entretien')">Factures récurrentes</button>
-        <button class="btn" onclick="openFactureForm()">${icon('plus')}Nouvelle facture</button>
-      </div>
+      <div><h2>Factures ${nonPayeeCount ? `<span class="badge impayee" style="font-size:11px;">non payée : ${nonPayeeCount}</span>` : ''}</h2><div class="sub">Toutes vos factures, regroupées par catégorie</div></div>
+      <button class="btn" onclick="openFactureForm()">${icon('plus')}Nouvelle facture</button>
     </div>
     <div class="searchbar">
       <div class="search-input">${icon('search')}<input placeholder="Rechercher une facture ou un client..." value="${esc(factureSearch)}" oninput="factureSearch=this.value;renderView()"></div>
@@ -1254,33 +1303,10 @@ function renderFactures(){
         <option value="impayee" ${factureStatusFilter==='impayee'?'selected':''}>Impayée</option>
       </select>
     </div>
-    ${factures.length ? factures.map(f=>{
-      const c = Data.client(f.clientId);
-      const retard = f.statut==='impayee' ? joursRetardFacture(f) : null;
-      const wash = f.statut==='payee' ? 'wash-green' : 'wash-red';
-      return `<div class="item-card ${wash}">
-        <div class="flex-between wrap">
-          <div>
-            <div class="flex" style="align-items:center;gap:8px;"><b style="font-size:15px;">${f.numero}</b><span class="badge ${f.statut==='payee'?'payee':'impayee'}">${f.statut==='payee'?'Envoyée payée':'Envoyée non payée'}</span></div>
-            <div class="small mt8">${esc(c.nom)}</div>
-          </div>
-          <div class="btn-row">
-            ${f.statut==='impayee' ? `<button class="btn accent small" onclick="marquerPayee('${f.id}')">${icon('check')}Marquer payée</button>` : ''}
-            <button class="icon-btn" onclick="previewFacturePDF('${f.id}')" title="Aperçu">${icon('eye')}</button>
-            <button class="icon-btn" onclick="imprimerFacture('${f.id}')" title="Imprimer / PDF">${icon('download')}</button>
-            <button class="icon-btn" onclick="dupliquerFacture('${f.id}')" title="Dupliquer">${icon('copy')}</button>
-            <button class="icon-btn danger" onclick="deleteFacture('${f.id}')" title="Supprimer">${icon('x')}</button>
-          </div>
-        </div>
-        <div class="grid grid-4 mt8">
-          <div><div class="small">Montant TTC</div><div class="mono" style="font-size:18px;">${fmtEUR(f.totaux.ttc)}</div></div>
-          <div><div class="small">Montant HT</div><div>${fmtEUR(f.totaux.ht)}</div></div>
-          <div><div class="small">TVA</div><div>${fmtEUR(f.totaux.tva)}</div></div>
-          <div><div class="small">Échéance</div><div>${fmtDate(f.dateEcheance)}${retard!=null?` <span style="color:#f87171;">(J+${retard})</span>`:''}</div></div>
-        </div>
-        ${f.statut==='impayee' && retard>=30 ? `<div class="btn-row mt8"><button class="btn danger small" onclick="previewMiseEnDemeure('${f.id}')">Mise en demeure</button></div>` : ''}
-      </div>`;
-    }).join('') : `<div class="empty-note">Aucune facture ne correspond.</div>`}
+    <div class="filters">
+      ${['tous', ...FACTURE_CATEGORIES].map(cat=>`<button class="chip ${factureCategoryFilter===cat?'active':''}" onclick="factureCategoryFilter='${cat}';renderView()">${cat==='tous'?'Toutes catégories':cat}</button>`).join('')}
+    </div>
+    ${listHTML}
   `;
 }
 function openFactureForm(){
