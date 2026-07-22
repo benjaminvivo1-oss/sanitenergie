@@ -308,6 +308,7 @@ label:first-child{margin-top:0;}
 }
 .item-card.wash-green{background:rgba(34,197,94,0.07);border-color:rgba(34,197,94,0.25);}
 .item-card.wash-red{background:rgba(239,68,68,0.07);border-color:rgba(239,68,68,0.25);}
+.item-card.wash-yellow{background:rgba(234,179,8,0.07);border-color:rgba(234,179,8,0.25);}
 .item-card .ic-row{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;margin-top:4px;}
 .item-card .ic-row svg{width:14px;height:14px;}
 
@@ -974,7 +975,8 @@ function renderDevis(){
     </div>
     ${filtered.length ? filtered.map(d=>{
       const c = Data.client(d.clientId);
-      return `<div class="item-card">
+      const wash = d.statut==='accepte' ? 'wash-green' : d.statut==='refuse' ? 'wash-red' : 'wash-yellow';
+      return `<div class="item-card ${wash}">
         <div class="flex-between wrap">
           <div>
             <div class="flex" style="align-items:center;gap:8px;"><b style="font-size:15px;">${d.numero}</b><span class="badge ${d.statut}">${DEVIS_STATUT_LABEL[d.statut]}</span></div>
