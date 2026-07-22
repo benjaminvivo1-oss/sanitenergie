@@ -2385,9 +2385,12 @@ function renderPoolVisionTabs(){
 function renderPoolVision(){
   if(pv.view==='historique') return renderPoolVisionHistorique();
   return `
-    <div class="page-head">
-      <h2>Pool Vision AI</h2>
-      <div class="sub">Générez un photomontage réaliste de piscine dans le jardin de votre client, en quelques minutes.</div>
+    <div class="page-head flex-between wrap" style="align-items:flex-end;">
+      <div>
+        <h2>Pool Vision AI</h2>
+        <div class="sub">Générez un photomontage réaliste de piscine dans le jardin de votre client, en quelques minutes.</div>
+      </div>
+      <button class="btn accent" onclick="pvRunSimulation()">${icon('wand')}Lancer une simulation</button>
     </div>
     ${renderPoolVisionTabs()}
     ${renderPoolVisionSteps()}
@@ -2449,7 +2452,7 @@ function pvRemovePhoto(i){
 }
 
 /* Step 2 — Analyse IA */
-function pvRunAnalysis(){
+function pvRunAnalysis(onDone){
   pv.analysisRunning = true; pv.analysisDone = false; pv.analysisActiveIdx = 0;
   pv.analysisItems = ANALYSIS_ITEMS.map(a=>Object.assign({}, a, {done:false}));
   clearInterval(pv._analysisTimer);
@@ -2458,6 +2461,7 @@ function pvRunAnalysis(){
       clearInterval(pv._analysisTimer);
       pv.analysisRunning = false; pv.analysisDone = true;
       renderView();
+      if(onDone) onDone();
       return;
     }
     pv.analysisItems[pv.analysisActiveIdx].done = true;
@@ -2603,11 +2607,11 @@ function pvGoStep(n){
   if(n===5){ pv.step=5; pv.genRunning=true; pv.genStage=0; pv.resultUrl=null; renderView(); pvRunGeneration(); return; }
   pv.step = n; renderView();
 }
-function pvRunGeneration(){
+function pvRunGeneration(onDone){
   clearInterval(pv._genTimer);
   pv._genTimer = setInterval(()=>{
     pv.genStage++;
-    if(pv.genStage >= GEN_STAGES.length){ clearInterval(pv._genTimer); pvComposite(); return; }
+    if(pv.genStage >= GEN_STAGES.length){ clearInterval(pv._genTimer); pvComposite(onDone); return; }
     renderView();
   }, 500);
 }
@@ -2645,7 +2649,7 @@ function pvDrawPoolShape(ctx, shape, w, h, eauHex, margHex){
   ctx.fill();
   ctx.globalAlpha = 1;
 }
-function pvComposite(){
+function pvComposite(onDone){
   const img = new Image();
   img.onload = ()=>{
     const canvas = document.createElement('canvas');
@@ -2665,9 +2669,52 @@ function pvComposite(){
     pv.resultUrl = canvas.toDataURL('image/jpeg', 0.92);
     pv.genRunning = false;
     renderView();
+    if(onDone) onDone();
   };
   img.onerror = ()=>{ toast('Erreur lors de la génération du rendu.'); pv.genRunning=false; pv.step=4; renderView(); };
   img.src = pv.photos[pv.mainPhotoIdx].dataUrl;
+}
+function pvDemoPhoto(){
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200; canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+  const sky = ctx.createLinearGradient(0,0,0,260);
+  sky.addColorStop(0,'#bcd9f2'); sky.addColorStop(1,'#eef5fb');
+  ctx.fillStyle = sky; ctx.fillRect(0,0,1200,260);
+  const grass = ctx.createLinearGradient(0,230,0,800);
+  grass.addColorStop(0,'#8fbf5a'); grass.addColorStop(1,'#5f9142');
+  ctx.fillStyle = grass; ctx.fillRect(0,230,1200,570);
+  ctx.fillStyle = '#c9beac';
+  ctx.fillRect(0,700,1200,100);
+  ctx.fillStyle = '#e4ddd0';
+  ctx.fillRect(950,120,250,160);
+  ctx.fillStyle = '#9c8f78';
+  ctx.beginPath(); ctx.moveTo(940,120); ctx.lineTo(1075,40); ctx.lineTo(1210,120); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#3f6b34';
+  [[120,250,60],[1080,240,70],[260,235,40]].forEach(([x,y,r])=>{ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); });
+  return canvas.toDataURL('image/jpeg', 0.88);
+}
+function pvRunSimulation(){
+  clearInterval(pv._analysisTimer); clearInterval(pv._genTimer);
+  pv = pvInitialState();
+  pv.photos = [{id: uid('pvp'), dataUrl: pvDemoPhoto()}];
+  pv.mainPhotoIdx = 0;
+  pv.modelId = 'ovale';
+  pv.custom = Object.assign(pv.custom, {longueur:9, largeur:4.5, eau:'bleu-lagon', liner:'bleu-uni', margelle:'pierre-claire', terrasse:'bois-composite', extras:['pergola','eclairage']});
+  pv.pos = {x:26, y:50, w:46, h:26, rot:-4};
+  pv.step = 2;
+  renderView();
+  pvRunAnalysis(()=>{
+    pv.step = 3; renderView();
+    setTimeout(()=>{
+      pv.step = 4; renderView();
+      setTimeout(()=>{
+        pv.step = 5; pv.genRunning = true; pv.genStage = 0; pv.resultUrl = null;
+        renderView();
+        pvRunGeneration(()=>{ toast('Simulation terminée — rendu de démonstration généré.'); });
+      }, 900);
+    }, 900);
+  });
 }
 function pvStepGenerating(){
   return `
