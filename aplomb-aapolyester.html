@@ -372,6 +372,93 @@ footer.app-footer button{
   #printArea{position:absolute;top:0;left:0;width:100%;padding:20px;background:#fff;color:#111;}
   .sidebar,.mobile-topbar,footer.app-footer,.modal-close,.no-print{display:none !important;}
 }
+
+/* Pool Vision AI */
+.pv-tabs{display:flex;gap:6px;margin-bottom:18px;}
+.pv-steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+.pv-step-chip{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:7px 14px 7px 10px;font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:7px;}
+.pv-step-chip .num{width:19px;height:19px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10.5px;flex:none;}
+.pv-step-chip.active{border-color:var(--primary);color:var(--text);background:rgba(59,130,246,0.1);}
+.pv-step-chip.active .num{background:var(--primary);border-color:var(--primary);color:#fff;}
+.pv-step-chip.done .num{background:var(--ok);border-color:var(--ok);color:#08210f;}
+
+.pv-dropzone{
+  border:2px dashed var(--border);border-radius:14px;padding:36px 18px;text-align:center;color:var(--muted);
+  cursor:pointer;transition:border-color .15s;
+}
+.pv-dropzone:hover, .pv-dropzone.drag{border-color:var(--primary);color:var(--text);background:rgba(59,130,246,0.05);}
+.pv-dropzone svg{width:30px;height:30px;margin-bottom:8px;}
+.pv-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:14px;}
+.pv-thumb{position:relative;border-radius:9px;overflow:hidden;aspect-ratio:1;border:2px solid var(--border);cursor:pointer;background:var(--bg);}
+.pv-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.pv-thumb.main{border-color:var(--primary);}
+.pv-thumb .pv-thumb-x{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.65);color:#fff;border:none;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.pv-thumb .pv-thumb-tag{position:absolute;bottom:0;left:0;right:0;background:rgba(59,130,246,0.9);color:#fff;font-size:9.5px;font-weight:700;text-align:center;padding:2px 0;}
+
+.pv-analysis-list{display:flex;flex-direction:column;gap:2px;}
+.pv-analysis-row{display:flex;align-items:center;gap:10px;padding:9px 4px;font-size:13px;color:var(--muted);}
+.pv-analysis-row .dot{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);flex:none;display:flex;align-items:center;justify-content:center;}
+.pv-analysis-row .dot svg{width:12px;height:12px;stroke:transparent;stroke-width:3;}
+.pv-analysis-row.done{color:var(--text);}
+.pv-analysis-row.done .dot{background:var(--ok);border-color:var(--ok);}
+.pv-analysis-row.done .dot svg{stroke:#fff;}
+.pv-analysis-row.spin .dot{border-color:var(--primary);border-top-color:transparent;animation:pv-spin .7s linear infinite;}
+@keyframes pv-spin{to{transform:rotate(360deg);}}
+
+.pv-model-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+@media(min-width:640px){.pv-model-grid{grid-template-columns:repeat(4,1fr);}}
+.pv-model-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;background:var(--card);}
+.pv-model-card.active{border-color:var(--primary);background:rgba(59,130,246,0.08);}
+.pv-model-shape{width:56px;height:36px;margin:0 auto 8px;background:var(--primary-l2);opacity:0.85;}
+.pv-model-shape.rect{border-radius:5px;}
+.pv-model-shape.rect-cut{clip-path:polygon(12% 0,88% 0,100% 22%,100% 100%,0 100%,0 22%);}
+.pv-model-shape.oval{border-radius:50%;}
+.pv-model-shape.circle{border-radius:50%;width:38px;height:38px;}
+.pv-model-shape.kidney{border-radius:60% 40% 55% 45%/55% 45% 60% 40%;}
+.pv-model-shape.lshape{clip-path:polygon(0 0,60% 0,60% 55%,100% 55%,100% 100%,0 100%);}
+.pv-model-shape.infinity{border-radius:5px 5px 0 0;}
+.pv-model-shape.lane{border-radius:18px;width:64px;height:22px;}
+.pv-model-card b{display:block;font-size:12px;margin-bottom:2px;}
+.pv-model-card span{font-size:10.5px;color:var(--muted);}
+
+.color-swatch-row{display:flex;gap:8px;flex-wrap:wrap;}
+.color-swatch{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);flex:none;position:relative;}
+.color-swatch.active{border-color:var(--text);box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--primary);}
+
+.pv-extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(min-width:640px){.pv-extra-grid{grid-template-columns:repeat(3,1fr);}}
+.pv-extra-card{display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:12.5px;font-weight:600;background:var(--card);}
+.pv-extra-card.active{border-color:var(--accent);background:rgba(34,197,94,0.08);color:var(--text);}
+.pv-extra-card svg{width:16px;height:16px;flex:none;color:var(--muted);}
+.pv-extra-card.active svg{color:var(--accent);}
+
+.pv-stage{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#1c2130;border:1px solid var(--border);user-select:none;touch-action:none;}
+.pv-stage img.pv-bg{width:100%;display:block;pointer-events:none;user-select:none;}
+.pv-pool-shape{
+  position:absolute;border-radius:10px;cursor:move;
+  background:rgba(27,163,198,0.55);border:2px solid rgba(255,255,255,0.85);
+  box-shadow:0 4px 18px rgba(0,0,0,0.35);
+}
+.pv-pool-shape.shape-circle,.pv-pool-shape.shape-oval,.pv-pool-shape.shape-kidney,.pv-pool-shape.shape-infinity{border-radius:50%;}
+.pv-resize-handle{
+  position:absolute;right:-7px;bottom:-7px;width:16px;height:16px;border-radius:50%;
+  background:#fff;border:2px solid var(--primary);cursor:nwse-resize;
+}
+.pv-rotate-handle{
+  position:absolute;left:50%;top:-26px;width:14px;height:14px;border-radius:50%;
+  background:#fff;border:2px solid var(--primary);cursor:grab;transform:translateX(-50%);
+}
+
+.pv-gen-list{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.pv-gen-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);}
+.pv-gen-row.active{color:var(--text);font-weight:600;}
+.pv-gen-row.done{color:var(--ok);}
+.pv-gen-row .dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex:none;}
+.pv-gen-row.active .dot{background:var(--primary);animation:pv-pulse 1s infinite;}
+.pv-gen-row.done .dot{background:var(--ok);}
+@keyframes pv-pulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,0.5);}70%{box-shadow:0 0 0 7px rgba(59,130,246,0);}100%{box-shadow:0 0 0 0 rgba(59,130,246,0);}}
+
+.pv-hist-thumb{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:9px;border:1px solid var(--border);margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -441,7 +528,7 @@ const clientConfig = {
     devis:   { actif: true, niveaux: [0, 4, 10] },
     impayes: { actif: true, niveaux: [7, 15, 30] },
   },
-  modulesActifs: ["avis-google"],
+  modulesActifs: ["avis-google", "pool-vision"],
 };
 
 /* =========================================================
@@ -513,6 +600,9 @@ const ICON_PATHS = {
   alert:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
   menu:'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
   mic:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>',
+  wand:'<path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M12.2 6.2 11 5M17.8 6.2 19 5M12.2 11.8 11 13"/><path d="m3 21 9-9"/><circle cx="15" cy="9" r="1"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
 };
 function icon(name, cls){ return `<svg class="ic ${cls||''}" viewBox="0 0 24 24">${ICON_PATHS[name]||''}</svg>`; }
 
@@ -805,6 +895,8 @@ const Data = {
   setAvisDemandes: v=>store.set('avisDemandes', v),
   avisConfig: ()=>store.get('avisConfig', {}),
   setAvisConfig: v=>store.set('avisConfig', v),
+  poolRenders: ()=>store.get('poolRenders', []),
+  setPoolRenders: v=>store.set('poolRenders', v),
   client: id=>Data.clients().find(c=>c.id===id),
   devisOne: id=>Data.devis().find(d=>d.id===id),
   factureOne: id=>Data.factures().find(f=>f.id===id),
@@ -2185,6 +2277,507 @@ function voirVueClient(id){
   `);
 }
 registerModule({id:'suivi-chantier', nom:'Chantiers', icone:'tool', render: renderChantiers, init: null});
+
+/* =========================================================
+   MODULE — POOL VISION AI
+   ========================================================= */
+const POOL_MODELS = [
+  {id:'rectangulaire', nom:'Rectangulaire', desc:'Le classique intemporel', shape:'rect'},
+  {id:'rectangulaire-angles', nom:'Angles coupés', desc:'Lignes adoucies', shape:'rect-cut'},
+  {id:'ovale', nom:'Ovale', desc:'Douceur et fluidité', shape:'oval'},
+  {id:'ronde', nom:'Ronde', desc:'Compacte et conviviale', shape:'circle'},
+  {id:'haricot', nom:'Forme haricot', desc:'Silhouette organique', shape:'kidney'},
+  {id:'l-shape', nom:'Forme en L', desc:'Terrains complexes', shape:'lshape'},
+  {id:'infinity', nom:'À débordement', desc:'Effet miroir sur l’horizon', shape:'infinity'},
+  {id:'couloir', nom:'Couloir de nage', desc:'Nage sportive', shape:'lane'},
+];
+const EAU_COLORS = [
+  {id:'bleu-lagon', nom:'Bleu lagon', hex:'#1ba3c6'},
+  {id:'bleu-nuit', nom:'Bleu nuit', hex:'#0d3b66'},
+  {id:'turquoise', nom:'Turquoise', hex:'#14b8a6'},
+  {id:'gris-anthracite', nom:'Gris anthracite', hex:'#3f4652'},
+];
+const LINER_COLORS = [
+  {id:'bleu-uni', nom:'Bleu uni', hex:'#2f6fb0'},
+  {id:'blanc-nacre', nom:'Blanc nacré', hex:'#e7ecef'},
+  {id:'gris-clair', nom:'Gris clair', hex:'#a9b0b8'},
+  {id:'sable', nom:'Sable', hex:'#d8c6a1'},
+];
+const MARGELLE_COLORS = [
+  {id:'pierre-claire', nom:'Pierre claire', hex:'#d8cfc0'},
+  {id:'gris-clair', nom:'Gris clair', hex:'#b7bcc4'},
+  {id:'bois-exotique', nom:'Bois exotique', hex:'#7a5230'},
+  {id:'noir-anthracite', nom:'Noir anthracite', hex:'#2b2e33'},
+];
+const TERRASSE_OPTIONS = [
+  {id:'bois-composite', nom:'Bois composite'},
+  {id:'carrelage-pierre', nom:'Carrelage effet pierre'},
+  {id:'beton-desactive', nom:'Béton désactivé'},
+  {id:'dalles-clipsables', nom:'Dalles clipsables'},
+  {id:'aucune', nom:'Conserver le sol actuel'},
+];
+const EXTRA_OPTIONS = [
+  {id:'pergola', nom:'Pergola bioclimatique', icone:'tool'},
+  {id:'pool-house', nom:'Pool house', icone:'file'},
+  {id:'jacuzzi', nom:'Spa / Jacuzzi attenant', icone:'star'},
+  {id:'eclairage', nom:'Éclairage LED subaquatique', icone:'wand'},
+  {id:'mobilier', nom:'Mobilier extérieur', icone:'users'},
+  {id:'volet', nom:'Volet roulant immergé', icone:'check'},
+];
+const ANALYSIS_ITEMS = [
+  {id:'terrain', label:'Analyse du terrain et du relief'},
+  {id:'perspective', label:'Calcul de la perspective et du point de fuite'},
+  {id:'lumiere', label:'Détection de la lumière et des ombres'},
+  {id:'vegetation', label:'Repérage de la végétation existante'},
+  {id:'obstacles', label:'Identification des obstacles et limites de terrain'},
+  {id:'profondeur', label:'Estimation de la profondeur de champ'},
+];
+const GEN_STAGES = [
+  'Préparation de la scène…',
+  'Positionnement du bassin…',
+  'Application des matériaux et couleurs…',
+  'Calcul des reflets et ombres portées…',
+  'Fusion photoréaliste…',
+  'Finalisation du rendu HD…',
+];
+const AMELIORATION_POOL = [
+  {label:'Ajouter une pergola bioclimatique', budget:'6 500 € – 9 000 €'},
+  {label:'Éclairage LED subaquatique multicolore', budget:'800 € – 1 500 €'},
+  {label:'Margelles en pierre naturelle plutôt que béton', budget:'+ 2 200 € – 3 400 €'},
+  {label:'Volet roulant immergé (sécurité et confort)', budget:'3 200 € – 5 000 €'},
+];
+
+function pvInitialState(){
+  return {
+    view: 'wizard', step: 1,
+    photos: [], mainPhotoIdx: 0,
+    analysisRunning: false, analysisDone: false, analysisActiveIdx: 0,
+    analysisItems: ANALYSIS_ITEMS.map(a=>Object.assign({}, a, {done:false})),
+    modelId: null,
+    custom: {longueur:8, largeur:4, eau:'bleu-lagon', liner:'bleu-uni', margelle:'pierre-claire', terrasse:'bois-composite', extras:[]},
+    pos: {x:28, y:52, w:44, h:24, rot:0},
+    genRunning: false, genStage: 0, resultUrl: null,
+    clientId: '', clientNom: '',
+    _drag: null, _analysisTimer: null, _genTimer: null,
+  };
+}
+let pv = pvInitialState();
+
+function pvSetView(v){ pv.view = v; renderView(); }
+
+function pvStepMeta(){
+  return [{n:1,label:'Import'},{n:2,label:'Analyse IA'},{n:3,label:'Piscine'},{n:4,label:'Positionnement'},{n:5,label:'Résultat'}];
+}
+function renderPoolVisionSteps(){
+  return `<div class="pv-steps">${pvStepMeta().map(s=>`
+    <div class="pv-step-chip ${pv.step===s.n?'active':''} ${pv.step>s.n?'done':''}">
+      <span class="num">${pv.step>s.n?'✓':s.n}</span>${s.label}
+    </div>`).join('')}</div>`;
+}
+function renderPoolVisionTabs(){
+  const n = Data.poolRenders().length;
+  return `<div class="pv-tabs">
+    <button class="chip ${pv.view==='wizard'?'active':''}" onclick="pvSetView('wizard')">Nouveau photomontage</button>
+    <button class="chip ${pv.view==='historique'?'active':''}" onclick="pvSetView('historique')">Historique${n?` (${n})`:''}</button>
+  </div>`;
+}
+
+function renderPoolVision(){
+  if(pv.view==='historique') return renderPoolVisionHistorique();
+  return `
+    <div class="page-head">
+      <h2>Pool Vision AI</h2>
+      <div class="sub">Générez un photomontage réaliste de piscine dans le jardin de votre client, en quelques minutes.</div>
+    </div>
+    ${renderPoolVisionTabs()}
+    ${renderPoolVisionSteps()}
+    ${pvRenderStep()}
+  `;
+}
+function pvRenderStep(){
+  if(pv.step===1) return pvStepImport();
+  if(pv.step===2) return pvStepAnalyse();
+  if(pv.step===3) return pvStepPiscine();
+  if(pv.step===4) return pvStepPosition();
+  return pvStepResultat();
+}
+
+/* Step 1 — Import */
+function pvStepImport(){
+  return `
+  <div class="card">
+    <h3>1. Importer les photos du jardin</h3>
+    <div class="pv-dropzone" onclick="document.getElementById('pv-file-input').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="pvHandleDrop(event)">
+      ${icon('upload')}
+      <div><b style="color:var(--text);">Glissez vos photos ici</b> ou cliquez pour parcourir</div>
+      <div class="small mt8">JPG, PNG, HEIC — jusqu’à 20 photos</div>
+    </div>
+    <input type="file" id="pv-file-input" accept="image/*" multiple style="display:none;" onchange="pvHandleFiles(this.files)">
+    ${pv.photos.length ? `<div class="pv-thumbs">${pv.photos.map((p,i)=>`
+      <div class="pv-thumb ${i===pv.mainPhotoIdx?'main':''}" onclick="pvSetMainPhoto(${i})">
+        <img src="${p.dataUrl}">
+        ${i===pv.mainPhotoIdx?'<div class="pv-thumb-tag">Principale</div>':''}
+        <button class="pv-thumb-x" onclick="event.stopPropagation();pvRemovePhoto(${i})">${icon('x')}</button>
+      </div>`).join('')}</div>` : `<div class="empty-note">Aucune photo importée pour le moment.</div>`}
+  </div>
+  <div class="btn-row mt16">
+    <button class="btn" ${pv.photos.length?'':'disabled'} onclick="pvGoStep(2)">Lancer l’analyse IA ${icon('wand')}</button>
+  </div>`;
+}
+function pvHandleDrop(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  pvHandleFiles(e.dataTransfer.files);
+}
+function pvHandleFiles(files){
+  const room = 20 - pv.photos.length;
+  Array.from(files).slice(0, Math.max(0,room)).forEach(file=>{
+    resizeImageFile(file, 1600, dataUrl=>{
+      pv.photos.push({id: uid('pvp'), dataUrl});
+      renderView();
+    });
+  });
+}
+function pvSetMainPhoto(i){ pv.mainPhotoIdx = i; renderView(); }
+function pvRemovePhoto(i){
+  pv.photos.splice(i,1);
+  if(pv.mainPhotoIdx>=pv.photos.length) pv.mainPhotoIdx = Math.max(0, pv.photos.length-1);
+  renderView();
+}
+
+/* Step 2 — Analyse IA */
+function pvRunAnalysis(){
+  pv.analysisRunning = true; pv.analysisDone = false; pv.analysisActiveIdx = 0;
+  pv.analysisItems = ANALYSIS_ITEMS.map(a=>Object.assign({}, a, {done:false}));
+  clearInterval(pv._analysisTimer);
+  pv._analysisTimer = setInterval(()=>{
+    if(pv.analysisActiveIdx >= pv.analysisItems.length){
+      clearInterval(pv._analysisTimer);
+      pv.analysisRunning = false; pv.analysisDone = true;
+      renderView();
+      return;
+    }
+    pv.analysisItems[pv.analysisActiveIdx].done = true;
+    pv.analysisActiveIdx++;
+    renderView();
+  }, 550);
+}
+function pvAnalysisSummary(){
+  return `Terrain globalement plat avec une légère pente vers le fond du jardin. Forte luminosité naturelle en fin de journée, ombres portées vers le nord-est. Végétation dense repérée sur la limite gauche à préserver. Aucun obstacle majeur détecté dans la zone d’implantation retenue.`;
+}
+function pvStepAnalyse(){
+  return `
+  <div class="card">
+    <h3>2. Analyse IA de la scène</h3>
+    <div class="small">L’IA étudie la photo pour préparer une intégration réaliste de la piscine.</div>
+    <div class="pv-analysis-list mt16">
+      ${pv.analysisItems.map((a,i)=>`<div class="pv-analysis-row ${a.done?'done':(i===pv.analysisActiveIdx && pv.analysisRunning?'spin':'')}">
+        <div class="dot">${a.done?icon('check'):''}</div>${a.label}
+      </div>`).join('')}
+    </div>
+    ${pv.analysisDone ? `<div class="item-card wash-green mt16"><b>Analyse terminée</b><div class="small mt8">${pvAnalysisSummary()}</div></div>` : ''}
+  </div>
+  <div class="btn-row mt16">
+    <button class="btn secondary" onclick="pvGoStep(1)">Retour</button>
+    <button class="btn" ${pv.analysisDone?'':'disabled'} onclick="pvGoStep(3)">Choisir la piscine</button>
+  </div>`;
+}
+
+/* Step 3 — Piscine */
+function pvSelectModel(id){ pv.modelId = id; renderView(); }
+function pvSetCustom(key, val){
+  pv.custom[key] = (key==='longueur'||key==='largeur') ? (parseFloat(val)||1) : val;
+  renderView();
+}
+function pvToggleExtra(id){
+  const i = pv.custom.extras.indexOf(id);
+  if(i>-1) pv.custom.extras.splice(i,1); else pv.custom.extras.push(id);
+  renderView();
+}
+function pvStepPiscine(){
+  const c = pv.custom;
+  return `
+  <div class="card">
+    <h3>3. Choisissez le modèle de piscine</h3>
+    <div class="pv-model-grid">
+      ${POOL_MODELS.map(m=>`<div class="pv-model-card ${pv.modelId===m.id?'active':''}" onclick="pvSelectModel('${m.id}')">
+        <div class="pv-model-shape ${m.shape}"></div><b>${m.nom}</b><span>${m.desc}</span>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="card mt16">
+    <h3>Dimensions</h3>
+    <div class="form-row cols-2">
+      <div><label>Longueur (m)</label><input type="number" min="2" max="20" step="0.5" value="${c.longueur}" onchange="pvSetCustom('longueur', this.value)"></div>
+      <div><label>Largeur (m)</label><input type="number" min="2" max="12" step="0.5" value="${c.largeur}" onchange="pvSetCustom('largeur', this.value)"></div>
+    </div>
+  </div>
+  <div class="card mt16"><h3>Couleur de l’eau</h3>
+    <div class="color-swatch-row">${EAU_COLORS.map(x=>`<button class="color-swatch ${c.eau===x.id?'active':''}" style="background:${x.hex};" title="${x.nom}" onclick="pvSetCustom('eau','${x.id}')"></button>`).join('')}</div>
+  </div>
+  <div class="card mt16"><h3>Liner</h3>
+    <div class="color-swatch-row">${LINER_COLORS.map(x=>`<button class="color-swatch ${c.liner===x.id?'active':''}" style="background:${x.hex};" title="${x.nom}" onclick="pvSetCustom('liner','${x.id}')"></button>`).join('')}</div>
+  </div>
+  <div class="card mt16"><h3>Margelles</h3>
+    <div class="color-swatch-row">${MARGELLE_COLORS.map(x=>`<button class="color-swatch ${c.margelle===x.id?'active':''}" style="background:${x.hex};" title="${x.nom}" onclick="pvSetCustom('margelle','${x.id}')"></button>`).join('')}</div>
+  </div>
+  <div class="card mt16"><h3>Terrasse / plage</h3>
+    <div class="filters">${TERRASSE_OPTIONS.map(t=>`<button class="chip ${c.terrasse===t.id?'active':''}" onclick="pvSetCustom('terrasse','${t.id}')">${t.nom}</button>`).join('')}</div>
+  </div>
+  <div class="card mt16"><h3>Options complémentaires</h3>
+    <div class="pv-extra-grid">${EXTRA_OPTIONS.map(o=>`<div class="pv-extra-card ${c.extras.includes(o.id)?'active':''}" onclick="pvToggleExtra('${o.id}')">${icon(o.icone)}${o.nom}</div>`).join('')}</div>
+  </div>
+  <div class="btn-row mt16">
+    <button class="btn secondary" onclick="pvGoStep(2)">Retour</button>
+    <button class="btn" ${pv.modelId?'':'disabled'} onclick="pvGoStep(4)">Positionner la piscine</button>
+  </div>`;
+}
+
+/* Step 4 — Positionnement */
+function pvShapeClass(shape){ return (shape==='oval'||shape==='circle'||shape==='kidney'||shape==='infinity') ? shape : 'rect'; }
+function pvStepPosition(){
+  const photo = pv.photos[pv.mainPhotoIdx];
+  const model = POOL_MODELS.find(m=>m.id===pv.modelId) || POOL_MODELS[0];
+  return `
+  <div class="card">
+    <h3>4. Positionnement de la piscine</h3>
+    <div class="small">Déplacez, redimensionnez et faites pivoter la piscine pour l’aligner avec la perspective du jardin.</div>
+    <div class="pv-stage mt16" id="pv-stage" onpointermove="pvPointerMove(event)" onpointerup="pvPointerUp(event)" onpointerleave="pvPointerUp(event)">
+      <img class="pv-bg" src="${photo.dataUrl}">
+      <div class="pv-pool-shape shape-${pvShapeClass(model.shape)}" id="pv-pool-el"
+        style="left:${pv.pos.x}%;top:${pv.pos.y}%;width:${pv.pos.w}%;height:${pv.pos.h}%;transform:rotate(${pv.pos.rot}deg);"
+        onpointerdown="pvPointerDown(event,'move')">
+        <div class="pv-rotate-handle" onpointerdown="event.stopPropagation();pvPointerDown(event,'rotate')"></div>
+        <div class="pv-resize-handle" onpointerdown="event.stopPropagation();pvPointerDown(event,'resize')"></div>
+      </div>
+    </div>
+    <div class="btn-row mt16"><button class="btn secondary small" onclick="pvAutoAlign()">${icon('wand')}Alignement automatique</button></div>
+  </div>
+  <div class="btn-row mt16">
+    <button class="btn secondary" onclick="pvGoStep(3)">Retour</button>
+    <button class="btn accent" onclick="pvGoStep(5)">Générer le rendu IA ${icon('wand')}</button>
+  </div>`;
+}
+function pvPointerDown(e, mode){
+  e.preventDefault();
+  const stage = document.getElementById('pv-stage');
+  const rect = stage.getBoundingClientRect();
+  pv._drag = {mode, rect, startX:e.clientX, startY:e.clientY, orig:Object.assign({}, pv.pos)};
+  try{ e.target.setPointerCapture(e.pointerId); }catch(err){}
+}
+function pvPointerMove(e){
+  if(!pv._drag) return;
+  const d = pv._drag;
+  const dxPct = (e.clientX - d.startX) / d.rect.width * 100;
+  const dyPct = (e.clientY - d.startY) / d.rect.height * 100;
+  if(d.mode==='move'){
+    pv.pos.x = Math.max(0, Math.min(100-pv.pos.w, d.orig.x + dxPct));
+    pv.pos.y = Math.max(0, Math.min(100-pv.pos.h, d.orig.y + dyPct));
+  } else if(d.mode==='resize'){
+    pv.pos.w = Math.max(8, Math.min(90, d.orig.w + dxPct));
+    pv.pos.h = Math.max(8, Math.min(90, d.orig.h + dyPct));
+  } else if(d.mode==='rotate'){
+    pv.pos.rot = Math.max(-45, Math.min(45, d.orig.rot + dxPct));
+  }
+  pvUpdatePoolElStyle();
+}
+function pvPointerUp(){ pv._drag = null; }
+function pvUpdatePoolElStyle(){
+  const el = document.getElementById('pv-pool-el');
+  if(!el) return;
+  el.style.left = pv.pos.x+'%'; el.style.top = pv.pos.y+'%'; el.style.width = pv.pos.w+'%'; el.style.height = pv.pos.h+'%';
+  el.style.transform = 'rotate('+pv.pos.rot+'deg)';
+}
+function pvAutoAlign(){
+  pv.pos = {x:28, y:52, w:44, h:24, rot:0};
+  toast('Analyse de la perspective terminée — piscine alignée automatiquement.');
+  renderView();
+}
+
+/* Step 5 — Génération + Résultat */
+function pvGoStep(n){
+  if(n===2 && !pv.analysisDone){ pv.step=2; renderView(); pvRunAnalysis(); return; }
+  if(n===5){ pv.step=5; pv.genRunning=true; pv.genStage=0; pv.resultUrl=null; renderView(); pvRunGeneration(); return; }
+  pv.step = n; renderView();
+}
+function pvRunGeneration(){
+  clearInterval(pv._genTimer);
+  pv._genTimer = setInterval(()=>{
+    pv.genStage++;
+    if(pv.genStage >= GEN_STAGES.length){ clearInterval(pv._genTimer); pvComposite(); return; }
+    renderView();
+  }, 500);
+}
+function pvPathShape(ctx, round, x, y, w, h){
+  ctx.beginPath();
+  if(round){
+    ctx.ellipse(x+w/2, y+h/2, Math.max(w,1)/2, Math.max(h,1)/2, 0, 0, Math.PI*2);
+  } else {
+    const r = Math.min(w,h)*0.06;
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+  }
+  ctx.closePath();
+}
+function pvDrawPoolShape(ctx, shape, w, h, eauHex, margHex){
+  const margin = Math.max(4, Math.min(w,h)*0.08);
+  const round = pvShapeClass(shape)!=='rect';
+  ctx.globalAlpha = 0.94;
+  ctx.fillStyle = margHex;
+  pvPathShape(ctx, round, -w/2-margin, -h/2-margin, w+margin*2, h+margin*2);
+  ctx.fill();
+  const grad = ctx.createLinearGradient(-w/2, -h/2, w/2, h/2);
+  grad.addColorStop(0, shade(eauHex, 0.25));
+  grad.addColorStop(0.5, eauHex);
+  grad.addColorStop(1, shade(eauHex, -0.2));
+  ctx.fillStyle = grad;
+  pvPathShape(ctx, round, -w/2, -h/2, w, h);
+  ctx.fill();
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = '#ffffff';
+  pvPathShape(ctx, round, -w/2, -h/2, w, h*0.32);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+function pvComposite(){
+  const img = new Image();
+  img.onload = ()=>{
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const model = POOL_MODELS.find(m=>m.id===pv.modelId) || POOL_MODELS[0];
+    const eau = (EAU_COLORS.find(x=>x.id===pv.custom.eau)||EAU_COLORS[0]).hex;
+    const marg = (MARGELLE_COLORS.find(x=>x.id===pv.custom.margelle)||MARGELLE_COLORS[0]).hex;
+    const px = pv.pos.x/100*canvas.width, py = pv.pos.y/100*canvas.height;
+    const pw = pv.pos.w/100*canvas.width, ph = pv.pos.h/100*canvas.height;
+    ctx.save();
+    ctx.translate(px+pw/2, py+ph/2);
+    ctx.rotate(pv.pos.rot*Math.PI/180);
+    pvDrawPoolShape(ctx, model.shape, pw, ph, eau, marg);
+    ctx.restore();
+    pv.resultUrl = canvas.toDataURL('image/jpeg', 0.92);
+    pv.genRunning = false;
+    renderView();
+  };
+  img.onerror = ()=>{ toast('Erreur lors de la génération du rendu.'); pv.genRunning=false; pv.step=4; renderView(); };
+  img.src = pv.photos[pv.mainPhotoIdx].dataUrl;
+}
+function pvStepGenerating(){
+  return `
+  <div class="card">
+    <h3>5. Génération du rendu</h3>
+    <div class="small">L’IA fusionne la piscine choisie avec votre photo, en respectant la lumière et la perspective détectées.</div>
+    <div class="pv-gen-list">
+      ${GEN_STAGES.map((s,i)=>`<div class="pv-gen-row ${i<pv.genStage?'done':(i===pv.genStage?'active':'')}"><div class="dot"></div>${s}</div>`).join('')}
+    </div>
+    <div class="progress-track mt16"><div class="progress-fill" style="width:${Math.round(pv.genStage/GEN_STAGES.length*100)}%;"></div></div>
+  </div>`;
+}
+function pvResultCompare(){
+  pcCounter++;
+  const cid = 'pvc'+pcCounter;
+  const before = pv.photos[pv.mainPhotoIdx].dataUrl;
+  return `
+  <div class="photo-compare mt16" id="${cid}">
+    <img src="${before}">
+    <div class="after-wrap" style="width:50%;"><img src="${pv.resultUrl}" style="width:200%;"></div>
+    <span class="tag left">Avant</span><span class="tag right">Après (IA)</span>
+    <input type="range" min="0" max="100" value="50" oninput="updatePhotoCompare('${cid}', this.value)">
+  </div>`;
+}
+function pvSetClient(id){ pv.clientId = id; if(id) pv.clientNom=''; }
+function pvOpenAmelioration(){
+  openModal(`<h3 class="modal-title">Améliorer le projet</h3>
+    <div class="small mb">Suggestions IA pour valoriser ce projet, avec estimation budgétaire.</div>
+    ${AMELIORATION_POOL.map(a=>`<div class="item-card"><div class="flex-between"><b>${a.label}</b><span class="badge info">${a.budget}</span></div></div>`).join('')}`);
+}
+function pvSaveRender(){
+  if(!pv.clientId && !pv.clientNom.trim()){ toast('Sélectionnez un client ou saisissez un nom.'); return; }
+  const model = POOL_MODELS.find(m=>m.id===pv.modelId);
+  const rec = {
+    id: uid('pv'), date: iso(TODAY), clientId: pv.clientId || null,
+    clientNom: pv.clientId ? Data.client(pv.clientId).nom : pv.clientNom.trim(),
+    modelNom: model ? model.nom : '', beforeUrl: pv.photos[pv.mainPhotoIdx].dataUrl, resultUrl: pv.resultUrl,
+  };
+  Data.setPoolRenders([rec, ...Data.poolRenders()]);
+  toast('Rendu enregistré dans l’historique.');
+  pv.view = 'historique';
+  renderView();
+}
+function pvRestart(){ pv = pvInitialState(); renderView(); }
+function pvStepResultat(){
+  if(pv.genRunning || !pv.resultUrl) return pvStepGenerating();
+  const clients = Data.clients();
+  return `
+  <div class="card">
+    <h3>5. Résultat</h3>
+    ${pvResultCompare()}
+    <div class="btn-row mt16">
+      <a class="btn" href="${pv.resultUrl}" download="pool-vision-render.jpg">${icon('download')}Télécharger (HD)</a>
+      <button class="btn secondary" onclick="pvOpenAmelioration()">${icon('wand')}Améliorer le projet</button>
+      <button class="btn ghost" onclick="pvRestart()">Nouveau photomontage</button>
+    </div>
+  </div>
+  <div class="card mt16">
+    <h3>Associer à un client</h3>
+    <label>Client existant</label>
+    <select onchange="pvSetClient(this.value)">
+      <option value="">— Sélectionner —</option>
+      ${clients.map(c=>`<option value="${c.id}" ${pv.clientId===c.id?'selected':''}>${esc(c.nom)}</option>`).join('')}
+    </select>
+    <label>ou nom du prospect</label>
+    <input type="text" placeholder="Nom du prospect" value="${esc(pv.clientNom)}" onchange="pv.clientNom=this.value;">
+    <div class="btn-row mt16"><button class="btn accent" onclick="pvSaveRender()">${icon('check')}Enregistrer le rendu</button></div>
+  </div>`;
+}
+
+/* Historique */
+function renderPoolVisionHistorique(){
+  const list = Data.poolRenders();
+  return `
+    <div class="page-head"><h2>Pool Vision AI</h2><div class="sub">Historique des photomontages générés.</div></div>
+    ${renderPoolVisionTabs()}
+    ${list.length ? `<div class="grid grid-3">${list.map(r=>`
+      <div class="card">
+        <img class="pv-hist-thumb" src="${r.resultUrl}">
+        <b>${esc(r.clientNom)}</b>
+        <div class="small mt8">${esc(r.modelNom)} · ${fmtDate(r.date)}</div>
+        <div class="btn-row mt8">
+          <button class="btn small secondary" onclick="pvViewRender('${r.id}')">${icon('eye')}Voir</button>
+          <button class="btn small danger" onclick="pvDeleteRender('${r.id}')">${icon('trash')}</button>
+        </div>
+      </div>`).join('')}</div>` : `<div class="empty-note">Aucun rendu enregistré pour le moment.</div>`}
+  `;
+}
+function pvViewRender(id){
+  const r = Data.poolRenders().find(x=>x.id===id);
+  if(!r) return;
+  pcCounter++;
+  const cid = 'pvh'+pcCounter;
+  openModal(`<h3 class="modal-title">${esc(r.clientNom)} — ${esc(r.modelNom)}</h3>
+    <div class="photo-compare" id="${cid}">
+      <img src="${r.beforeUrl}">
+      <div class="after-wrap" style="width:50%;"><img src="${r.resultUrl}" style="width:200%;"></div>
+      <span class="tag left">Avant</span><span class="tag right">Après</span>
+      <input type="range" min="0" max="100" value="50" oninput="updatePhotoCompare('${cid}', this.value)">
+    </div>
+    <div class="btn-row mt16"><a class="btn" href="${r.resultUrl}" download="pool-vision-render.jpg">${icon('download')}Télécharger</a></div>`);
+}
+function pvDeleteRender(id){
+  if(!confirm('Supprimer ce rendu ?')) return;
+  Data.setPoolRenders(Data.poolRenders().filter(x=>x.id!==id));
+  toast('Rendu supprimé.');
+  renderView();
+}
+
+registerModule({id:'pool-vision', nom:'Pool Vision AI', icone:'wand', render: renderPoolVision, init: null});
 
 /* =========================================================
    ROUTER / NAV / INIT
