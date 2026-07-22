@@ -268,7 +268,7 @@ label:first-child{margin-top:0;}
 
 .kanban{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
 .kanban-col{
-  flex:none;width:200px;background:var(--card);border-radius:10px;padding:8px;border:1px solid var(--border);
+  flex:1;min-width:240px;background:var(--card);border-radius:10px;padding:8px;border:1px solid var(--border);
 }
 .kanban-col h4{font-size:11.5px;margin:2px 6px 8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;}
 .kanban-card{
@@ -289,6 +289,29 @@ label:first-child{margin-top:0;}
 }
 .photo-compare .tag.left{left:8px;}
 .photo-compare .tag.right{right:8px;}
+
+.phase-stepper{display:flex;gap:2px;overflow-x:auto;padding:4px 0 10px;}
+.phase-step{flex:none;width:78px;text-align:center;position:relative;}
+.phase-step::before{
+  content:'';position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--border);z-index:0;
+}
+.phase-step:first-child::before{display:none;}
+.phase-step.done::before{background:var(--ok);}
+.phase-step .step-dot{
+  width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;background:var(--bg);border:1.5px solid var(--border);color:var(--muted);position:relative;z-index:1;
+}
+.phase-step.done .step-dot{background:var(--ok);border-color:var(--ok);color:#08210f;}
+.phase-step.current .step-dot{background:var(--warn);border-color:var(--warn);color:#241b02;}
+.phase-step .step-label{font-size:10px;color:var(--muted);line-height:1.25;}
+.phase-step.done .step-label, .phase-step.current .step-label{color:var(--text);font-weight:600;}
+
+.photo-thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+.photo-thumb{
+  flex:none;border:1px solid var(--border);background:var(--bg);color:var(--muted);border-radius:7px;
+  padding:6px 12px;font-size:11.5px;font-weight:600;white-space:nowrap;
+}
+.photo-thumb.active{border-color:var(--primary);color:var(--primary-l2);background:rgba(59,130,246,0.12);}
 
 .empty-note{color:var(--muted);font-size:12.5px;padding:14px 4px;}
 .small{font-size:12px;color:var(--muted);}
@@ -1870,33 +1893,68 @@ const PHASES = ['Diagnostic','Vidange','Préparation / ponçage','Traitement osm
 let chantierView = 'kanban';
 function renderChantiers(){
   const chantiers = Data.chantiers();
+  const actifs = chantiers.filter(c=>c.phaseActuelle<7);
   const enRetard = chantiers.filter(c=>c.retard && c.phaseActuelle<7);
-  const semaine = chantiers.filter(c=>c.phaseActuelle<7);
+  const termines30j = chantiers.filter(c=>c.phaseActuelle===7 && c.clos && daysSince(c.clos)<=30);
+  const totalPhotos = chantiers.reduce((s,c)=>s+Object.keys(c.photos||{}).length,0);
+  const semaine = actifs.slice().sort((a,b)=> new Date(a.phases[a.phaseActuelle].prevue) - new Date(b.phases[b.phaseActuelle].prevue));
 
   return `
-    <div class="section-title"><h2>Suivi de chantier</h2>
+    <div class="page-head flex-between wrap">
+      <div><h2>Suivi de chantier</h2><div class="sub">Phases, photos et notifications client</div></div>
       <div class="btn-row"><button class="chip ${chantierView==='kanban'?'active':''}" onclick="chantierView='kanban';renderView()">Kanban</button><button class="chip ${chantierView==='liste'?'active':''}" onclick="chantierView='liste';renderView()">Liste</button></div>
     </div>
 
-    ${enRetard.length ? `<div class="card" style="border-left:4px solid var(--danger);"><b style="color:var(--danger);">⚠ Chantiers en retard</b><ul class="small mt8">${enRetard.map(c=>`<li>${esc(c.nom)} — ${esc(Data.client(c.clientId).nom)} : phase « ${PHASES[c.phaseActuelle]} » en retard</li>`).join('')}</ul></div>` : ''}
+    <div class="grid grid-4">
+      <div class="kpi"><small>Chantiers actifs</small><div class="val">${actifs.length}</div><div class="delta">en cours</div><div class="icon-badge c-blue">${icon('tool')}</div></div>
+      <div class="kpi ${enRetard.length?'danger':''}"><small>En retard</small><div class="val">${enRetard.length}</div><div class="delta">à surveiller</div><div class="icon-badge c-red">${icon('alert')}</div></div>
+      <div class="kpi"><small>Terminés (30 j)</small><div class="val">${termines30j.length}</div><div class="delta">réceptionnés</div><div class="icon-badge c-green">${icon('check')}</div></div>
+      <div class="kpi"><small>Photos publiées</small><div class="val">${totalPhotos}</div><div class="delta">avant / après</div><div class="icon-badge c-yellow">${icon('eye')}</div></div>
+    </div>
+
+    ${enRetard.length ? `<div class="card mt16" style="border-left:3px solid var(--danger);">
+      <div class="flex" style="align-items:center;gap:8px;color:#f87171;font-weight:700;">${icon('alert')}Chantiers en retard</div>
+      <ul class="small mt8" style="margin:0;padding-left:18px;">${enRetard.map(c=>`<li>${esc(c.nom)} — ${esc(Data.client(c.clientId).nom)} : phase « ${PHASES[c.phaseActuelle]} »</li>`).join('')}</ul>
+    </div>` : ''}
 
     <div class="section-title"><h2 style="font-size:16px;">Planning de la semaine</h2></div>
     <div class="card">
-      <ul class="timeline">
-        ${semaine.map(c=>{ const ph=c.phases[c.phaseActuelle]; return `<li><div class="tl-dot next">${new Date(ph.prevue).getDate()}</div><div><b>${esc(c.nom)}</b> — ${esc(Data.client(c.clientId).nom)}<div class="small">${PHASES[c.phaseActuelle]} — prévu le ${fmtDate(ph.prevue)}</div></div></li>`; }).join('')}
-      </ul>
+      ${semaine.length ? `<ul class="timeline">
+        ${semaine.map(c=>{ const ph=c.phases[c.phaseActuelle]; return `<li><div class="tl-dot ${c.retard?'':'next'}" style="${c.retard?'background:var(--danger);color:#fff;':''}">${new Date(ph.prevue).getDate()}</div><div><b>${esc(c.nom)}</b> — ${esc(Data.client(c.clientId).nom)}<div class="small">${PHASES[c.phaseActuelle]} — prévu le ${fmtDate(ph.prevue)}</div></div></li>`; }).join('')}
+      </ul>` : `<div class="empty-note">Aucun chantier actif cette semaine.</div>`}
     </div>
 
-    <div class="section-title"><h2 style="font-size:16px;">Chantiers</h2></div>
+    <div class="section-title"><h2 style="font-size:16px;">Chantiers (${chantiers.length})</h2></div>
     ${chantierView==='kanban' ? renderKanban(chantiers) : renderChantierListe(chantiers)}
   `;
 }
+function chantierThumb(c){
+  const entries = Object.entries(c.photos||{});
+  if(!entries.length) return '';
+  const [, p] = entries[entries.length-1];
+  return `<img src="${p.apres}" onerror="onPhotoError(this,'Photo')" style="width:100%;height:72px;object-fit:cover;border-radius:6px;margin-top:8px;display:block;">`;
+}
 function renderKanban(chantiers){
+  const cols = [
+    {label:'En retard', filter:c=>c.retard && c.phaseActuelle<7},
+    {label:'En cours', filter:c=>!c.retard && c.phaseActuelle<7},
+    {label:'Terminé', filter:c=>c.phaseActuelle===7},
+  ];
   return `<div class="kanban">
-    ${PHASES.map((ph,i)=>{
-      const items = chantiers.filter(c=>c.phaseActuelle===i);
-      return `<div class="kanban-col"><h4>${ph}</h4>
-        ${items.map(c=>`<div class="kanban-card" onclick="openChantierDetail('${c.id}')"><b>${esc(c.nom)}</b>${esc(Data.client(c.clientId).nom)}${c.retard?'<div class="small" style="color:var(--danger);">⚠ retard</div>':''}</div>`).join('') || `<div class="small" style="padding:6px;">—</div>`}
+    ${cols.map(col=>{
+      const items = chantiers.filter(col.filter);
+      return `<div class="kanban-col"><h4>${col.label} (${items.length})</h4>
+        ${items.map(c=>{
+          const cl = Data.client(c.clientId);
+          const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
+          return `<div class="kanban-card" onclick="openChantierDetail('${c.id}')">
+            <b>${esc(c.nom)}</b>
+            <div class="small">${esc(cl.nom)}</div>
+            <div class="small mt8">${PHASES[Math.min(c.phaseActuelle,7)]}</div>
+            <div class="progress-track mt8" style="height:5px;"><div class="progress-fill" style="width:${pct}%;"></div></div>
+            ${chantierThumb(c)}
+          </div>`;
+        }).join('') || `<div class="small" style="padding:6px;">Aucun chantier.</div>`}
       </div>`;
     }).join('')}
   </div>`;
@@ -1906,11 +1964,12 @@ function renderChantierListe(chantiers){
     ${chantiers.map(c=>{
       const cl = Data.client(c.clientId);
       const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
-      return `<div class="card" style="cursor:pointer;" onclick="openChantierDetail('${c.id}')">
+      return `<div class="item-card" style="cursor:pointer;" onclick="openChantierDetail('${c.id}')">
         <div class="flex-between"><b>${esc(c.nom)}</b>${c.phaseActuelle===7?`<span class="badge accepte">Terminé</span>`:c.retard?`<span class="badge refuse">Retard</span>`:`<span class="badge envoye">En cours</span>`}</div>
         <div class="small mt8">${esc(cl.nom)} — ${esc(cl.ville)}</div>
-        <div class="small mt8">${PHASES[c.phaseActuelle]}</div>
+        <div class="small mt8">${PHASES[Math.min(c.phaseActuelle,7)]}</div>
         <div class="progress-track mt8"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        ${chantierThumb(c)}
       </div>`;
     }).join('')}
   </div>`;
@@ -1919,30 +1978,46 @@ function openChantierDetail(id){
   const c = Data.chantierOne(id);
   const cl = Data.client(c.clientId);
   const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
-  const photoPhases = Object.keys(c.photos||{});
+  const photoEntries = Object.entries(c.photos||{});
+  const currentPhaseInfo = c.phases[c.phaseActuelle];
   openModal(`
     <h3 class="modal-title">${esc(c.nom)}</h3>
     <div class="small">${esc(cl.nom)} — ${esc(cl.ville)} · Piscine ${esc(cl.piscine.type)}, ${cl.piscine.volume} m³</div>
-    <div class="progress-track mt16"><div class="progress-fill" style="width:${pct}%;"></div></div>
-    <ul class="timeline mt8">
+
+    <div class="flex-between mt16"><b class="small" style="color:var(--text);">${PHASES[Math.min(c.phaseActuelle,7)]}</b><b class="small">${pct}%</b></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+
+    <div class="phase-stepper mt16">
       ${c.phases.map((ph,i)=>{
         const done = i < c.phaseActuelle || (i===c.phaseActuelle && ph.reelle);
         const current = i===c.phaseActuelle && !ph.reelle;
-        return `<li>
-          <div class="tl-dot ${done?'done':current?'next':'future'}">${done?'✓':i+1}</div>
-          <div style="flex:1;">
-            <div class="flex-between"><b>${PHASES[i]}</b><span class="small">Prévu ${fmtDate(ph.prevue)}${ph.reelle?` · Réel ${fmtDate(ph.reelle)}`:''}</span></div>
-            ${ph.notes ? `<div class="small">${esc(ph.notes)}</div>` : ''}
-            ${c.photos && c.photos[PHASES[i]] ? renderPhotoComparator(c.id, PHASES[i], c.photos[PHASES[i]]) : ''}
-          </div>
-        </li>`;
+        return `<div class="phase-step ${done?'done':current?'current':''}">
+          <div class="step-dot">${done?'✓':i+1}</div>
+          <div class="step-label">${PHASES[i]}</div>
+        </div>`;
       }).join('')}
-    </ul>
+    </div>
+
+    ${currentPhaseInfo && currentPhaseInfo.notes ? `<div class="msg-box"><b>${PHASES[c.phaseActuelle]} — note d’intervention</b>${esc(currentPhaseInfo.notes)}</div>` : ''}
+
+    ${photoEntries.length ? `
+      <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Photos avant / après</h2></div>
+      <div id="chantier-photo-viewer">${renderPhotoComparator(c.id, photoEntries[photoEntries.length-1][0], photoEntries[photoEntries.length-1][1])}</div>
+      ${photoEntries.length>1 ? `<div class="photo-thumbs mt8">${photoEntries.map(([ph],i)=>`<button class="photo-thumb ${i===photoEntries.length-1?'active':''}" data-phase="${esc(ph)}" onclick="switchChantierPhoto('${c.id}','${esc(ph)}',this)">${esc(ph)}</button>`).join('')}</div>` : ''}
+    ` : ''}
+
     <div class="btn-row mt16">
-      ${c.phaseActuelle<7 ? `<button class="btn accent" onclick="avancerPhase('${c.id}')">Simuler changement de phase</button>` : `<span class="badge accepte">Chantier réceptionné</span>`}
-      <button class="btn secondary" onclick="voirVueClient('${c.id}')">Voir la vue client</button>
+      ${c.phaseActuelle<7 ? `<button class="btn accent" onclick="avancerPhase('${c.id}')">${icon('check')}Simuler changement de phase</button>` : `<span class="badge accepte">Chantier réceptionné</span>`}
+      <button class="btn secondary" onclick="voirVueClient('${c.id}')">${icon('eye')}Voir la vue client</button>
     </div>
   `);
+}
+function switchChantierPhoto(chantierId, phaseName, btn){
+  const c = Data.chantierOne(chantierId);
+  const photos = (c.photos||{})[phaseName];
+  if(!photos) return;
+  document.getElementById('chantier-photo-viewer').innerHTML = renderPhotoComparator(c.id, phaseName, photos);
+  document.querySelectorAll('.photo-thumb').forEach(b=>b.classList.toggle('active', b===btn));
 }
 let pcCounter = 0;
 function placeholderPhoto(label){
@@ -1994,6 +2069,7 @@ function voirVueClient(id){
   const c = Data.chantierOne(id);
   const cl = Data.client(c.clientId);
   const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
+  const photoEntries = Object.entries(c.photos||{});
   openModal(`
     <h3 class="modal-title">Vue client — lien de suivi (simulation)</h3>
     <p class="small">C’est l’écran que ${esc(cl.nom)} ouvre depuis son téléphone en cliquant sur le lien reçu par SMS, sans créer de compte.</p>
@@ -2001,12 +2077,16 @@ function voirVueClient(id){
       <div class="pf-top">Suivi de mon chantier — AA Polyester</div>
       <div class="pf-body">
         <b>${esc(c.nom)}</b>
-        <div class="progress-track mt8"><div class="progress-fill" style="width:${pct}%;"></div></div>
-        <div class="small mt8">Étape en cours : <b>${PHASES[Math.min(c.phaseActuelle, 7)]}</b></div>
-        <ul class="timeline mt16">
-          ${c.phases.slice(0, c.phaseActuelle+1).map((ph,i)=>`<li><div class="tl-dot ${ph.reelle?'done':'next'}">${ph.reelle?'✓':i+1}</div><div>${PHASES[i]}${ph.reelle?` — ${fmtDate(ph.reelle)}`:' — en cours'}</div></li>`).join('')}
-        </ul>
-        ${Object.keys(c.photos||{}).length ? `<div class="small mt8"><b>Photos</b></div>${Object.entries(c.photos).map(([ph,p])=>renderPhotoComparator(c.id, ph, p)).join('')}` : ''}
+        <div class="flex-between mt8"><span class="small">${PHASES[Math.min(c.phaseActuelle, 7)]}</span><span class="small">${pct}%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        <div class="phase-stepper mt16">
+          ${c.phases.map((ph,i)=>{
+            const done = i < c.phaseActuelle || (i===c.phaseActuelle && ph.reelle);
+            const current = i===c.phaseActuelle && !ph.reelle;
+            return `<div class="phase-step ${done?'done':current?'current':''}"><div class="step-dot">${done?'✓':i+1}</div><div class="step-label">${PHASES[i]}</div></div>`;
+          }).join('')}
+        </div>
+        ${photoEntries.length ? `<div class="small mt16"><b>Dernières photos</b></div>${renderPhotoComparator(c.id, photoEntries[photoEntries.length-1][0], photoEntries[photoEntries.length-1][1])}` : ''}
       </div>
     </div>
   `);
