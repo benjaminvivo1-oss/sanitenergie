@@ -311,6 +311,22 @@ label:first-child{margin-top:0;}
 .item-card .ic-row{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;margin-top:4px;}
 .item-card .ic-row svg{width:14px;height:14px;}
 
+.chart-box{position:relative;width:100%;height:150px;}
+.mic-btn{
+  width:64px;height:64px;border-radius:50%;background:var(--primary);border:none;color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.mic-btn svg{width:26px;height:26px;}
+.mic-btn.recording{background:var(--danger);animation:pulse 1.2s infinite;}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(239,68,68,0.5);}
+  70%{box-shadow:0 0 0 14px rgba(239,68,68,0);}
+  100%{box-shadow:0 0 0 0 rgba(239,68,68,0);}
+}
+.dots{letter-spacing:3px;font-size:14px;}
+.dots .on{color:var(--primary-l2);}
+.dots .off{color:var(--border);}
+
 footer.app-footer{
   text-align:center;padding:26px 16px 40px;color:var(--muted);font-size:11.5px;
 }
@@ -471,6 +487,7 @@ const ICON_PATHS = {
   check:'<polyline points="20 6 9 17 4 12"/>',
   alert:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
   menu:'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
+  mic:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>',
 };
 function icon(name, cls){ return `<svg class="ic ${cls||''}" viewBox="0 0 24 24">${ICON_PATHS[name]||''}</svg>`; }
 
@@ -560,9 +577,9 @@ function buildSeed(){
   function totaux(lignes){ let ht=0,tva=0; lignes.forEach(l=>{ const t=l.qte*l.prixUnitaire; ht+=t; tva+=t*l.tva/100; }); return {ht:Math.round(ht*100)/100, tva:Math.round(tva*100)/100, ttc:Math.round((ht+tva)*100)/100}; }
 
   const devis = [
-    {id:'dv1', numero:'DV-2026-041', clientId:'c12', statut:'brouillon', dateCreation:iso(daysAgo(2)), dateEnvoi:null,
+    {id:'dv1', numero:'DV-2026-041', clientId:'c12', statut:'envoye', dateCreation:iso(daysAgo(2)), dateEnvoi:iso(daysAgo(2)),
       lignes:[ligne('p5',1), ligne('p3',20)]},
-    {id:'dv2', numero:'DV-2026-042', clientId:'c13', statut:'brouillon', dateCreation:iso(daysAgo(1)), dateEnvoi:null,
+    {id:'dv2', numero:'DV-2026-042', clientId:'c13', statut:'envoye', dateCreation:iso(daysAgo(1)), dateEnvoi:iso(daysAgo(0)),
       lignes:[ligne('p10',1), ligne('p9',8)]},
     {id:'dv3', numero:'DV-2026-036', clientId:'c7', statut:'envoye', dateCreation:iso(daysAgo(2)), dateEnvoi:iso(daysAgo(1)),
       lignes:[ligne('p2',32), ligne('p4',32)]},
@@ -851,10 +868,17 @@ function renderDashboard(){
       <div class="kpi"><small>Chantiers en cours</small><div class="val">${Data.chantiers().filter(c=>c.phaseActuelle<7).length}</div><div class="delta">suivi en temps réel</div><div class="icon-badge c-yellow">${icon('tool')}</div></div>
     </div>
 
-    <div class="section-title"><h2 style="font-size:18px;">Saisonnalité — CA mensuel</h2><span class="sub">Le creux hivernal contraste avec le pic mars-juin</span></div>
-    <div class="card">
-      <canvas id="chartSaison" height="220"></canvas>
-      <p class="small mt8">Argument commercial : les <b>contrats d’entretien</b> (hivernages + mises en service) lissent ce creux en sécurisant du chiffre d’affaires récurrent d’octobre à février.</p>
+    <div class="section-title"><h2 style="font-size:18px;">Chiffre d’affaires</h2></div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Évolution du mois en cours</h3>
+        <div class="chart-box"><canvas id="chartMoisCourant"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Saisonnalité annuelle</h3>
+        <div class="chart-box"><canvas id="chartSaison"></canvas></div>
+        <p class="small mt8">Les <b>contrats d’entretien</b> lissent le creux hivernal en sécurisant du CA récurrent d’octobre à février.</p>
+      </div>
     </div>
 
     <div class="section-title"><h2 style="font-size:18px;">À surveiller</h2></div>
@@ -882,7 +906,30 @@ function darkScales(extra){
   const out = { x: Object.assign({}, base, (extra&&extra.x)||{}), y: Object.assign({}, base, (extra&&extra.y)||{}) };
   return out;
 }
+function computeMonthEvolution(){
+  const year = TODAY.getFullYear(), month = TODAY.getMonth();
+  const todayDate = TODAY.getDate();
+  const paidThisMonth = Data.factures().filter(f=>f.statut==='payee' && f.datePaiement && new Date(f.datePaiement).getFullYear()===year && new Date(f.datePaiement).getMonth()===month);
+  const labels = [], data = [];
+  let running = 0;
+  for(let d=1; d<=todayDate; d++){
+    running += paidThisMonth.filter(f=>new Date(f.datePaiement).getDate()===d).reduce((s,f)=>s+f.totaux.ttc,0);
+    labels.push(String(d));
+    data.push(running);
+  }
+  return {labels, data};
+}
 function initDashboard(){
+  const ctxMois = document.getElementById('chartMoisCourant');
+  if(ctxMois){
+    if(typeof Chart==='undefined'){ chartFallback('chartMoisCourant','Graphique indisponible hors connexion (Chart.js non chargé).'); }
+    else {
+      const evo = computeMonthEvolution();
+      new Chart(ctxMois, { type:'line', data:{ labels: evo.labels,
+        datasets:[{ label:'CA cumulé (€)', data: evo.data, borderColor: clientConfig.charte.couleurPrincipale, backgroundColor: clientConfig.charte.couleurPrincipale+'22', fill:true, tension:0.3, pointRadius:2 }] },
+        options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales: darkScales({ x:{ticks:{color:'#8b93a7', maxTicksLimit:8}} }) } });
+    }
+  }
   const ctx = document.getElementById('chartSaison');
   if(!ctx) return;
   if(typeof Chart==='undefined'){ chartFallback('chartSaison','Graphique indisponible hors connexion (Chart.js non chargé).'); return; }
@@ -891,8 +938,8 @@ function initDashboard(){
     data:{ labels:['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'],
       datasets:[{ label:'CA mensuel estimé (€)', data:[4200,5100,9800,15200,18900,21400,13800,11200,9600,6300,5400,4800],
         backgroundColor: [4200,5100,9800,15200,18900,21400,13800,11200,9600,6300,5400,4800].map((v,i)=> (i<=1||i>=9) ? 'rgba(139,147,167,0.35)' : clientConfig.charte.couleurPrincipale),
-        borderRadius:6 }] },
-    options:{ plugins:{legend:{display:false}}, scales: darkScales({ y:{ticks:{color:'#8b93a7', callback:v=>v/1000+'k'}} }) }
+        borderRadius:4 }] },
+    options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales: darkScales({ y:{ticks:{color:'#8b93a7', callback:v=>v/1000+'k'}} }) }
   });
 }
 
@@ -901,7 +948,7 @@ function initDashboard(){
    ========================================================= */
 let devisFilter = 'tous';
 let devisSearch = '';
-const DEVIS_STATUT_LABEL = {brouillon:'Brouillon', envoye:'Envoyé', accepte:'Accepté', refuse:'Refusé'};
+const DEVIS_STATUT_LABEL = {envoye:'Envoyé', accepte:'Accepté', refuse:'Refusé'};
 function renderDevis(){
   const all = Data.devis();
   const filtered = all.filter(d=>{
@@ -914,13 +961,16 @@ function renderDevis(){
   return `
     <div class="page-head flex-between wrap">
       <div><h2>Devis</h2><div class="sub">Gérez vos devis et leur suivi</div></div>
-      <button class="btn" onclick="openDevisForm()">${icon('plus')}Nouveau devis</button>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="openDevisVocal()">${icon('mic')}Devis vocal</button>
+        <button class="btn" onclick="openDevisForm()">${icon('plus')}Nouveau devis</button>
+      </div>
     </div>
     <div class="searchbar">
       <div class="search-input">${icon('search')}<input placeholder="Rechercher un devis ou un client..." value="${esc(devisSearch)}" oninput="devisSearch=this.value;renderView()"></div>
     </div>
     <div class="filters">
-      ${['tous','brouillon','envoye','accepte','refuse'].map(f=>`<button class="chip ${devisFilter===f?'active':''}" onclick="devisFilter='${f}';renderView()">${f==='tous'?'Tous':DEVIS_STATUT_LABEL[f]}</button>`).join('')}
+      ${['tous','envoye','accepte','refuse'].map(f=>`<button class="chip ${devisFilter===f?'active':''}" onclick="devisFilter='${f}';renderView()">${f==='tous'?'Tous':DEVIS_STATUT_LABEL[f]}</button>`).join('')}
     </div>
     ${filtered.length ? filtered.map(d=>{
       const c = Data.client(d.clientId);
@@ -933,11 +983,10 @@ function renderDevis(){
           <div class="btn-row" style="align-items:center;">
             <div class="mono" style="font-size:16px;margin-right:4px;">${fmtEUR(d.totaux.ttc)}</div>
             <button class="icon-btn" onclick="previewDevisPDF('${d.id}')" title="Aperçu PDF">${icon('eye')}</button>
-            ${d.statut==='brouillon' ? `<button class="btn accent small" onclick="envoyerDevis('${d.id}')">Envoyer</button>` : ''}
             ${d.statut==='envoye' ? `<button class="icon-btn" onclick="statuerDevis('${d.id}','accepte')" title="Marquer accepté">${icon('check')}</button><button class="icon-btn danger" onclick="statuerDevis('${d.id}','refuse')" title="Marquer refusé">${icon('x')}</button>` : ''}
             ${d.statut==='accepte' && !d._converti ? `<button class="btn small" onclick="convertirDevisEnFacture('${d.id}')">→ Facture</button>` : ''}
             ${d.statut==='accepte' && d._converti ? `<span class="badge info">Facturé</span>` : ''}
-            ${d.statut==='brouillon' ? `<button class="icon-btn danger" onclick="deleteDevis('${d.id}')" title="Supprimer">${icon('trash')}</button>` : ''}
+            ${d.statut!=='accepte' ? `<button class="icon-btn danger" onclick="deleteDevis('${d.id}')" title="Supprimer">${icon('trash')}</button>` : ''}
           </div>
         </div>
       </div>`;
@@ -954,22 +1003,23 @@ function deleteDevis(id){
 
 function markConverted(devisId){ const d=Data.devisOne(devisId); d._converti=true; Data.setDevis(Data.devis().map(x=>x.id===d.id?d:x)); }
 
-function openDevisForm(){
+function openDevisForm(prefClientId, prefLignes, rawText){
   const clients = Data.clients();
   const prestations = Data.prestations();
   openModal(`
-    <h3 class="modal-title">Nouveau devis</h3>
-    <label>Client</label>
-    <select id="ndv-client">${clients.map(c=>`<option value="${c.id}">${esc(c.nom)} — ${esc(c.ville)}</option>`).join('')}</select>
+    <h3 class="modal-title">${rawText ? 'Devis généré depuis la dictée' : 'Nouveau devis'}</h3>
+    ${rawText ? `<div class="msg-box"><b>Transcription</b>${esc(rawText)}</div>` : ''}
+    <label>Client${rawText ? (prefClientId ? ' (détecté automatiquement)' : ' (non détecté — sélectionnez-le)') : ''}</label>
+    <select id="ndv-client">${clients.map(c=>`<option value="${c.id}" ${prefClientId===c.id?'selected':''}>${esc(c.nom)} — ${esc(c.ville)}</option>`).join('')}</select>
     <label>Bibliothèque de prestations (clic pour ajouter une ligne)</label>
     <div class="btn-row" style="max-height:120px;overflow-y:auto;">
       ${prestations.map(p=>`<button class="chip" onclick="addLigneToForm('${p.id}')">${esc(p.designation)} — ${p.prix}€/${p.unite}</button>`).join('')}
     </div>
     <div id="ndv-lignes" class="mt16"></div>
     <div class="flex-between mt16"><b>Total TTC</b><b id="ndv-total" class="mono">0,00 €</b></div>
-    <div class="btn-row mt16"><button class="btn" onclick="saveNewDevis()">Enregistrer le brouillon</button><button class="btn secondary" onclick="closeModal()">Annuler</button></div>
+    <div class="btn-row mt16"><button class="btn" onclick="saveNewDevis()">${icon('check')}Créer et envoyer le devis</button><button class="btn secondary" onclick="closeModal()">Annuler</button></div>
   `);
-  window._ndvLignes = [];
+  window._ndvLignes = prefLignes ? prefLignes.slice() : [];
   renderNdvLignes();
 }
 function addLigneToForm(pid){
@@ -999,21 +1049,118 @@ function saveNewDevis(){
   const clientId = document.getElementById('ndv-client').value;
   const all = Data.devis();
   const numero = clientConfig.facturation.prefixeDevis + '-2026-' + String(50+all.length).padStart(3,'0');
-  const nd = {id: uid('dv'), numero, clientId, statut:'brouillon', dateCreation: iso(TODAY), dateEnvoi:null, lignes: window._ndvLignes, relanceSimOffset:null};
+  const nd = {id: uid('dv'), numero, clientId, statut:'envoye', dateCreation: iso(TODAY), dateEnvoi: iso(TODAY), lignes: window._ndvLignes, relanceSimOffset:null};
   nd.totaux = calcTotaux(nd.lignes);
   Data.setDevis([nd, ...all]);
   closeModal();
-  toast(`Devis ${numero} créé en brouillon.`);
+  toast(`Devis ${numero} créé et envoyé par email et SMS.`);
   setTab('devis');
 }
-function envoyerDevis(id){
-  const all = Data.devis();
-  const d = all.find(x=>x.id===id);
-  d.statut = 'envoye'; d.dateEnvoi = iso(TODAY); d.relanceSimOffset = null;
-  Data.setDevis(all);
-  toast(`Devis ${d.numero} envoyé par email et SMS.`);
-  renderView();
+
+/* Devis vocal */
+function normalize(s){ return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function wordBoundaryIncludes(haystack, needle){
+  const re = new RegExp('(^|[^a-z0-9])'+needle.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'($|[^a-z0-9])');
+  return re.test(haystack);
 }
+const PRESTATION_KEYWORDS = {
+  p1: ['diagnostic','vidange'],
+  p2: ['osmose'],
+  p3: ['poncage','preparation coque'],
+  p4: ['gelcoat'],
+  p5: ['fissure'],
+  p6: ['liner'],
+  p7: ['pompe de filtration','pompe'],
+  p8: ['filtre a sable','filtre sable'],
+  p9: ['margelle'],
+  p10: ['hivernage','hiverner'],
+  p11: ['mise en service','remise en service'],
+  p12: ['contrat annuel','deux passages'],
+};
+let vocalRecognition = null;
+let vocalRecording = false;
+function openDevisVocal(){
+  const supported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  openModal(`
+    <h3 class="modal-title">Devis vocal</h3>
+    <p class="small">Décrivez les travaux à voix haute, par exemple : « hivernage et reprise de margelles 6 mètres linéaires chez Isabelle Marty ». Aplomb reconnaît le client et les prestations.</p>
+    ${supported ? `
+      <div class="center mt16">
+        <button class="mic-btn" id="vocalMicBtn" onclick="toggleVocalRecording()">${icon('mic')}</button>
+        <div class="small mt8" id="vocalStatus">Appuyez pour parler</div>
+      </div>
+    ` : `<div class="small mt16">Reconnaissance vocale non disponible sur ce navigateur — dictez le texte ci-dessous à l’écrit.</div>`}
+    <label class="mt16">Transcription</label>
+    <textarea id="vocal-transcript" rows="4" placeholder="Ex : traitement osmose et gelcoat 30 m² pour Sophie Delcros"></textarea>
+    <div class="btn-row mt16"><button class="btn" onclick="analyserDicteeVocale()">${icon('check')}Analyser et pré-remplir le devis</button><button class="btn secondary" onclick="closeModal()">Annuler</button></div>
+  `);
+}
+function getVocalRecognition(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return null;
+  const r = new SR();
+  r.lang = 'fr-FR';
+  r.continuous = true;
+  r.interimResults = true;
+  return r;
+}
+function toggleVocalRecording(){
+  if(vocalRecording){ vocalRecognition && vocalRecognition.stop(); return; }
+  vocalRecognition = getVocalRecognition();
+  if(!vocalRecognition){ toast('Reconnaissance vocale non disponible sur ce navigateur.'); return; }
+  const ta = document.getElementById('vocal-transcript');
+  let finalTranscript = ta.value ? ta.value + ' ' : '';
+  vocalRecognition.onstart = ()=>{
+    vocalRecording = true;
+    const btn = document.getElementById('vocalMicBtn'); if(btn) btn.classList.add('recording');
+    const st = document.getElementById('vocalStatus'); if(st) st.textContent = 'Écoute en cours… parlez.';
+  };
+  vocalRecognition.onresult = (e)=>{
+    let interim = '';
+    for(let i=e.resultIndex; i<e.results.length; i++){
+      const t = e.results[i][0].transcript;
+      if(e.results[i].isFinal) finalTranscript += t + ' '; else interim += t;
+    }
+    const box = document.getElementById('vocal-transcript');
+    if(box) box.value = finalTranscript + interim;
+  };
+  vocalRecognition.onerror = ()=>{ toast('Micro indisponible ou permission refusée — dictez le texte à l’écrit ci-dessous.'); };
+  vocalRecognition.onend = ()=>{
+    vocalRecording = false;
+    const btn = document.getElementById('vocalMicBtn'); if(btn) btn.classList.remove('recording');
+    const st = document.getElementById('vocalStatus'); if(st) st.textContent = 'Appuyez pour parler';
+  };
+  vocalRecognition.start();
+}
+function analyserDicteeVocale(){
+  const raw = document.getElementById('vocal-transcript').value.trim();
+  if(!raw){ toast('Dictez ou saisissez un texte avant d’analyser.'); return; }
+  const norm = normalize(raw);
+  const clients = Data.clients();
+  let matchedClient = null;
+  for(const c of clients){
+    const parts = normalize(c.nom).split(/\s+/).filter(w=>w.length>2);
+    if(parts.some(p=>wordBoundaryIncludes(norm, p))){ matchedClient = c; break; }
+  }
+  const prestations = Data.prestations();
+  const lignes = [];
+  Object.entries(PRESTATION_KEYWORDS).forEach(([pid, kws])=>{
+    if(kws.some(k=>norm.includes(k))){
+      const p = prestations.find(x=>x.id===pid);
+      let qte = 1;
+      if(p.unite==='m²' || p.unite==='ml'){
+        const unitPattern = p.unite==='m²' ? /(\d+[.,]?\d*)\s*(m2|m²|metres? carres?)/i : /(\d+[.,]?\d*)\s*(ml|metres? lineaires?)/i;
+        const m = norm.match(unitPattern);
+        if(m) qte = parseFloat(m[1].replace(',','.'));
+      }
+      lignes.push({designation:p.designation, unite:p.unite, qte, prixUnitaire:p.prix, tva:p.tva});
+    }
+  });
+  if(!lignes.length){ toast('Aucune prestation reconnue — essayez avec des mots-clés comme « hivernage », « gelcoat », « osmose »…'); return; }
+  closeModal();
+  openDevisForm(matchedClient ? matchedClient.id : null, lignes, raw);
+}
+
 function statuerDevis(id, statut){
   const all = Data.devis();
   const d = all.find(x=>x.id===id);
@@ -1338,47 +1485,72 @@ function openClientFiche(id){
 /* =========================================================
    RELANCES
    ========================================================= */
+function relanceDots(jours, niveaux){
+  return niveaux.map(n=> `<span class="${jours>=n?'on':'off'}">●</span>`).join(' ');
+}
 function renderRelances(){
   const devisEnAttente = Data.devis().filter(d=>d.statut==='envoye');
   const facturesImpayees = Data.factures().filter(f=>f.statut==='impayee');
   return `
-    <div class="section-title"><h2>Relances programmées</h2><span class="sub">Automatisées — email + SMS, sans action de l’artisan</span></div>
+    <div class="page-head"><h2>Relances</h2><div class="sub">Automatisées — email + SMS envoyés sans action de votre part</div></div>
 
-    <div class="section-title"><h2 style="font-size:16px;">Relances devis (J0 / J+4 / J+10)</h2></div>
-    ${devisEnAttente.length ? devisEnAttente.map(d=>renderRelanceDevisCard(d)).join('') : `<div class="card"><div class="empty-note">Aucun devis en attente de relance.</div></div>`}
+    <div class="section-title"><h2 style="font-size:16px;">Devis en attente (${devisEnAttente.length})</h2></div>
+    ${devisEnAttente.length ? `<div class="grid grid-2">${devisEnAttente.map(d=>renderRelanceDevisRow(d)).join('')}</div>` : `<div class="card"><div class="empty-note">Aucun devis en attente de relance.</div></div>`}
 
-    <div class="section-title mt16"><h2 style="font-size:16px;">Relances impayés (J+7 / J+15 / J+30)</h2></div>
-    ${facturesImpayees.length ? facturesImpayees.map(f=>renderRelanceFactureCard(f)).join('') : `<div class="card"><div class="empty-note">Aucune facture impayée.</div></div>`}
+    <div class="section-title mt16"><h2 style="font-size:16px;">Factures impayées (${facturesImpayees.length})</h2></div>
+    ${facturesImpayees.length ? `<div class="grid grid-2">${facturesImpayees.map(f=>renderRelanceFactureRow(f)).join('')}</div>` : `<div class="card"><div class="empty-note">Aucune facture impayée.</div></div>`}
   `;
 }
-function renderRelanceDevisCard(d){
+function renderRelanceDevisRow(d){
   const c = Data.client(d.clientId);
   const jours = joursEcoulesDevis(d);
   const niveaux = clientConfig.relances.devis.niveaux;
   const prochain = niveaux.find(n=>n>jours);
+  const statusText = prochain!=null ? `Prochaine relance dans ${prochain-jours} j (J+${prochain})` : 'Relances terminées';
   return `
-    <div class="card mt8">
+    <div class="item-card">
       <div class="flex-between wrap">
-        <div><b>${d.numero}</b> — ${esc(c.nom)} <span class="small">(${fmtEUR(d.totaux.ttc)} TTC, envoyé le ${fmtDate(d.dateEnvoi)})</span></div>
+        <div>
+          <b>${d.numero}</b> — ${esc(c.nom)}
+          <div class="small mt8">${fmtEUR(d.totaux.ttc)} TTC · envoyé le ${fmtDate(d.dateEnvoi)}</div>
+        </div>
+        <span class="badge ${prochain!=null?'envoye':'info'}">${statusText}</span>
+      </div>
+      <div class="flex-between mt8">
+        <div class="dots">${relanceDots(jours, niveaux)}</div>
         <div class="btn-row">
-          ${prochain!=null ? `<button class="btn accent small" onclick="simulerRelanceDevis('${d.id}', ${prochain})">Simuler J+${prochain}</button>` : `<span class="badge info">Relances terminées</span>`}
+          <button class="btn secondary small" onclick="voirMessagesRelanceDevis('${d.id}')">${icon('mail')}Messages</button>
+          ${prochain!=null ? `<button class="btn accent small" onclick="simulerRelanceDevis('${d.id}', ${prochain})">Simuler J+${prochain}</button>` : ''}
         </div>
       </div>
-      <ul class="timeline mt8">
-        ${RELANCE_DEVIS_TEXTES.map(r=>{
-          const done = jours >= r.jour;
-          const isNext = !done && r.jour === prochain;
-          return `<li>
-            <div class="tl-dot ${done?'done':isNext?'next':'future'}">${done?'✓':isNext?'→':r.jour}</div>
-            <div style="flex:1;">
-              <div class="flex-between"><b>${r.label} (J${r.jour===0?'0':'+'+r.jour})</b><span class="small">${done?'Envoyée':'Programmée'}</span></div>
-              ${done || isNext ? `<div class="msg-box"><b>Email</b>${esc(r.email(d,c)).replace(/\n/g,'<br>')}</div><div class="msg-box"><b>SMS</b>${esc(r.sms(d,c))}</div>` : ''}
-            </div>
-          </li>`;
-        }).join('')}
-      </ul>
     </div>
   `;
+}
+function voirMessagesRelanceDevis(id){
+  const d = Data.devisOne(id), c = Data.client(d.clientId);
+  const jours = joursEcoulesDevis(d);
+  const niveaux = clientConfig.relances.devis.niveaux;
+  const prochain = niveaux.find(n=>n>jours);
+  openModal(`
+    <h3 class="modal-title">Messages de relance — ${d.numero}</h3>
+    <div class="small">${esc(c.nom)} · ${fmtEUR(d.totaux.ttc)} TTC · envoyé le ${fmtDate(d.dateEnvoi)}</div>
+    <ul class="timeline mt16">
+      ${RELANCE_DEVIS_TEXTES.map(r=>{
+        const done = jours >= r.jour;
+        const isNext = !done && r.jour === prochain;
+        if(!done && !isNext) return '';
+        return `<li>
+          <div class="tl-dot ${done?'done':'next'}">${done?'✓':'→'}</div>
+          <div style="flex:1;">
+            <div class="flex-between"><b>${r.label} (J${r.jour===0?'0':'+'+r.jour})</b><span class="small">${done?'Envoyée':'Programmée'}</span></div>
+            <div class="msg-box"><b>Email</b>${esc(r.email(d,c)).replace(/\n/g,'<br>')}</div>
+            <div class="msg-box"><b>SMS</b>${esc(r.sms(d,c))}</div>
+          </div>
+        </li>`;
+      }).join('')}
+    </ul>
+    <div class="btn-row mt16"><button class="btn secondary" onclick="closeModal()">Fermer</button></div>
+  `);
 }
 function simulerRelanceDevis(id, niveau){
   const all = Data.devis();
@@ -1388,35 +1560,60 @@ function simulerRelanceDevis(id, niveau){
   toast(`Relance J+${niveau} envoyée pour ${d.numero} (email + SMS).`);
   renderView();
 }
-function renderRelanceFactureCard(f){
+function renderRelanceFactureRow(f){
   const c = Data.client(f.clientId);
   const jours = joursRetardFacture(f);
   const niveaux = clientConfig.relances.impayes.niveaux;
   const prochain = niveaux.find(n=>n>jours);
+  const statusText = prochain!=null ? `Prochaine relance dans ${prochain-jours} j (J+${prochain})` : 'Relances terminées';
   return `
-    <div class="card mt8">
+    <div class="item-card wash-red">
       <div class="flex-between wrap">
-        <div><b>${f.numero}</b> — ${esc(c.nom)} <span class="small">(${fmtEUR(f.totaux.ttc)} TTC, échue le ${fmtDate(f.dateEcheance)})</span></div>
+        <div>
+          <b>${f.numero}</b> — ${esc(c.nom)}
+          <div class="small mt8">${fmtEUR(f.totaux.ttc)} TTC · échue le ${fmtDate(f.dateEcheance)} (J+${jours})</div>
+        </div>
+        <span class="badge impayee">${statusText}</span>
+      </div>
+      <div class="flex-between mt8 wrap">
+        <div class="dots">${relanceDots(jours, niveaux)}</div>
         <div class="btn-row">
+          <button class="btn secondary small" onclick="voirMessagesRelanceFacture('${f.id}')">${icon('mail')}Messages</button>
           ${prochain!=null ? `<button class="btn accent small" onclick="simulerRelanceFacture('${f.id}', ${prochain})">Simuler J+${prochain}</button>` : ''}
           ${jours>=30 ? `<button class="btn danger small" onclick="previewMiseEnDemeure('${f.id}')">Mise en demeure</button>` : ''}
         </div>
       </div>
-      <ul class="timeline mt8">
-        ${RELANCE_IMPAYES_TEXTES.map(r=>{
-          const done = jours >= r.jour;
-          const isNext = !done && r.jour === prochain;
-          return `<li>
-            <div class="tl-dot ${done?'done':isNext?'next':'future'}">${done?'✓':isNext?'→':r.jour}</div>
-            <div style="flex:1;">
-              <div class="flex-between"><b>${r.label} (J+${r.jour})</b><span class="small">${done?'Envoyée':'Programmée'}</span></div>
-              ${done || isNext ? `<div class="msg-box"><b>Email</b>${esc(r.email(f,c)).replace(/\n/g,'<br>')}</div><div class="msg-box"><b>SMS</b>${esc(r.sms(f,c))}</div>` : ''}
-            </div>
-          </li>`;
-        }).join('')}
-      </ul>
     </div>
   `;
+}
+function voirMessagesRelanceFacture(id){
+  const f = Data.factureOne(id), c = Data.client(f.clientId);
+  const jours = joursRetardFacture(f);
+  const niveaux = clientConfig.relances.impayes.niveaux;
+  const prochain = niveaux.find(n=>n>jours);
+  openModal(`
+    <h3 class="modal-title">Messages de relance — ${f.numero}</h3>
+    <div class="small">${esc(c.nom)} · ${fmtEUR(f.totaux.ttc)} TTC · échue le ${fmtDate(f.dateEcheance)}</div>
+    <ul class="timeline mt16">
+      ${RELANCE_IMPAYES_TEXTES.map(r=>{
+        const done = jours >= r.jour;
+        const isNext = !done && r.jour === prochain;
+        if(!done && !isNext) return '';
+        return `<li>
+          <div class="tl-dot ${done?'done':'next'}">${done?'✓':'→'}</div>
+          <div style="flex:1;">
+            <div class="flex-between"><b>${r.label} (J+${r.jour})</b><span class="small">${done?'Envoyée':'Programmée'}</span></div>
+            <div class="msg-box"><b>Email</b>${esc(r.email(f,c)).replace(/\n/g,'<br>')}</div>
+            <div class="msg-box"><b>SMS</b>${esc(r.sms(f,c))}</div>
+          </div>
+        </li>`;
+      }).join('')}
+    </ul>
+    <div class="btn-row mt16">
+      ${jours>=30 ? `<button class="btn danger small" onclick="previewMiseEnDemeure('${f.id}')">Mise en demeure</button>` : ''}
+      <button class="btn secondary" onclick="closeModal()">Fermer</button>
+    </div>
+  `);
 }
 function simulerRelanceFacture(id, niveau){
   const all = Data.factures();
@@ -1446,7 +1643,7 @@ function renderAvisGoogle(){
     </div>
 
     <div class="section-title"><h2 style="font-size:16px;">Progression sur 6 mois</h2></div>
-    <div class="card"><canvas id="chartAvis" height="200"></canvas></div>
+    <div class="card"><div class="chart-box"><canvas id="chartAvis"></canvas></div></div>
 
     <div class="section-title"><h2 style="font-size:16px;">Texte du SMS envoyé (éditable)</h2></div>
     <div class="card">
@@ -1481,8 +1678,8 @@ function initAvisGoogle(){
   if(typeof Chart==='undefined'){ chartFallback('chartAvis','Graphique indisponible hors connexion (Chart.js non chargé).'); return; }
   const cfg = Data.avisConfig();
   new Chart(ctx, {type:'line', data:{ labels: cfg.progression.map(p=>p.mois),
-    datasets:[{ label:'Avis cumulés', data: cfg.progression.map(p=>p.total), borderColor: clientConfig.charte.couleurPrincipale, backgroundColor: clientConfig.charte.couleurPrincipale+'22', fill:true, tension:0.35, pointRadius:4, pointBackgroundColor: clientConfig.charte.couleurPrincipale }] },
-    options:{ plugins:{legend:{display:false}}, scales: darkScales() } });
+    datasets:[{ label:'Avis cumulés', data: cfg.progression.map(p=>p.total), borderColor: clientConfig.charte.couleurPrincipale, backgroundColor: clientConfig.charte.couleurPrincipale+'22', fill:true, tension:0.35, pointRadius:3, pointBackgroundColor: clientConfig.charte.couleurPrincipale }] },
+    options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales: darkScales() } });
 }
 function saveAvisTexts(){
   const cfg = Data.avisConfig();
@@ -1538,22 +1735,9 @@ function renderContrats(){
   const monthCounts = new Array(12).fill(0);
   contrats.forEach(c=>monthCounts[c.mois]++);
 
-  const rows = contrats.slice().sort((a,b)=>{
-    const na = nextOccurrence(a.mois), nb = nextOccurrence(b.mois); return na-nb;
-  }).map(c=>{
-    const cl = Data.client(c.clientId);
-    const next = nextOccurrence(c.mois);
-    const joursRestants = daysBetween(TODAY, next);
-    const relanceDue = joursRestants<=45;
-    return `<tr>
-      <td>${esc(cl.nom)}</td>
-      <td>${esc(c.type)}</td>
-      <td>${fmtDate(next)} <span class="small">(${joursRestants}j)</span></td>
-      <td class="right mono">${fmtEUR(c.montant)}</td>
-      <td>${relanceDue ? `<span class="badge envoye">Relance renouvellement active</span>` : `<span class="badge info">À venir</span>`}</td>
-      <td class="right">${relanceDue ? `<button class="btn accent small" onclick="genererDevisRenouvellement('${c.id}')">Réponse positive → devis</button>` : ''}</td>
-    </tr>`;
-  }).join('');
+  const sortedContrats = contrats.slice().sort((a,b)=> nextOccurrence(a.mois)-nextOccurrence(b.mois));
+  const dueSoon = sortedContrats.filter(c=> daysBetween(TODAY, nextOccurrence(c.mois)) <= 45);
+  const others = sortedContrats.filter(c=> daysBetween(TODAY, nextOccurrence(c.mois)) > 45);
 
   return `
     <div class="page-head flex-between wrap">
@@ -1567,19 +1751,34 @@ function renderContrats(){
     </div>
 
     <div class="section-title"><h2 style="font-size:16px;">Calendrier annuel des interventions</h2><span class="sub">Pic hivernages (oct-nov) et mises en service (mars-avr)</span></div>
-    <div class="card"><canvas id="chartContrats" height="200"></canvas></div>
+    <div class="card"><div class="chart-box"><canvas id="chartContrats"></canvas></div></div>
 
-    <div class="section-title"><h2 style="font-size:16px;">Liste des contrats actifs</h2></div>
+    ${dueSoon.length ? `
+    <div class="section-title"><h2 style="font-size:16px;">À renouveler bientôt (${dueSoon.length})</h2></div>
+    ${dueSoon.map(c=>{
+      const cl = Data.client(c.clientId);
+      const next = nextOccurrence(c.mois);
+      const j = daysBetween(TODAY, next);
+      return `<div class="item-card wash-green">
+        <div class="flex-between wrap">
+          <div><b>${esc(cl.nom)}</b> <span class="small">— ${esc(c.type)}</span><div class="small mt8">${fmtDate(next)} (dans ${j} j) · ${fmtEUR(c.montant)}/an</div></div>
+          <button class="btn accent small" onclick="genererDevisRenouvellement('${c.id}')">${icon('check')}Renouvellement → devis</button>
+        </div>
+      </div>`;
+    }).join('')}
+    ` : ''}
+
+    <div class="section-title"><h2 style="font-size:16px;">Tous les contrats (${contrats.length})</h2></div>
     <div class="card list-card table-wrap">
       <table>
-        <thead><tr><th>Client</th><th>Type</th><th>Prochaine intervention</th><th class="right">Montant</th><th>Relance</th><th></th></tr></thead>
-        <tbody>${rows}</tbody>
+        <thead><tr><th>Client</th><th>Type</th><th>Prochaine intervention</th><th class="right">Montant</th></tr></thead>
+        <tbody>${others.map(c=>{ const cl=Data.client(c.clientId); return `<tr><td>${esc(cl.nom)}</td><td>${esc(c.type)}</td><td>${fmtDate(nextOccurrence(c.mois))}</td><td class="right mono">${fmtEUR(c.montant)}</td></tr>`; }).join('')}</tbody>
       </table>
     </div>
 
     <div class="section-title"><h2 style="font-size:16px;">Clients sans contrat</h2></div>
     <div class="card">
-      ${clientsSansContrat.length ? `<ul class="timeline">${clientsSansContrat.map(c=>`<li><div class="tl-dot future">!</div><div class="flex-between" style="flex:1;"><div><b>${esc(c.nom)}</b><div class="small">${esc(c.ville)} — jamais reconduit</div></div><button class="btn secondary small" onclick="openContratForm('${c.id}')">Proposer un contrat</button></div></li>`).join('')}</ul>` : `<div class="empty-note">Tous les clients sont sous contrat.</div>`}
+      ${clientsSansContrat.length ? `<div class="btn-row">${clientsSansContrat.map(c=>`<span class="chip" style="display:inline-flex;align-items:center;gap:8px;">${esc(c.nom)}<button class="link-btn" onclick="openContratForm('${c.id}')">Proposer</button></span>`).join('')}</div>` : `<div class="empty-note">Tous les clients sont sous contrat.</div>`}
     </div>
   `;
 }
@@ -1591,8 +1790,8 @@ function initContrats(){
   const monthCounts = new Array(12).fill(0);
   contrats.forEach(c=>monthCounts[c.mois]++);
   new Chart(ctx, {type:'bar', data:{ labels:['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'],
-    datasets:[{ label:'Interventions programmées', data: monthCounts, backgroundColor: monthCounts.map((v,i)=> (i===9||i===10||i===2||i===3) ? clientConfig.charte.couleurPrincipale : 'rgba(139,147,167,0.35)'), borderRadius:6 }] },
-    options:{ plugins:{legend:{display:false}}, scales: darkScales({ y:{ticks:{color:'#8b93a7', stepSize:1}} }) } });
+    datasets:[{ label:'Interventions programmées', data: monthCounts, backgroundColor: monthCounts.map((v,i)=> (i===9||i===10||i===2||i===3) ? clientConfig.charte.couleurPrincipale : 'rgba(139,147,167,0.35)'), borderRadius:4 }] },
+    options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales: darkScales({ y:{ticks:{color:'#8b93a7', stepSize:1}} }) } });
 }
 function openContratForm(prefClientId){
   const clients = Data.clients();
