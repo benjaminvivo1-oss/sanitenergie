@@ -290,21 +290,22 @@ label:first-child{margin-top:0;}
 .photo-compare .tag.left{left:8px;}
 .photo-compare .tag.right{right:8px;}
 
-.phase-stepper{display:flex;gap:2px;overflow-x:auto;padding:4px 0 10px;}
-.phase-step{flex:none;width:78px;text-align:center;position:relative;}
-.phase-step::before{
-  content:'';position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--border);z-index:0;
+.chk-list{display:flex;flex-direction:column;gap:1px;}
+.chk-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-radius:8px;cursor:pointer;}
+.chk-row:hover{background:var(--card);}
+.chk-box{
+  width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);flex:none;
+  display:flex;align-items:center;justify-content:center;color:transparent;
 }
-.phase-step:first-child::before{display:none;}
-.phase-step.done::before{background:var(--ok);}
-.phase-step .step-dot{
-  width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:800;background:var(--bg);border:1.5px solid var(--border);color:var(--muted);position:relative;z-index:1;
-}
-.phase-step.done .step-dot{background:var(--ok);border-color:var(--ok);color:#08210f;}
-.phase-step.current .step-dot{background:var(--warn);border-color:var(--warn);color:#241b02;}
-.phase-step .step-label{font-size:10px;color:var(--muted);line-height:1.25;}
-.phase-step.done .step-label, .phase-step.current .step-label{color:var(--text);font-weight:600;}
+.chk-box svg{width:13px;height:13px;stroke:transparent;stroke-width:3;}
+.chk-row.done .chk-box{background:var(--ok);border-color:var(--ok);}
+.chk-row.done .chk-box svg{stroke:#fff;}
+.chk-lbl{flex:1;font-size:13px;color:var(--muted);}
+.chk-row.done .chk-lbl{color:var(--text);font-weight:600;}
+.chk-date{font-size:11px;color:var(--muted);flex:none;}
+.click-row{cursor:pointer;}
+.click-row:hover{background:var(--card-hover);}
+.journal-photo{margin-top:8px;max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--border);object-fit:cover;cursor:pointer;display:block;}
 
 .photo-thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
 .photo-thumb{
@@ -658,7 +659,8 @@ function buildSeed(){
   ];
 
   const chantiers = [
-    {id:'ch1', nom:'Rénovation gelcoat complète', clientId:'c12', phaseActuelle:4, dateDebut:iso(daysAgo(21)), retard:false,
+    {id:'ch1', nom:'Rénovation gelcoat complète', clientId:'c12', dateDebut:iso(daysAgo(21)), retard:false,
+      adresse:'6 chemin des Vignes, Cases-de-Pène', contactSurPlace:'Bernard Falguera — 06 12 34 56 12', codeAcces:'',
       phases:[
         {nom:'Diagnostic', prevue:iso(daysAgo(21)), reelle:iso(daysAgo(21)), notes:'Coque en bon état général, quelques cloques localisées côté profond.'},
         {nom:'Vidange', prevue:iso(daysAgo(19)), reelle:iso(daysAgo(19)), notes:'Vidange complète réalisée sans incident.'},
@@ -670,7 +672,8 @@ function buildSeed(){
         {nom:'Réception', prevue:iso(daysFromNow(8)), reelle:null, notes:''},
       ],
       photos:{ 'Préparation / ponçage':{avant:photoUrl('cpb-poncage-av-ch1'), apres:photoUrl('cpb-poncage-ap-ch1')}, 'Application gelcoat':{avant:photoUrl('cpb-gelcoat-av-ch1'), apres:photoUrl('cpb-gelcoat-mid-ch1')} }},
-    {id:'ch2', nom:'Pose de liner', clientId:'c10', phaseActuelle:2, dateDebut:iso(daysAgo(14)), retard:true,
+    {id:'ch2', nom:'Pose de liner', clientId:'c10', dateDebut:iso(daysAgo(14)), retard:true,
+      adresse:'18 avenue du Roussillon, Rivesaltes', contactSurPlace:'Camille Rousse — 06 12 34 56 10', codeAcces:'',
       phases:[
         {nom:'Diagnostic', prevue:iso(daysAgo(14)), reelle:iso(daysAgo(14)), notes:'Ancien liner très abîmé, remplacement validé avec le client.'},
         {nom:'Vidange', prevue:iso(daysAgo(12)), reelle:iso(daysAgo(12)), notes:'Vidange OK.'},
@@ -682,7 +685,8 @@ function buildSeed(){
         {nom:'Réception', prevue:iso(daysFromNow(7)), reelle:null, notes:''},
       ],
       photos:{ 'Diagnostic':{avant:photoUrl('cpb-diag-av-ch2'), apres:photoUrl('cpb-diag-ap-ch2')} }},
-    {id:'ch3', nom:'Traitement osmose collectif', clientId:'c14', phaseActuelle:3, dateDebut:iso(daysAgo(9)), retard:false,
+    {id:'ch3', nom:'Traitement osmose collectif', clientId:'c14', dateDebut:iso(daysAgo(9)), retard:false,
+      adresse:'Résidence Les Terrasses, 4 rue de la Réal, Perpignan', contactSurPlace:'M. Roca, gardien — 06 71 22 33 44', codeAcces:'Digicode : 2846A',
       phases:[
         {nom:'Diagnostic', prevue:iso(daysAgo(9)), reelle:iso(daysAgo(9)), notes:'Cloques d’osmose détectées sur 40% de la surface.'},
         {nom:'Vidange', prevue:iso(daysAgo(7)), reelle:iso(daysAgo(7)), notes:''},
@@ -694,7 +698,8 @@ function buildSeed(){
         {nom:'Réception', prevue:iso(daysFromNow(10)), reelle:null, notes:''},
       ],
       photos:{ 'Traitement osmose':{avant:photoUrl('cpb-osmose-av-ch3'), apres:photoUrl('cpb-osmose-ap-ch3')} }},
-    {id:'ch4', nom:'Réparation fissure + ponçage', clientId:'c1', phaseActuelle:7, dateDebut:iso(daysAgo(18)), retard:false, clos:iso(daysAgo(5)),
+    {id:'ch4', nom:'Réparation fissure + ponçage', clientId:'c1', dateDebut:iso(daysAgo(18)), retard:false, clos:iso(daysAgo(5)),
+      adresse:'9 rue des Micocouliers, Estagel', contactSurPlace:'Marc Fabre — 06 12 34 56 01', codeAcces:'',
       phases:[
         {nom:'Diagnostic', prevue:iso(daysAgo(18)), reelle:iso(daysAgo(18)), notes:''},
         {nom:'Vidange', prevue:iso(daysAgo(17)), reelle:iso(daysAgo(17)), notes:''},
@@ -706,7 +711,8 @@ function buildSeed(){
         {nom:'Réception', prevue:iso(daysAgo(5)), reelle:iso(daysAgo(5)), notes:'Client très satisfait du résultat.'},
       ],
       photos:{ 'Application gelcoat':{avant:photoUrl('cpb-gelcoat-av-ch4'), apres:photoUrl('cpb-gelcoat-ap-ch4')} }},
-    {id:'ch5', nom:'Mise en service + margelles', clientId:'c4', phaseActuelle:7, dateDebut:iso(daysAgo(28)), retard:false, clos:iso(daysAgo(20)),
+    {id:'ch5', nom:'Mise en service + margelles', clientId:'c4', dateDebut:iso(daysAgo(28)), retard:false, clos:iso(daysAgo(20)),
+      adresse:'Gîte Font Vive, route de Rasiguères, Cases-de-Pène', contactSurPlace:'Propriétaire sur place — 06 12 34 56 04', codeAcces:'Boîte à clés : 0472',
       phases:[
         {nom:'Diagnostic', prevue:iso(daysAgo(28)), reelle:iso(daysAgo(28)), notes:''},
         {nom:'Vidange', prevue:iso(daysAgo(27)), reelle:iso(daysAgo(27)), notes:'Non concerné.'},
@@ -718,7 +724,8 @@ function buildSeed(){
         {nom:'Réception', prevue:iso(daysAgo(20)), reelle:iso(daysAgo(20)), notes:''},
       ],
       photos:{ 'Finitions et margelles':{avant:photoUrl('cpb-margelles-av-ch5'), apres:photoUrl('cpb-margelles-ap-ch5')} }},
-    {id:'ch6', nom:'Remplacement filtre à sable + pompe', clientId:'c3', phaseActuelle:7, dateDebut:iso(daysAgo(65)), retard:false, clos:iso(daysAgo(60)),
+    {id:'ch6', nom:'Remplacement filtre à sable + pompe', clientId:'c3', dateDebut:iso(daysAgo(65)), retard:false, clos:iso(daysAgo(60)),
+      adresse:'Camping Les Micocouliers, chemin de la Rivière, Estagel', contactSurPlace:'Responsable technique — 06 98 11 22 33', codeAcces:'Barrière : code 4521',
       phases:[
         {nom:'Diagnostic', prevue:iso(daysAgo(65)), reelle:iso(daysAgo(65)), notes:'Pompe HS, filtre entartré.'},
         {nom:'Vidange', prevue:iso(daysAgo(64)), reelle:iso(daysAgo(64)), notes:'Non concerné.'},
@@ -731,6 +738,9 @@ function buildSeed(){
       ],
       photos:{ 'Réception':{avant:photoUrl('cpb-localtech-av-ch6'), apres:photoUrl('cpb-localtech-ap-ch6')} }},
   ];
+  chantiers.forEach(ch=>{
+    ch.journal = ch.phases.filter(p=>p.notes).map(p=>({date: p.reelle || p.prevue, texte:`${p.nom} — ${p.notes}`, photo:null})).reverse();
+  });
 
   const avisDemandes = [
     {id:'ad1', clientId:'c1', chantierId:'ch4', dateEnvoi:iso(daysAgo(3)), statut:'cliquee'},
@@ -889,7 +899,7 @@ function renderDashboard(){
     <div class="grid grid-3 mt16">
       <div class="kpi"><small>Taux d’acceptation devis</small><div class="val">${tauxAcceptation}%</div><div class="delta">devis acceptés / traités</div><div class="icon-badge c-blue">${icon('percent')}</div></div>
       <div class="kpi"><small>CA récurrent sécurisé</small><div class="val">${fmtEUR(caRecurrent)}<span style="font-size:12px;color:var(--muted);font-weight:500;"> /an</span></div><div class="delta">contrats d’entretien</div><div class="icon-badge c-green">${icon('repeat')}</div></div>
-      <div class="kpi"><small>Chantiers en cours</small><div class="val">${Data.chantiers().filter(c=>c.phaseActuelle<7).length}</div><div class="delta">suivi en temps réel</div><div class="icon-badge c-yellow">${icon('tool')}</div></div>
+      <div class="kpi"><small>Chantiers en cours</small><div class="val">${Data.chantiers().filter(c=>chStatut(c)!=='termine').length}</div><div class="delta">suivi en temps réel</div><div class="icon-badge c-yellow">${icon('tool')}</div></div>
     </div>
 
     <div class="section-title"><h2 style="font-size:18px;">Chiffre d’affaires</h2></div>
@@ -1821,7 +1831,7 @@ function renderContrats(){
 
     <div class="section-title"><h2 style="font-size:16px;">Tous les contrats (${contrats.length})</h2></div>
     <div class="card list-card table-wrap">
-      <table>
+      <table style="min-width:520px;">
         <thead><tr><th>Client</th><th>Type</th><th>Prochaine intervention</th><th class="right">Montant</th></tr></thead>
         <tbody>${others.map(c=>{ const cl=Data.client(c.clientId); return `<tr><td>${esc(cl.nom)}</td><td>${esc(c.type)}</td><td>${fmtDate(nextOccurrence(c.mois))}</td><td class="right mono">${fmtEUR(c.montant)}</td></tr>`; }).join('')}</tbody>
       </table>
@@ -1890,20 +1900,23 @@ registerModule({id:'contrats-entretien', nom:'Contrats', icone:'calendar', rende
    MODULE : SUIVI DE CHANTIER
    ========================================================= */
 const PHASES = ['Diagnostic','Vidange','Préparation / ponçage','Traitement osmose','Application gelcoat','Finitions et margelles','Remise en eau','Réception'];
-let chantierView = 'kanban';
+function chDoneCount(c){ return c.phases.filter(p=>p.reelle).length; }
+function chStatut(c){ const n = chDoneCount(c); return n>=PHASES.length ? 'termine' : n>0 ? 'en_cours' : 'planifie'; }
+function chNextPhase(c){ return c.phases.find(p=>!p.reelle) || null; }
 function renderChantiers(){
   const chantiers = Data.chantiers();
-  const actifs = chantiers.filter(c=>c.phaseActuelle<7);
-  const enRetard = chantiers.filter(c=>c.retard && c.phaseActuelle<7);
-  const termines30j = chantiers.filter(c=>c.phaseActuelle===7 && c.clos && daysSince(c.clos)<=30);
+  const actifs = chantiers.filter(c=>chStatut(c)!=='termine');
+  const enRetard = chantiers.filter(c=>c.retard && chStatut(c)!=='termine');
+  const termines30j = chantiers.filter(c=>chStatut(c)==='termine' && c.clos && daysSince(c.clos)<=30);
   const totalPhotos = chantiers.reduce((s,c)=>s+Object.keys(c.photos||{}).length,0);
-  const semaine = actifs.slice().sort((a,b)=> new Date(a.phases[a.phaseActuelle].prevue) - new Date(b.phases[b.phaseActuelle].prevue));
+  const semaine = actifs.slice().sort((a,b)=>{
+    const da = chNextPhase(a) ? chNextPhase(a).prevue : a.phases[a.phases.length-1].prevue;
+    const db = chNextPhase(b) ? chNextPhase(b).prevue : b.phases[b.phases.length-1].prevue;
+    return new Date(da) - new Date(db);
+  });
 
   return `
-    <div class="page-head flex-between wrap">
-      <div><h2>Suivi de chantier</h2><div class="sub">Phases, photos et notifications client</div></div>
-      <div class="btn-row"><button class="chip ${chantierView==='kanban'?'active':''}" onclick="chantierView='kanban';renderView()">Kanban</button><button class="chip ${chantierView==='liste'?'active':''}" onclick="chantierView='liste';renderView()">Liste</button></div>
-    </div>
+    <div class="page-head"><h2>Suivi de chantier</h2><div class="sub">Étapes, journal de chantier et photos</div></div>
 
     <div class="grid grid-4">
       <div class="kpi"><small>Chantiers actifs</small><div class="val">${actifs.length}</div><div class="delta">en cours</div><div class="icon-badge c-blue">${icon('tool')}</div></div>
@@ -1914,91 +1927,83 @@ function renderChantiers(){
 
     ${enRetard.length ? `<div class="card mt16" style="border-left:3px solid var(--danger);">
       <div class="flex" style="align-items:center;gap:8px;color:#f87171;font-weight:700;">${icon('alert')}Chantiers en retard</div>
-      <ul class="small mt8" style="margin:0;padding-left:18px;">${enRetard.map(c=>`<li>${esc(c.nom)} — ${esc(Data.client(c.clientId).nom)} : phase « ${PHASES[c.phaseActuelle]} »</li>`).join('')}</ul>
+      <ul class="small mt8" style="margin:0;padding-left:18px;">${enRetard.map(c=>{ const np=chNextPhase(c); return `<li>${esc(c.nom)} — ${esc(Data.client(c.clientId).nom)} : étape « ${np?np.nom:'—'} »</li>`; }).join('')}</ul>
     </div>` : ''}
 
     <div class="section-title"><h2 style="font-size:16px;">Planning de la semaine</h2></div>
     <div class="card">
       ${semaine.length ? `<ul class="timeline">
-        ${semaine.map(c=>{ const ph=c.phases[c.phaseActuelle]; return `<li><div class="tl-dot ${c.retard?'':'next'}" style="${c.retard?'background:var(--danger);color:#fff;':''}">${new Date(ph.prevue).getDate()}</div><div><b>${esc(c.nom)}</b> — ${esc(Data.client(c.clientId).nom)}<div class="small">${PHASES[c.phaseActuelle]} — prévu le ${fmtDate(ph.prevue)}</div></div></li>`; }).join('')}
+        ${semaine.map(c=>{ const np = chNextPhase(c) || c.phases[c.phases.length-1]; return `<li><div class="tl-dot ${c.retard?'':'next'}" style="${c.retard?'background:var(--danger);color:#fff;':''}">${new Date(np.prevue).getDate()}</div><div><b>${esc(c.nom)}</b> — ${esc(Data.client(c.clientId).nom)}<div class="small">${np.nom} — prévu le ${fmtDate(np.prevue)}</div></div></li>`; }).join('')}
       </ul>` : `<div class="empty-note">Aucun chantier actif cette semaine.</div>`}
     </div>
 
     <div class="section-title"><h2 style="font-size:16px;">Chantiers (${chantiers.length})</h2></div>
-    ${chantierView==='kanban' ? renderKanban(chantiers) : renderChantierListe(chantiers)}
+    ${renderChantierTable(chantiers)}
   `;
 }
-function chantierThumb(c){
-  const entries = Object.entries(c.photos||{});
-  if(!entries.length) return '';
-  const [, p] = entries[entries.length-1];
-  return `<img src="${p.apres}" onerror="onPhotoError(this,'Photo')" style="width:100%;height:72px;object-fit:cover;border-radius:6px;margin-top:8px;display:block;">`;
-}
-function renderKanban(chantiers){
-  const cols = [
-    {label:'En retard', filter:c=>c.retard && c.phaseActuelle<7},
-    {label:'En cours', filter:c=>!c.retard && c.phaseActuelle<7},
-    {label:'Terminé', filter:c=>c.phaseActuelle===7},
-  ];
-  return `<div class="kanban">
-    ${cols.map(col=>{
-      const items = chantiers.filter(col.filter);
-      return `<div class="kanban-col"><h4>${col.label} (${items.length})</h4>
-        ${items.map(c=>{
+function renderChantierTable(chantiers){
+  const rank = c=> (c.retard && chStatut(c)!=='termine') ? 0 : chStatut(c)==='termine' ? 2 : 1;
+  const sorted = chantiers.slice().sort((a,b)=> rank(a)-rank(b) || new Date(a.dateDebut)-new Date(b.dateDebut));
+  return `<div class="card list-card table-wrap">
+    <table style="min-width:680px;">
+      <thead><tr><th>Client</th><th>Prestation</th><th>Avancement</th><th>Dates</th><th>Statut</th></tr></thead>
+      <tbody>
+        ${sorted.map(c=>{
           const cl = Data.client(c.clientId);
-          const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
-          return `<div class="kanban-card" onclick="openChantierDetail('${c.id}')">
-            <b>${esc(c.nom)}</b>
-            <div class="small">${esc(cl.nom)}</div>
-            <div class="small mt8">${PHASES[Math.min(c.phaseActuelle,7)]}</div>
-            <div class="progress-track mt8" style="height:5px;"><div class="progress-fill" style="width:${pct}%;"></div></div>
-            ${chantierThumb(c)}
-          </div>`;
-        }).join('') || `<div class="small" style="padding:6px;">Aucun chantier.</div>`}
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-function renderChantierListe(chantiers){
-  return `<div class="grid grid-3">
-    ${chantiers.map(c=>{
-      const cl = Data.client(c.clientId);
-      const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
-      return `<div class="item-card" style="cursor:pointer;" onclick="openChantierDetail('${c.id}')">
-        <div class="flex-between"><b>${esc(c.nom)}</b>${c.phaseActuelle===7?`<span class="badge accepte">Terminé</span>`:c.retard?`<span class="badge refuse">Retard</span>`:`<span class="badge envoye">En cours</span>`}</div>
-        <div class="small mt8">${esc(cl.nom)} — ${esc(cl.ville)}</div>
-        <div class="small mt8">${PHASES[Math.min(c.phaseActuelle,7)]}</div>
-        <div class="progress-track mt8"><div class="progress-fill" style="width:${pct}%;"></div></div>
-        ${chantierThumb(c)}
-      </div>`;
-    }).join('')}
+          const done = chDoneCount(c);
+          const pct = Math.round(done/PHASES.length*100);
+          const statut = chStatut(c);
+          const dateFin = c.phases[c.phases.length-1].prevue;
+          return `<tr class="click-row" onclick="openChantierDetail('${c.id}')">
+            <td><b>${esc(cl.nom)}</b><div class="small">${esc(c.adresse||cl.ville)}</div></td>
+            <td class="small">${esc(c.nom)}</td>
+            <td style="min-width:150px;">
+              <div class="flex" style="align-items:center;gap:8px;"><div class="progress-track" style="flex:1;"><div class="progress-fill" style="width:${pct}%;${c.retard&&statut!=='termine'?'background:var(--danger);':''}"></div></div><span class="mono" style="font-size:12px;">${pct}%</span></div>
+              <div class="small" style="margin-top:2px;">${done}/${PHASES.length} étapes</div>
+            </td>
+            <td class="small">${fmtDate(c.dateDebut)} → ${fmtDate(dateFin)}</td>
+            <td>${statut==='termine'?`<span class="badge accepte">Terminé</span>`:(c.retard?`<span class="badge refuse">Retard</span>`:`<span class="badge envoye">En cours</span>`)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
   </div>`;
 }
 function openChantierDetail(id){
   const c = Data.chantierOne(id);
   const cl = Data.client(c.clientId);
-  const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
+  const done = chDoneCount(c);
+  const pct = Math.round(done/PHASES.length*100);
+  const statut = chStatut(c);
   const photoEntries = Object.entries(c.photos||{});
-  const currentPhaseInfo = c.phases[c.phaseActuelle];
   openModal(`
     <h3 class="modal-title">${esc(c.nom)}</h3>
     <div class="small">${esc(cl.nom)} — ${esc(cl.ville)} · Piscine ${esc(cl.piscine.type)}, ${cl.piscine.volume} m³</div>
 
-    <div class="flex-between mt16"><b class="small" style="color:var(--text);">${PHASES[Math.min(c.phaseActuelle,7)]}</b><b class="small">${pct}%</b></div>
-    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+    <div class="flex-between mt16"><b class="small" style="color:var(--text);">${done}/${PHASES.length} étapes</b><b class="small">${pct}%</b></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;${c.retard&&statut!=='termine'?'background:var(--danger);':''}"></div></div>
 
-    <div class="phase-stepper mt16">
-      ${c.phases.map((ph,i)=>{
-        const done = i < c.phaseActuelle || (i===c.phaseActuelle && ph.reelle);
-        const current = i===c.phaseActuelle && !ph.reelle;
-        return `<div class="phase-step ${done?'done':current?'current':''}">
-          <div class="step-dot">${done?'✓':i+1}</div>
-          <div class="step-label">${PHASES[i]}</div>
-        </div>`;
-      }).join('')}
+    <div class="grid grid-2 mt16">
+      <div class="card" style="background:var(--bg);">
+        <b class="small" style="color:var(--text);">Étapes</b>
+        <div class="chk-list mt8">
+          ${c.phases.map((ph,i)=>`<div class="chk-row ${ph.reelle?'done':''}" onclick="toggleChantierPhase('${c.id}',${i})">
+            <div class="chk-box">${icon('check')}</div>
+            <span class="chk-lbl">${ph.nom}</span>
+            <span class="chk-date">${ph.reelle?fmtDate(ph.reelle):fmtDate(ph.prevue)}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);">
+        <b class="small" style="color:var(--text);">Informations</b>
+        <div class="mt8" style="display:flex;flex-direction:column;gap:8px;">
+          <div class="ic-row">${icon('users')}${esc(c.contactSurPlace||'—')}</div>
+          <div class="ic-row">${icon('tool')}${esc(c.codeAcces||'Aucun code d’accès')}</div>
+          <div class="ic-row">${icon('calendar')}Début ${fmtDate(c.dateDebut)}</div>
+          <div class="ic-row">${icon('calendar')}Fin prévue ${fmtDate(c.phases[c.phases.length-1].prevue)}</div>
+        </div>
+      </div>
     </div>
-
-    ${currentPhaseInfo && currentPhaseInfo.notes ? `<div class="msg-box"><b>${PHASES[c.phaseActuelle]} — note d’intervention</b>${esc(currentPhaseInfo.notes)}</div>` : ''}
 
     ${photoEntries.length ? `
       <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Photos avant / après</h2></div>
@@ -2006,11 +2011,99 @@ function openChantierDetail(id){
       ${photoEntries.length>1 ? `<div class="photo-thumbs mt8">${photoEntries.map(([ph],i)=>`<button class="photo-thumb ${i===photoEntries.length-1?'active':''}" data-phase="${esc(ph)}" onclick="switchChantierPhoto('${c.id}','${esc(ph)}',this)">${esc(ph)}</button>`).join('')}</div>` : ''}
     ` : ''}
 
+    <div class="section-title" style="margin:20px 0 10px;"><h2 style="font-size:15px;">Journal de chantier</h2></div>
+    <div id="chantier-journal-${c.id}">${renderChantierJournal(c)}</div>
+    <div class="btn-row mt8" style="align-items:center;">
+      <input id="cjinput-${c.id}" placeholder="Nouvelle entrée..." style="flex:1;min-width:160px;">
+      <label class="btn secondary small" style="cursor:pointer;margin:0;">${icon('eye')}Photo<input type="file" accept="image/*" id="cjphoto-${c.id}" style="display:none;" onchange="previewChantierPhoto('${c.id}')"></label>
+      <button class="btn small" onclick="addChantierJournal('${c.id}')">${icon('plus')}Ajouter</button>
+    </div>
+    <div id="cjphoto-preview-${c.id}" class="small mt8"></div>
+
     <div class="btn-row mt16">
-      ${c.phaseActuelle<7 ? `<button class="btn accent" onclick="avancerPhase('${c.id}')">${icon('check')}Simuler changement de phase</button>` : `<span class="badge accepte">Chantier réceptionné</span>`}
+      ${statut!=='termine' ? `<span class="badge envoye">${done}/${PHASES.length} étapes terminées</span>` : `<span class="badge accepte">Chantier réceptionné</span>`}
       <button class="btn secondary" onclick="voirVueClient('${c.id}')">${icon('eye')}Voir la vue client</button>
     </div>
   `);
+}
+function renderChantierJournal(c){
+  const entries = c.journal || [];
+  if(!entries.length) return `<div class="empty-note">Aucune entrée pour le moment.</div>`;
+  return `<ul class="timeline" style="max-height:260px;overflow-y:auto;">
+    ${entries.map(j=>`<li>
+      <div class="tl-dot done" style="background:var(--bg);border:1px solid var(--border);color:var(--muted);">${new Date(j.date).getDate()}</div>
+      <div style="flex:1;">
+        <div class="small">${fmtDate(j.date)}</div>
+        <div style="font-size:13px;">${esc(j.texte)}</div>
+        ${j.photo ? `<img src="${j.photo}" class="journal-photo" onclick="openPhotoLightbox('${j.photo}')">` : ''}
+      </div>
+    </li>`).join('')}
+  </ul>`;
+}
+let _chJournalPhoto = {};
+function resizeImageFile(file, maxDim, cb){
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let w = img.width, h = img.height;
+      if(w>maxDim || h>maxDim){
+        if(w>=h){ h = Math.round(h*maxDim/w); w = maxDim; } else { w = Math.round(w*maxDim/h); h = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function previewChantierPhoto(id){
+  const fi = document.getElementById('cjphoto-'+id);
+  if(!fi.files || !fi.files[0]) return;
+  resizeImageFile(fi.files[0], 900, (dataUrl)=>{
+    _chJournalPhoto[id] = dataUrl;
+    const prev = document.getElementById('cjphoto-preview-'+id);
+    if(prev) prev.innerHTML = `<img src="${dataUrl}" style="height:52px;border-radius:6px;border:1px solid var(--border);object-fit:cover;vertical-align:middle;margin-right:8px;"><span style="color:#4ade80;">Photo prête</span>`;
+  });
+}
+function addChantierJournal(id){
+  const inp = document.getElementById('cjinput-'+id);
+  const texte = inp.value.trim();
+  const photo = _chJournalPhoto[id] || null;
+  if(!texte && !photo){ toast('Ajoutez un texte ou une photo.'); return; }
+  const all = Data.chantiers();
+  const c = all.find(x=>x.id===id);
+  c.journal = c.journal || [];
+  c.journal.unshift({date: iso(TODAY), texte: texte || 'Photo ajoutée', photo});
+  Data.setChantiers(all);
+  _chJournalPhoto[id] = null;
+  toast('Entrée ajoutée au journal de chantier.');
+  openChantierDetail(id);
+}
+function openPhotoLightbox(src){
+  openModal(`<h3 class="modal-title">Photo</h3><img src="${src}" style="width:100%;border-radius:10px;">`);
+}
+function toggleChantierPhase(id, idx){
+  const all = Data.chantiers();
+  const c = all.find(x=>x.id===id);
+  const ph = c.phases[idx];
+  const wasComplete = c.phases.every(p=>p.reelle);
+  ph.reelle = ph.reelle ? null : iso(TODAY);
+  const nowComplete = c.phases.every(p=>p.reelle);
+  if(nowComplete && !wasComplete){ c.retard = false; c.clos = iso(TODAY); }
+  Data.setChantiers(all);
+  if(nowComplete && !wasComplete){
+    const cl = Data.client(c.clientId);
+    const ad = {id: uid('ad'), clientId: c.clientId, chantierId: c.id, dateEnvoi: iso(daysFromNow(2)), statut:'envoyee'};
+    Data.setAvisDemandes([ad, ...Data.avisDemandes()]);
+    toast(`Chantier réceptionné — demande d’avis Google programmée à J+2 pour ${cl.nom}.`);
+  } else {
+    toast(ph.reelle ? `« ${ph.nom} » marqué terminé. Notification envoyée au client.` : `« ${ph.nom} » remis à faire.`);
+  }
+  renderView();
+  openChantierDetail(id);
 }
 function switchChantierPhoto(chantierId, phaseName, btn){
   const c = Data.chantierOne(chantierId);
@@ -2046,30 +2139,13 @@ function updatePhotoCompare(cid, val){
   box.querySelector('.after-wrap').style.width = val+'%';
   box.querySelector('.after-wrap img').style.width = (10000/val)+'%';
 }
-function avancerPhase(id){
-  const all = Data.chantiers();
-  const c = all.find(x=>x.id===id);
-  c.phases[c.phaseActuelle].reelle = iso(TODAY);
-  if(c.phaseActuelle < 7){
-    c.phaseActuelle++;
-    c.retard = false;
-  }
-  Data.setChantiers(all);
-  toast(`Phase « ${PHASES[c.phaseActuelle-1]||PHASES[0]} » terminée. Notification envoyée au client.`);
-  if(c.phaseActuelle===7){
-    const cl = Data.client(c.clientId);
-    const ad = {id: uid('ad'), clientId: c.clientId, chantierId: c.id, dateEnvoi: iso(daysFromNow(2)), statut:'envoyee'};
-    Data.setAvisDemandes([ad, ...Data.avisDemandes()]);
-    toast(`Chantier réceptionné — demande d’avis Google programmée à J+2 pour ${cl.nom}.`);
-  }
-  closeModal();
-  renderView();
-}
 function voirVueClient(id){
   const c = Data.chantierOne(id);
   const cl = Data.client(c.clientId);
-  const pct = Math.round((c.phaseActuelle)/(PHASES.length-1)*100);
+  const done = chDoneCount(c);
+  const pct = Math.round(done/PHASES.length*100);
   const photoEntries = Object.entries(c.photos||{});
+  const lastJournal = (c.journal||[]).slice(0,3);
   openModal(`
     <h3 class="modal-title">Vue client — lien de suivi (simulation)</h3>
     <p class="small">C’est l’écran que ${esc(cl.nom)} ouvre depuis son téléphone en cliquant sur le lien reçu par SMS, sans créer de compte.</p>
@@ -2077,16 +2153,13 @@ function voirVueClient(id){
       <div class="pf-top">Suivi de mon chantier — AA Polyester</div>
       <div class="pf-body">
         <b>${esc(c.nom)}</b>
-        <div class="flex-between mt8"><span class="small">${PHASES[Math.min(c.phaseActuelle, 7)]}</span><span class="small">${pct}%</span></div>
+        <div class="flex-between mt8"><span class="small">${done}/${PHASES.length} étapes</span><span class="small">${pct}%</span></div>
         <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
-        <div class="phase-stepper mt16">
-          ${c.phases.map((ph,i)=>{
-            const done = i < c.phaseActuelle || (i===c.phaseActuelle && ph.reelle);
-            const current = i===c.phaseActuelle && !ph.reelle;
-            return `<div class="phase-step ${done?'done':current?'current':''}"><div class="step-dot">${done?'✓':i+1}</div><div class="step-label">${PHASES[i]}</div></div>`;
-          }).join('')}
+        <div class="chk-list mt16">
+          ${c.phases.map(ph=>`<div class="chk-row ${ph.reelle?'done':''}" style="cursor:default;"><div class="chk-box">${icon('check')}</div><span class="chk-lbl">${ph.nom}</span></div>`).join('')}
         </div>
         ${photoEntries.length ? `<div class="small mt16"><b>Dernières photos</b></div>${renderPhotoComparator(c.id, photoEntries[photoEntries.length-1][0], photoEntries[photoEntries.length-1][1])}` : ''}
+        ${lastJournal.length ? `<div class="small mt16"><b>Dernières nouvelles du chantier</b></div><ul class="timeline">${lastJournal.map(j=>`<li><div class="tl-dot done" style="background:var(--bg);border:1px solid var(--border);color:var(--muted);">${new Date(j.date).getDate()}</div><div><div class="small">${fmtDate(j.date)}</div>${esc(j.texte)}${j.photo?`<img src="${j.photo}" class="journal-photo">`:''}</div></li>`).join('')}</ul>` : ''}
       </div>
     </div>
   `);
